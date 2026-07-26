@@ -55,6 +55,10 @@ class OpenEvolve:
         )
         os.makedirs(self.output_dir, exist_ok=True)
 
+        # Track the most recent checkpoint saved by this run (as opposed to any
+        # older checkpoints left over in output_dir/checkpoints from prior runs)
+        self.last_checkpoint_iteration: Optional[int] = None
+
         # Set up logging
         self._setup_logging()
 
@@ -463,7 +467,8 @@ class OpenEvolve:
         os.makedirs(checkpoint_dir, exist_ok=True)
 
         # Create specific checkpoint directory
-        checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_{iteration}")
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_{timestamp}_{iteration}")
         os.makedirs(checkpoint_path, exist_ok=True)
 
         # Save the database
@@ -508,6 +513,7 @@ class OpenEvolve:
             )
 
         logger.info(f"Saved checkpoint at iteration {iteration} to {checkpoint_path}")
+        self.last_checkpoint_iteration = iteration
 
     def _load_checkpoint(self, checkpoint_path: str) -> None:
         """Load state from a checkpoint directory"""

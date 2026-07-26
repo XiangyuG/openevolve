@@ -4,6 +4,7 @@ Command-line interface for OpenEvolve
 
 import argparse
 import asyncio
+import glob
 import logging
 import os
 import sys
@@ -134,10 +135,19 @@ async def main_async() -> int:
             checkpoint_path=args.checkpoint,
         )
 
-        # Get the checkpoint path
+        # Get the checkpoint path saved by this run (not just the highest-numbered
+        # checkpoint directory on disk, which may be left over from a previous run
+        # that reused the same output directory)
         checkpoint_dir = os.path.join(openevolve.output_dir, "checkpoints")
         latest_checkpoint = None
-        if os.path.exists(checkpoint_dir):
+        if openevolve.last_checkpoint_iteration is not None:
+            matches = glob.glob(
+                os.path.join(checkpoint_dir, f"checkpoint_*_{openevolve.last_checkpoint_iteration}")
+            )
+            if matches:
+                latest_checkpoint = max(matches, key=os.path.getmtime)
+
+        if latest_checkpoint is None and os.path.exists(checkpoint_dir):
             checkpoints = [
                 os.path.join(checkpoint_dir, d)
                 for d in os.listdir(checkpoint_dir)
