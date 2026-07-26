@@ -148,6 +148,10 @@ def _run_iteration_worker(
         # Get parent artifacts if available
         parent_artifacts = db_snapshot["artifacts"].get(parent_id)
 
+        # Get developer feedback from a previously rejected attempt on this parent, if any
+        # (interactive mode only; see ReviewGate / _run_evolution_interactive)
+        developer_feedback = db_snapshot.get("developer_feedback", {}).get(parent_id)
+
         # Get island-specific programs for context
         parent_island = parent.metadata.get("island", db_snapshot["current_island"])
         island_programs = [
@@ -191,6 +195,7 @@ def _run_iteration_worker(
             program_artifacts=parent_artifacts,
             feature_dimensions=db_snapshot.get("feature_dimensions", []),
             current_changes_description=parent_changes_desc,
+            developer_feedback=developer_feedback,
         )
 
         iteration_start = time.time()
@@ -278,6 +283,10 @@ def _run_iteration_worker(
             child_code = new_code
             changes_summary = "Full rewrite"
 
+        from openevolve.utils.code_utils import extract_change_explanation
+
+        change_explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
+
         # Check code length
         if len(child_code) > _worker_config.max_code_length:
             return SerializableResult(
@@ -306,6 +315,7 @@ def _run_iteration_worker(
             iteration_found=iteration,
             metadata={
                 "changes": changes_summary,
+                "explanation": change_explanation,
                 "parent_metrics": parent.metrics,
                 "island": parent_island,
             },
@@ -397,12 +407,14 @@ class ProcessParallelController:
         database: ProgramDatabase,
         evolution_tracer=None,
         file_suffix: str = ".py",
+        review_gate=None,
     ):
         self.config = config
         self.evaluation_file = evaluation_file
         self.database = database
         self.evolution_tracer = evolution_tracer
         self.file_suffix = file_suffix
+        self.review_gate = review_gate
 
         self.executor: Optional[ProcessPoolExecutor] = None
         self.shutdown_event = mp.Event()
@@ -411,6 +423,13 @@ class ProcessParallelController:
         # Number of worker processes
         self.num_workers = config.evaluator.parallel_evaluations
         self.num_islands = config.database.num_islands
+
+        # Interactive review mode (see review_gate.py): feedback from rejected
+        # attempts, keyed by parent_id, and how many times each parent has been
+        # rejected in a row (used to give up on a stuck lineage)
+        self.interactive_enabled = bool(config.interactive.enabled) and review_gate is not None
+        self._pending_feedback: Dict[str, str] = {}
+        self._rejection_counts: Dict[str, int] = {}
 
         logger.info(f"Initialized process parallel controller with {self.num_workers} workers")
 
@@ -504,6 +523,7 @@ class ProcessParallelController:
             "current_island": self.database.current_island,
             "feature_dimensions": self.database.config.feature_dimensions,
             "artifacts": {},  # Will be populated selectively
+            "developer_feedback": dict(self._pending_feedback),
         }
 
         # Include artifacts for programs that might be selected
@@ -535,6 +555,11 @@ class ProcessParallelController:
         """Run evolution with process-based parallelism"""
         if not self.executor:
             raise RuntimeError("Process pool not started")
+
+        if self.interactive_enabled:
+            return await self._run_evolution_interactive(
+                start_iteration, max_iterations, target_score, checkpoint_callback
+            )
 
         total_iterations = start_iteration + max_iterations
 
@@ -849,23 +874,325 @@ class ProcessParallelController:
 
         return self.database.get_best_program()
 
+    async def _run_evolution_interactive(
+        self,
+        start_iteration: int,
+        max_iterations: int,
+        target_score: Optional[float] = None,
+        checkpoint_callback=None,
+    ):
+        """
+        Run evolution one iteration at a time, gating every accepted child on a
+        developer decision from self.review_gate before it is written to the
+        database. Runs single-flight (no batching across islands) because the
+        parent sampled for iteration N+1 depends on whether iteration N's child
+        was accepted.
+        """
+        total_iterations = start_iteration + max_iterations
+        logger.info(
+            f"Starting interactive (human-reviewed) evolution from iteration {start_iteration} "
+            f"for {max_iterations} iterations (total: {total_iterations})"
+        )
+
+        current_iteration = start_iteration
+        completed_iterations = 0
+        island_id = 0
+        forced_parent_id: Optional[str] = None
+
+        early_stopping_enabled = self.config.early_stopping_patience is not None
+        best_score = float("-inf")
+        iterations_without_improvement = 0
+
+        loop = asyncio.get_event_loop()
+
+        while (
+            current_iteration < total_iterations
+            and completed_iterations < max_iterations
+            and not self.shutdown_event.is_set()
+        ):
+            target_island = island_id % self.num_islands
+
+            future = self._submit_iteration(
+                current_iteration, target_island, forced_parent_id=forced_parent_id
+            )
+            if future is None:
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                forced_parent_id = None
+                continue
+
+            timeout_seconds = self.config.evaluator.timeout + 30
+            try:
+                # Offload the blocking wait onto a thread so the event loop (and
+                # the review gate's own polling) keeps running.
+                result = await loop.run_in_executor(None, future.result, timeout_seconds)
+            except FutureTimeoutError:
+                logger.error(
+                    f"⏰ Iteration {current_iteration} timed out after {timeout_seconds}s "
+                    f"(evaluator timeout: {self.config.evaluator.timeout}s + 30s buffer). "
+                    f"Canceling future and continuing with next iteration."
+                )
+                future.cancel()
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                forced_parent_id = None
+                continue
+            except Exception as e:
+                logger.error(f"Error processing result from iteration {current_iteration}: {e}")
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                forced_parent_id = None
+                continue
+
+            if result.error:
+                logger.warning(f"Iteration {current_iteration} error: {result.error}")
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                forced_parent_id = None
+                continue
+
+            if not result.child_program_dict:
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                forced_parent_id = None
+                continue
+
+            child_program = Program(**result.child_program_dict)
+            parent_program = self.database.get(result.parent_id) if result.parent_id else None
+
+            if parent_program is None:
+                logger.warning(
+                    f"Iteration {current_iteration}: parent {result.parent_id} no longer in "
+                    f"database, discarding child {child_program.id} without review"
+                )
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                forced_parent_id = None
+                continue
+
+            # Ask the developer to approve or reject this iteration's child
+            decision = await self.review_gate.request_decision(
+                iteration=current_iteration,
+                parent=parent_program,
+                child=child_program,
+                changes_summary=child_program.metadata.get("changes", ""),
+                explanation=child_program.metadata.get("explanation", ""),
+            )
+
+            if not decision.approved:
+                logger.info(
+                    f"Iteration {current_iteration}: child {child_program.id} rejected by developer"
+                )
+                self._pending_feedback[parent_program.id] = decision.feedback
+                self._rejection_counts[parent_program.id] = (
+                    self._rejection_counts.get(parent_program.id, 0) + 1
+                )
+
+                if (
+                    self._rejection_counts[parent_program.id]
+                    >= self.config.interactive.max_rejections_per_parent
+                ):
+                    logger.info(
+                        f"Parent {parent_program.id} rejected "
+                        f"{self._rejection_counts[parent_program.id]} times in a row; "
+                        f"giving up on this lineage and sampling a new parent next"
+                    )
+                    del self._rejection_counts[parent_program.id]
+                    del self._pending_feedback[parent_program.id]
+                    forced_parent_id = None
+                else:
+                    forced_parent_id = parent_program.id
+
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                continue
+
+            # Approved: from here on, same bookkeeping as the standard (non-interactive) path
+            logger.info(
+                f"Iteration {current_iteration}: child {child_program.id} approved by developer"
+            )
+            self._pending_feedback.pop(parent_program.id, None)
+            self._rejection_counts.pop(parent_program.id, None)
+            forced_parent_id = None
+
+            self.database.add(
+                child_program, iteration=current_iteration, target_island=result.target_island
+            )
+
+            if result.artifacts:
+                self.database.store_artifacts(child_program.id, result.artifacts)
+
+            if self.evolution_tracer:
+                trace_island_id = child_program.metadata.get(
+                    "island", self.database.current_island
+                )
+                self.evolution_tracer.log_trace(
+                    iteration=current_iteration,
+                    parent_program=parent_program,
+                    child_program=child_program,
+                    prompt=result.prompt,
+                    llm_response=result.llm_response,
+                    artifacts=result.artifacts,
+                    island_id=trace_island_id,
+                    metadata={
+                        "iteration_time": result.iteration_time,
+                        "changes": child_program.metadata.get("changes", ""),
+                        "developer_approved": True,
+                    },
+                )
+
+            if result.prompt:
+                self.database.log_prompt(
+                    template_key=(
+                        "full_rewrite_user"
+                        if not self.config.diff_based_evolution
+                        else "diff_user"
+                    ),
+                    program_id=child_program.id,
+                    prompt=result.prompt,
+                    responses=[result.llm_response] if result.llm_response else [],
+                )
+
+            db_island_id = child_program.metadata.get("island", self.database.current_island)
+            self.database.increment_island_generation(island_idx=db_island_id)
+
+            if self.database.should_migrate():
+                logger.info(f"Performing migration at iteration {current_iteration}")
+                self.database.migrate_programs()
+                self.database.log_island_status()
+
+            logger.info(
+                f"Iteration {current_iteration}: "
+                f"Program {child_program.id} "
+                f"(parent: {result.parent_id}) "
+                f"completed in {result.iteration_time:.2f}s"
+            )
+
+            if child_program.metrics:
+                metrics_str = ", ".join(
+                    f"{k}={v:.4f}" if isinstance(v, (int, float)) else f"{k}={v}"
+                    for k, v in child_program.metrics.items()
+                )
+                logger.info(f"Metrics: {metrics_str}")
+
+            if self.database.best_program_id == child_program.id:
+                logger.info(
+                    f"🌟 New best solution found at iteration {current_iteration}: "
+                    f"{child_program.id}"
+                )
+
+            if (
+                current_iteration > 0
+                and current_iteration % self.config.checkpoint_interval == 0
+            ):
+                logger.info(f"Checkpoint interval reached at iteration {current_iteration}")
+                self.database.log_island_status()
+                if checkpoint_callback:
+                    checkpoint_callback(current_iteration)
+
+            stop_reason = None
+
+            if target_score is not None and child_program.metrics:
+                if (
+                    "combined_score" in child_program.metrics
+                    and child_program.metrics["combined_score"] >= target_score
+                ):
+                    logger.info(
+                        f"Target score {target_score} reached at iteration {current_iteration}"
+                    )
+                    stop_reason = "target_score"
+
+            if stop_reason is None and early_stopping_enabled and child_program.metrics:
+                if self.config.early_stopping_metric in child_program.metrics:
+                    current_score = child_program.metrics[self.config.early_stopping_metric]
+                else:
+                    current_score = safe_numeric_average(child_program.metrics)
+
+                if isinstance(current_score, (int, float)):
+                    if self.config.early_stopping_patience > 0:
+                        improvement = current_score - best_score
+                        if improvement >= self.config.convergence_threshold:
+                            best_score = current_score
+                            iterations_without_improvement = 0
+                        else:
+                            iterations_without_improvement += 1
+
+                        if iterations_without_improvement >= self.config.early_stopping_patience:
+                            self.early_stopping_triggered = True
+                            logger.info(
+                                f"🛑 Early stopping triggered at iteration {current_iteration}: "
+                                f"No improvement for {iterations_without_improvement} iterations "
+                                f"(best score: {best_score:.4f})"
+                            )
+                            stop_reason = "early_stopping"
+                    else:
+                        if current_score == self.config.convergence_threshold:
+                            best_score = current_score
+                            self.early_stopping_triggered = True
+                            logger.info(
+                                f"🛑 Early stopping (event-based) triggered at iteration "
+                                f"{current_iteration}: Task successfully solved with score "
+                                f"{best_score:.4f}."
+                            )
+                            stop_reason = "early_stopping"
+
+            current_iteration += 1
+            completed_iterations += 1
+            island_id += 1
+
+            if stop_reason:
+                break
+
+        if self.shutdown_event.is_set():
+            logger.info("✅ Evolution completed - Shutdown requested")
+        elif self.early_stopping_triggered:
+            logger.info("✅ Evolution completed - Early stopping triggered due to convergence")
+        else:
+            logger.info("✅ Evolution completed - Maximum iterations reached")
+
+        return self.database.get_best_program()
+
     def _submit_iteration(
-        self, iteration: int, island_id: Optional[int] = None
+        self,
+        iteration: int,
+        island_id: Optional[int] = None,
+        forced_parent_id: Optional[str] = None,
     ) -> Optional[Future]:
-        """Submit an iteration to the process pool, optionally pinned to a specific island"""
+        """
+        Submit an iteration to the process pool, optionally pinned to a specific island
+
+        forced_parent_id: used by interactive review mode to retry the exact same
+        parent (with developer feedback) after a rejection, instead of re-sampling.
+        """
         try:
             # Use specified island or current island
             target_island = island_id if island_id is not None else self.database.current_island
 
-            # Use thread-safe sampling that doesn't modify shared state
-            # This fixes the race condition from GitHub issue #246
-            # Inspirations are the diverse/creative examples; size them by
-            # num_diverse_programs (not num_top_programs) so the config parameter
-            # actually controls the inspiration count (GitHub issue #452).
-            parent, inspirations = self.database.sample_from_island(
-                island_id=target_island,
-                num_inspirations=self.config.prompt.num_diverse_programs,
-            )
+            forced_parent = self.database.get(forced_parent_id) if forced_parent_id else None
+            if forced_parent is not None:
+                # Keep the same parent, but still draw fresh inspirations
+                _, inspirations = self.database.sample_from_island(
+                    island_id=target_island,
+                    num_inspirations=self.config.prompt.num_diverse_programs,
+                )
+                parent = forced_parent
+            else:
+                # Use thread-safe sampling that doesn't modify shared state
+                # This fixes the race condition from GitHub issue #246
+                # Inspirations are the diverse/creative examples; size them by
+                # num_diverse_programs (not num_top_programs) so the config parameter
+                # actually controls the inspiration count (GitHub issue #452).
+                parent, inspirations = self.database.sample_from_island(
+                    island_id=target_island,
+                    num_inspirations=self.config.prompt.num_diverse_programs,
+                )
 
             # Create database snapshot
             db_snapshot = self._create_database_snapshot()

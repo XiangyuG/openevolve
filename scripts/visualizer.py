@@ -11,6 +11,7 @@ from typing import Optional, Any
 from flask import Flask, render_template, jsonify
 
 from manual import create_manual_blueprint
+from review import create_review_blueprint
 
 
 logger = logging.getLogger(__name__)
@@ -193,6 +194,9 @@ def run_static_export(args):
 # Manual mode blueprint mounted at /manual
 app.register_blueprint(create_manual_blueprint(lambda: os.environ.get("EVOLVE_OUTPUT", "examples/")))
 
+# Interactive review blueprint mounted at /review
+app.register_blueprint(create_review_blueprint(lambda: os.environ.get("EVOLVE_OUTPUT", "examples/")))
+
 
 if __name__ == "__main__":
     import argparse
@@ -231,4 +235,5 @@ if __name__ == "__main__":
     os.environ["EVOLVE_OUTPUT"] = args.path
     logger.info(f"Starting server at http://{args.host}:{args.port} with log level {args.log_level.upper()}")
     logger.info(f"Manual UI: http://{args.host}:{args.port}/manual")
+    logger.info(f"Review UI: http://{args.host}:{args.port}/review")
     app.run(host=args.host, port=args.port, debug=True)

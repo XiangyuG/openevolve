@@ -1,0 +1,46 @@
+# Small interactive test config: same LLM/task setup as config.yaml, but with
+# every iteration gated on developer approval via the /review UI, and a smaller
+# scope so a manual smoke test doesn't take forever.
+max_iterations: 3
+checkpoint_interval: 1
+
+# LLM configuration
+llm:
+  primary_model: "gpt-5-mini"
+  primary_model_weight: 0.8
+  secondary_model: "gpt-5-nano"
+  secondary_model_weight: 0.2
+  api_base: "https://api.openai.com/v1"
+  api_key: "${OPENAI_API_KEY}"
+  temperature: 0.7
+  max_tokens: 16000
+  timeout: 120
+
+# Prompt configuration
+prompt:
+  system_message: "You are an expert programmer specializing in optimization algorithms. Your task is to improve a function minimization algorithm to find the global minimum of a complex function with many local minima. The function is f(x, y) = sin(x) * cos(y) + sin(x*y) + (x^2 + y^2)/20. Focus on improving the search_algorithm function to reliably find the global minimum, escaping local minima that might trap simple algorithms."
+
+# Database configuration (single island keeps the demo simple to follow)
+database:
+  population_size: 10
+  archive_size: 10
+  num_islands: 1
+  elite_selection_ratio: 0.2
+  exploitation_ratio: 0.7
+  similarity_threshold: 0.99
+
+# Evaluator configuration
+evaluator:
+  timeout: 60
+  cascade_thresholds: [1.3]
+  parallel_evaluations: 1
+
+# Evolution settings
+diff_based_evolution: true
+max_code_length: 20000
+
+# Human-in-the-loop review: every iteration blocks until approved/rejected at /review
+interactive:
+  enabled: true
+  timeout: null # wait indefinitely for a developer decision
+  max_rejections_per_parent: 3

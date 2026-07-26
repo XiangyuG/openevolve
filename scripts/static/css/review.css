@@ -1,0 +1,74 @@
+/* Additions on top of manual.css for the interactive review page */
+
+.task-card .task-summary { display: flex; flex-direction: column; gap: 2px; }
+.task-card .task-iteration { font-weight: 700; }
+
+.review-modal {
+  padding: 0;
+}
+
+.review-body {
+  position: absolute;
+  top: 14px; left: 14px; right: 64px; bottom: 14px;
+  display: flex; flex-direction: column; gap: 12px;
+  min-height: 0;
+}
+
+.review-summary { flex: 0 0 auto; }
+.review-summary h2 { margin: 0 0 8px 0; font-size: 18px; color: #111827; }
+
+.metrics-table {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 4px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #111827;
+  margin-bottom: 10px;
+}
+.metrics-table .header { font-weight: 700; color: #4b5563; }
+.metrics-table .delta-pos { color: #067647; }
+.metrics-table .delta-neg { color: #b42318; }
+
+.review-field { margin-bottom: 8px; }
+.review-field .code-viewer {
+  max-height: 110px;
+  min-height: 32px;
+  color: #e6edf3;
+  white-space: pre-wrap;
+}
+
+.review-code {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+}
+.review-code .pane { position: absolute; top: 0; bottom: 0; }
+.review-code .code-pane {
+  position: absolute;
+  top: 36px; left: 10px; right: 10px; bottom: 10px;
+  max-height: none;
+  white-space: pre;
+}
+
+.review-actions {
+  flex: 0 0 auto;
+  display: flex; flex-direction: column; gap: 8px;
+}
+#feedbackInput {
+  width: 100%;
+  min-height: 56px;
+  resize: vertical;
+  border-radius: 8px;
+  border: 1px solid #d8dee9;
+  padding: 8px;
+  font: 13px/1.4 ui-sans-serif, system-ui;
+  color: #111827;
+}
+.action-buttons { display: flex; justify-content: flex-end; gap: 10px; }
+
+button.danger {
+  background: #fdecea;
+  color: #b42318;
+  border-color: #f3c6c1;
+}

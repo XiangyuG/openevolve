@@ -26,6 +26,8 @@ DIFF_USER_TEMPLATE = """# Current Program Information
 
 {artifacts}
 
+{developer_feedback}
+
 # Program Evolution History
 {evolution_history}
 
@@ -71,6 +73,8 @@ FULL_REWRITE_USER_TEMPLATE = """# Current Program Information
 - Areas identified for improvement: {improvement_areas}
 
 {artifacts}
+
+{developer_feedback}
 
 # Program Evolution History
 {evolution_history}

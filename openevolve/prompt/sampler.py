@@ -63,6 +63,7 @@ class PromptSampler:
         program_artifacts: Optional[Dict[str, Union[str, bytes]]] = None,
         feature_dimensions: Optional[List[str]] = None,
         current_changes_description: Optional[str] = None,
+        developer_feedback: Optional[str] = None,
         **kwargs: Any,
     ) -> Dict[str, str]:
         """
@@ -80,6 +81,8 @@ class PromptSampler:
             diff_based_evolution: Whether to use diff-based evolution (True) or full rewrites (False)
             template_key: Optional override for template key
             program_artifacts: Optional artifacts from program evaluation
+            developer_feedback: Optional feedback from a developer who rejected the
+                previous attempt on this parent (interactive review mode)
             **kwargs: Additional keys to replace in the user prompt
 
         Returns:
@@ -143,6 +146,9 @@ class PromptSampler:
         if self.config.include_artifacts and program_artifacts:
             artifacts_section = self._render_artifacts(program_artifacts)
 
+        # Format developer feedback section (interactive review mode), if any
+        developer_feedback_section = self._render_developer_feedback(developer_feedback)
+
         # Apply stochastic template variations if enabled
         if self.config.use_template_stochasticity:
             user_template = self._apply_template_variations(user_template)
@@ -163,6 +169,7 @@ class PromptSampler:
             current_program=current_program,
             language=language,
             artifacts=artifacts_section,
+            developer_feedback=developer_feedback_section,
             **kwargs,
         )
 
@@ -647,6 +654,27 @@ class PromptSampler:
                 result = result.replace(f"{{{key}}}", chosen_variation)
 
         return result
+
+    def _render_developer_feedback(self, feedback: Optional[str]) -> str:
+        """
+        Render developer feedback from a previously rejected attempt on this parent
+        (interactive review mode), if any
+
+        Args:
+            feedback: Free-text feedback the developer gave when rejecting the last attempt
+
+        Returns:
+            Formatted string for prompt inclusion (empty string if no feedback)
+        """
+        if not feedback:
+            return ""
+
+        return (
+            "## Developer Feedback (Previous Attempt Rejected)\n\n"
+            "A developer reviewed your last change to this program and rejected it. "
+            "Address this feedback in your next attempt:\n\n"
+            f"{feedback}"
+        )
 
     def _render_artifacts(self, artifacts: Dict[str, Union[str, bytes]]) -> str:
         """

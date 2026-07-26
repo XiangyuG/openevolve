@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>OpenEvolve – Iteration Review</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="/static/css/manual.css"/>
+  <link rel="stylesheet" href="/static/css/review.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Iteration Review</h1>
+    <button id="notifyBtn" class="ghost">🔔 Enable alerts</button>
+    <button id="refreshBtn" class="ghost">Refresh</button>
+  </header>
+
+  <main class="container">
+    <div id="taskList" class="task-list"></div>
+  </main>
+
+  <div id="modalOverlay" class="overlay hidden"></div>
+
+  <div id="reviewModal" class="modal review-modal hidden">
+    <button id="closeModal" class="icon-btn close-btn" aria-label="Close">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div class="review-body">
+      <div class="review-summary">
+        <h2 id="reviewTitle">Iteration</h2>
+        <div id="metricsTable" class="metrics-table"></div>
+        <div class="review-field">
+          <div class="pane-title">Explanation</div>
+          <pre id="changesExplanation" class="code-viewer readonly"></pre>
+        </div>
+        <div class="review-field">
+          <div class="pane-title">Changes summary</div>
+          <pre id="changesSummary" class="code-viewer readonly"></pre>
+        </div>
+        <div id="changesDescriptionField" class="review-field hidden">
+          <div class="pane-title">Changes description</div>
+          <pre id="changesDescription" class="code-viewer readonly"></pre>
+        </div>
+      </div>
+
+      <div class="review-code">
+        <div class="pane left">
+          <div class="pane-title">Parent code</div>
+          <pre id="parentCode" class="code-viewer readonly code-pane"></pre>
+        </div>
+        <div class="pane right">
+          <div class="pane-title">Child code</div>
+          <pre id="childCode" class="code-viewer readonly code-pane"></pre>
+        </div>
+      </div>
+
+      <div class="review-actions">
+        <textarea id="feedbackInput" placeholder="Feedback for the LLM (required when rejecting)"></textarea>
+        <div class="action-buttons">
+          <button id="rejectBtn" class="danger">Reject</button>
+          <button id="approveBtn" class="primary">Approve</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/review.js"></script>
+</body>
+</html>

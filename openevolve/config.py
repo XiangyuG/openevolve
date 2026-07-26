@@ -413,6 +413,28 @@ class EvolutionTraceConfig:
 
 
 @dataclass
+class InteractiveConfig:
+    """Configuration for interactive (human-in-the-loop) review of every iteration"""
+
+    # When enabled, every iteration's child program must be approved by a developer
+    # (via the review queue / UI) before it is added to the database. Evolution runs
+    # single-file, one iteration at a time, since the next parent sample depends on
+    # whether the previous child was accepted.
+    enabled: bool = False
+
+    # How long to wait for a developer decision before raising a timeout error.
+    # None means wait indefinitely.
+    timeout: Optional[float] = None
+
+    # If the same parent gets rejected this many times in a row, give up on that
+    # lineage and fall back to normal island sampling instead of retrying forever.
+    max_rejections_per_parent: int = 3
+
+    # Runtime-only: injected by the controller, points at <output_dir>/review_queue
+    _review_queue_dir: Optional[str] = None
+
+
+@dataclass
 class Config:
     """Master configuration for OpenEvolve"""
 
@@ -431,6 +453,7 @@ class Config:
     database: DatabaseConfig = field(default_factory=DatabaseConfig)
     evaluator: EvaluatorConfig = field(default_factory=EvaluatorConfig)
     evolution_trace: EvolutionTraceConfig = field(default_factory=EvolutionTraceConfig)
+    interactive: InteractiveConfig = field(default_factory=InteractiveConfig)
 
     # Evolution settings
     diff_based_evolution: bool = True

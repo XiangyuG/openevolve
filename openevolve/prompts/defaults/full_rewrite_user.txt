@@ -5,6 +5,8 @@
 
 {artifacts}
 
+{developer_feedback}
+
 # Program Evolution History
 {evolution_history}
 
@@ -25,3 +27,10 @@ as the original program, but with improved internal implementation.
 ```{language}
 # Your rewritten program here
 ```
+
+After the code block, add a short explanation in English, in exactly this format:
+
+I made the following changes:
+(1) <what you changed and why> - corresponding code: <short reference, e.g. function name>
+(2) <what you changed and why> - corresponding code: <short reference>
+...

@@ -5,6 +5,8 @@
 
 {artifacts}
 
+{developer_feedback}
+
 # Program Evolution History
 {evolution_history}
 
@@ -41,6 +43,12 @@ for i in range(m):
 >>>>>>> REPLACE
 
 You can suggest multiple changes. Each SEARCH section must exactly match code in the current program.
-Be thoughtful about your changes and explain your reasoning thoroughly.
 
 IMPORTANT: Do not rewrite the entire program - focus on targeted improvements.
+
+After all SEARCH/REPLACE blocks, add a short explanation in English, in exactly this format:
+
+I made the following changes:
+(1) <what you changed and why> - corresponding code: <short reference, e.g. function name or SEARCH snippet>
+(2) <what you changed and why> - corresponding code: <short reference>
+...

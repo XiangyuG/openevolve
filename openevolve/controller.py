@@ -61,6 +61,9 @@ class OpenEvolve:
         # Manual mode queue lives in <openevolve_output>/manual_tasks_queue
         self._setup_manual_mode_queue()
 
+        # Interactive review queue lives in <openevolve_output>/review_queue
+        self._setup_review_queue()
+
         # Set random seed for reproducibility if specified
         if self.config.random_seed is not None:
             import hashlib
@@ -217,6 +220,35 @@ class OpenEvolve:
 
         logger.info(f"Manual mode enabled. Queue dir: {qdir}")
 
+    def _setup_review_queue(self) -> None:
+        """
+        Set up the interactive review queue if config.interactive.enabled
+
+        Queue directory is always:
+          <openevolve_output>/review_queue
+
+        The directory is cleared on controller start so the review UI shows only
+        tasks from the current run (no stale tasks after restart)
+        """
+        self.review_gate = None
+
+        if not bool(getattr(self.config.interactive, "enabled", False)):
+            return
+
+        qdir = Path(self.output_dir).expanduser().resolve() / "review_queue"
+
+        # Clear stale tasks from previous runs
+        if qdir.exists():
+            shutil.rmtree(qdir)
+        qdir.mkdir(parents=True, exist_ok=True)
+
+        self.config.interactive._review_queue_dir = str(qdir)
+
+        from openevolve.review_gate import ReviewGate
+
+        self.review_gate = ReviewGate(str(qdir), timeout=self.config.interactive.timeout)
+        logger.info(f"Interactive review mode enabled. Queue dir: {qdir}")
+
     def _load_initial_program(self) -> str:
         """Load the initial program from file"""
         with open(self.initial_program_path, "r") as f:
@@ -314,6 +346,7 @@ class OpenEvolve:
                 self.database,
                 self.evolution_tracer,
                 file_suffix=self.config.file_suffix,
+                review_gate=self.review_gate,
             )
 
             # Set up signal handlers for graceful shutdown

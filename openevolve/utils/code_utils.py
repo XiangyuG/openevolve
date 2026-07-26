@@ -120,6 +120,28 @@ def parse_full_rewrite(llm_response: str, language: str = "python") -> Optional[
     return llm_response
 
 
+def extract_change_explanation(
+    llm_response: str,
+    diff_pattern: str = r"<<<<<<< SEARCH\n(.*?)=======\n(.*?)>>>>>>> REPLACE",
+) -> str:
+    """
+    Pull out the LLM's natural-language explanation of its changes from its raw
+    response, by stripping out the SEARCH/REPLACE diff blocks (or fenced code
+    blocks, for full rewrites) and returning whatever text is left.
+
+    Args:
+        llm_response: Raw text returned by the LLM
+        diff_pattern: Regex pattern used to find SEARCH/REPLACE diff blocks
+
+    Returns:
+        Remaining explanation text (stripped), or "" if nothing is left
+    """
+    remaining = re.sub(diff_pattern, "", llm_response, flags=re.DOTALL)
+    remaining = re.sub(r"```.*?```", "", remaining, flags=re.DOTALL)
+    remaining = re.sub(r"\n{3,}", "\n\n", remaining)
+    return remaining.strip()
+
+
 def _format_block_lines(lines: List[str], max_line_len: int = 100, max_lines: int = 30) -> str:
     """Format a block of lines for diff summary: show all lines (truncated per line, optional cap)."""
     truncated = []
