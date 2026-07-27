@@ -25,6 +25,7 @@ import signal
 import subprocess
 import tempfile
 import time
+import uuid
 from pathlib import Path
 
 from openevolve.evaluation_result import EvaluationResult
@@ -119,6 +120,13 @@ if BPF_TOOL not in TOOLS:
 TOOL = TOOLS[BPF_TOOL]
 RUNNER = Path(os.environ.get("BPF_RUNNER", str(LIBBPF_TOOLS_DIR / TOOL["runner"])))
 
+# Every candidate this evaluator sees gets a permanent copy on disk, regardless
+# of whether it compiles, benchmarks well, or is later approved/rejected in
+# interactive review -- OpenEvolve itself only keeps the population/checkpoints,
+# not a full history of every generated candidate.
+SAVE_PROGRAMS = os.environ.get("BPF_SAVE_PROGRAMS", "1") != "0"
+SAVE_DIR = Path(os.environ.get("BPF_SAVE_DIR", str(Path("generated_programs") / BPF_TOOL)))
+
 
 RUNNER_ROW_PATTERN = re.compile(
     r"^(?P<program>\S+)\s+"
@@ -130,6 +138,17 @@ RUNNER_ROW_PATTERN = re.compile(
 SINGLE_RUN_CNT_PATTERN = re.compile(r"run_cnt delta:\s*(\d+)")
 SINGLE_RUN_TIME_PATTERN = re.compile(r"run_time_ns delta:\s*(\d+)")
 SINGLE_AVG_PATTERN = re.compile(r"average execution:\s*([\d.]+)\s*ns/run")
+
+
+def _save_candidate(source: str, metrics: dict) -> None:
+    if not SAVE_PROGRAMS:
+        return
+    SAVE_DIR.mkdir(parents=True, exist_ok=True)
+    stamp = f"{time.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+    (SAVE_DIR / f"{stamp}.bpf.c").write_text(source, encoding="utf-8")
+    (SAVE_DIR / f"{stamp}.json").write_text(
+        json.dumps(metrics, indent=2, sort_keys=True), encoding="utf-8"
+    )
 
 
 def _structural_score(source: str) -> float:
@@ -339,13 +358,15 @@ def evaluate(program_path: str) -> EvaluationResult:
                 timeout=TIMEOUT_SECONDS,
             )
         except subprocess.TimeoutExpired as exc:
+            timeout_metrics = {
+                "score": 0.0,
+                "combined_score": 0.0,
+                "compile_success": 0.0,
+                "structural_score": _structural_score(source),
+            }
+            _save_candidate(source, timeout_metrics)
             return EvaluationResult(
-                metrics={
-                    "score": 0.0,
-                    "combined_score": 0.0,
-                    "compile_success": 0.0,
-                    "structural_score": _structural_score(source),
-                },
+                metrics=timeout_metrics,
                 artifacts={
                     "error": f"clang timed out after {TIMEOUT_SECONDS}s",
                     "cmd": " ".join(cmd),
@@ -377,6 +398,7 @@ def evaluate(program_path: str) -> EvaluationResult:
 
         if compile_success == 0.0:
             artifacts["error"] = "clang compilation failed"
+            _save_candidate(source, metrics)
             return EvaluationResult(metrics=metrics, artifacts=artifacts)
 
         if RUN_BENCHMARK:
@@ -391,6 +413,7 @@ def evaluate(program_path: str) -> EvaluationResult:
             )
             metrics["combined_score"] = metrics["score"]
 
+        _save_candidate(source, metrics)
         return EvaluationResult(metrics=metrics, artifacts=artifacts)
 
 

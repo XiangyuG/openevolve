@@ -82,6 +82,18 @@ BPF_TOOL=cachestat python openevolve-run.py \
   --iterations 50
 ```
 
+## Saved candidates
+
+Every candidate the evaluator sees gets a permanent copy on disk, regardless
+of whether it compiles, how it benchmarks, or whether it's later
+approved/rejected -- OpenEvolve's own population/checkpoints only keep what
+survives, not a full history of every generated program.
+
+Written to `$BPF_SAVE_DIR` (default `./generated_programs/<BPF_TOOL>`,
+relative to wherever you invoke `openevolve-run.py`) as a pair of files per
+candidate: `<timestamp>_<id>.bpf.c` (the source) and a matching `.json`
+sidecar with that candidate's metrics. Set `BPF_SAVE_PROGRAMS=0` to disable.
+
 ## Human-in-the-loop review
 
 `config_interactive.yaml` is the same setup as `config.yaml` plus an
@@ -131,4 +143,6 @@ export BPF_RUNNER_SECONDS=60
 export BPF_RUNNER_MAX_ENTRIES=256                    # used by filetop/tcprtt only
 export BPF_WORKLOAD_CMD=                              # override the default fio invocation entirely
 export BPF_FIO_RUNTIME=600
+export BPF_SAVE_PROGRAMS=1                            # save every candidate to BPF_SAVE_DIR
+export BPF_SAVE_DIR=./generated_programs/$BPF_TOOL
 ```
