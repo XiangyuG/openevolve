@@ -283,9 +283,16 @@ def _run_iteration_worker(
             child_code = new_code
             changes_summary = "Full rewrite"
 
-        from openevolve.utils.code_utils import extract_change_explanation
+        from openevolve.utils.code_utils import (
+            extract_change_explanation,
+            extract_transformation_witnesses,
+            validate_smt_formula,
+        )
 
         change_explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
+        change_witnesses = extract_transformation_witnesses(change_explanation)
+        for witness in change_witnesses:
+            witness["validation"] = validate_smt_formula(witness["formula"])
 
         # Check code length
         if len(child_code) > _worker_config.max_code_length:
@@ -316,6 +323,7 @@ def _run_iteration_worker(
             metadata={
                 "changes": changes_summary,
                 "explanation": change_explanation,
+                "witnesses": change_witnesses,
                 "parent_metrics": parent.metrics,
                 "island": parent_island,
             },
@@ -983,6 +991,8 @@ class ProcessParallelController:
                 child=child_program,
                 changes_summary=child_program.metadata.get("changes", ""),
                 explanation=child_program.metadata.get("explanation", ""),
+                witnesses=child_program.metadata.get("witnesses", []),
+                child_artifacts=result.artifacts or {},
             )
 
             if not decision.approved:

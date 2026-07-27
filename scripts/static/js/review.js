@@ -81,6 +81,12 @@ const changesExplanation = $("#changesExplanation");
 const changesSummary = $("#changesSummary");
 const changesDescription = $("#changesDescription");
 const changesDescriptionField = $("#changesDescriptionField");
+const equivalenceField = $("#equivalenceField");
+const equivalenceTable = $("#equivalenceTable");
+const witnessesField = $("#witnessesField");
+const witnessesList = $("#witnessesList");
+const artifactsField = $("#artifactsField");
+const artifactsDump = $("#artifactsDump");
 const parentCode = $("#parentCode");
 const childCode = $("#childCode");
 
@@ -192,6 +198,147 @@ function renderMetricsTable(parentMetrics, childMetrics, delta) {
   });
 }
 
+function verdictLabel(v) {
+  if (v === true) return "✓ equivalent";
+  if (v === false) return "✗ NOT equivalent";
+  return "? unknown";
+}
+
+function verdictClass(v) {
+  if (v === true) return "delta-pos";
+  if (v === false) return "delta-neg";
+  return "";
+}
+
+function renderEquivalence(childArtifacts) {
+  equivalenceTable.innerHTML = "";
+  const raw = childArtifacts && childArtifacts.equivalence_detail;
+  if (!raw) {
+    equivalenceField.classList.add("hidden");
+    return;
+  }
+
+  let detail;
+  try {
+    detail = JSON.parse(raw);
+  } catch (e) {
+    equivalenceField.classList.add("hidden");
+    return;
+  }
+
+  const entries = Object.keys(detail);
+  if (!entries.length) {
+    equivalenceField.classList.add("hidden");
+    return;
+  }
+
+  entries.forEach((entry) => {
+    const row = detail[entry] || {};
+    const card = document.createElement("div");
+    card.className = "witness-card";
+
+    const head = document.createElement("div");
+    head.className = "witness-summary";
+    head.textContent = entry;
+    const badge = document.createElement("span");
+    badge.className = `equiv-badge ${verdictClass(row.equivalent)}`;
+    badge.textContent = ` — ${verdictLabel(row.equivalent)} (${row.result_type || "?"})`;
+    head.appendChild(badge);
+    card.appendChild(head);
+
+    if (row.counter_example) {
+      const ce = document.createElement("pre");
+      ce.className = "code-viewer readonly witness-formula";
+      ce.textContent = row.counter_example;
+      card.appendChild(ce);
+    }
+
+    equivalenceTable.appendChild(card);
+  });
+
+  equivalenceField.classList.remove("hidden");
+}
+
+function renderWitnesses(witnesses) {
+  witnessesList.innerHTML = "";
+  if (!witnesses || !witnesses.length) {
+    witnessesField.classList.add("hidden");
+    return;
+  }
+
+  witnesses.forEach((w) => {
+    const card = document.createElement("div");
+    card.className = "witness-card";
+
+    const summary = document.createElement("div");
+    summary.className = "witness-summary";
+    summary.textContent = w.summary || "(change)";
+    card.appendChild(summary);
+
+    if (w.example) {
+      const example = document.createElement("div");
+      example.className = "witness-example";
+      example.textContent = w.example;
+      card.appendChild(example);
+    }
+
+    if (w.witness) {
+      const witnessText = document.createElement("div");
+      witnessText.className = "witness-text";
+      witnessText.textContent = w.witness;
+      card.appendChild(witnessText);
+    }
+
+    if (w.formula) {
+      const formula = document.createElement("pre");
+      formula.className = "code-viewer readonly witness-formula";
+      formula.textContent = w.formula;
+      card.appendChild(formula);
+
+      const v = w.validation || {};
+      const badge = document.createElement("span");
+      let label;
+      let cls;
+      if (v.parses === "true") {
+        label = `✓ parses (${v.check || "unknown"})`;
+        cls = v.check === "unsat" ? "delta-neg" : "delta-pos";
+      } else if (v.parses === "false") {
+        label = `✗ does not parse${v.error ? ": " + v.error : ""}`;
+        cls = "delta-neg";
+      } else {
+        label = "? not validated (z3-solver unavailable)";
+        cls = "";
+      }
+      badge.className = `equiv-badge ${cls}`;
+      badge.textContent = label;
+      card.appendChild(badge);
+    }
+
+    witnessesList.appendChild(card);
+  });
+
+  witnessesField.classList.remove("hidden");
+}
+
+const ARTIFACT_SKIP_KEYS = new Set(["equivalence_detail"]);
+
+function renderArtifacts(childArtifacts) {
+  const entries = Object.entries(childArtifacts || {}).filter(
+    ([k]) => !ARTIFACT_SKIP_KEYS.has(k)
+  );
+  if (!entries.length) {
+    artifactsField.classList.add("hidden");
+    return;
+  }
+
+  const lines = entries.map(([k, v]) => {
+    const text = typeof v === "string" ? v : JSON.stringify(v);
+    return `# ${k}\n${text}`;
+  });
+  artifactsDump.textContent = lines.join("\n\n");
+  artifactsField.classList.remove("hidden");
+}
+
 async function openTask(taskId) {
   stopTitleFlash();
   const data = await fetchJSON(`${API_BASE}/tasks/${taskId}`);
@@ -203,6 +350,9 @@ async function openTask(taskId) {
   changesSummary.textContent = data.changes_summary || "(none)";
   changesDescriptionField.classList.toggle("hidden", !data.changes_description);
   changesDescription.textContent = data.changes_description || "";
+  renderEquivalence(data.child_artifacts || {});
+  renderWitnesses(data.witnesses || []);
+  renderArtifacts(data.child_artifacts || {});
   parentCode.textContent = data.parent_code || "";
   childCode.textContent = data.child_code || "";
   feedbackInput.value = "";

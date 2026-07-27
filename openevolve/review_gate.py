@@ -14,7 +14,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from openevolve.database import Program
 
@@ -62,6 +62,8 @@ class ReviewGate:
         child: Program,
         changes_summary: str,
         explanation: str = "",
+        witnesses: Optional[List[Dict[str, Any]]] = None,
+        child_artifacts: Optional[Dict[str, Any]] = None,
     ) -> ReviewDecision:
         """Write a review task for this iteration's child and wait for a decision"""
         review_id = str(uuid.uuid4())
@@ -77,6 +79,8 @@ class ReviewGate:
             "changes_summary": changes_summary,
             "changes_explanation": explanation,
             "changes_description": child.changes_description,
+            "witnesses": witnesses or [],
+            "child_artifacts": child_artifacts or {},
             "parent_metrics": parent.metrics,
             "child_metrics": child.metrics,
             "metrics_delta": _metrics_delta(parent.metrics, child.metrics),

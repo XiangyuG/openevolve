@@ -49,6 +49,50 @@
   white-space: pre-wrap;
 }
 
+.witness-card {
+  background: #f7f8fa;
+  border: 1px solid #e6e8ee;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.witness-summary {
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
+}
+.witness-example {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #374151;
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+}
+.witness-text {
+  color: #374151;
+  margin-bottom: 6px;
+  white-space: pre-wrap;
+}
+.witness-formula.code-viewer {
+  height: auto;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
+  white-space: pre;
+  margin-bottom: 6px;
+}
+.equiv-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #374151;
+}
+.equiv-badge.delta-pos { background: #e6f4ea; color: #067647; }
+.equiv-badge.delta-neg { background: #fdecea; color: #b42318; }
+
 /* Parent/child code panes: normal side-by-side flow sized to the code's
    own line count (no absolute positioning, no fixed/vh height, no inner
    vertical scrollbar) -- same single .review-body scrollbar covers these. */

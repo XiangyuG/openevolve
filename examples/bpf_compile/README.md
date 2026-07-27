@@ -52,6 +52,53 @@ Known gaps:
   `biostacks`). `tcprtt` (TCP) and `wakeuptime` (scheduler) need a different
   trigger -- pass one via `BPF_WORKLOAD_CMD`.
 
+## Equivalence checking
+
+After a candidate compiles, the evaluator symbolically checks it against
+`TOOL["source"]` (the program this evolution run started from) using
+heimdall-private's `verify_mixed_entries.py`, run in its own `c2rust` conda
+env. It checks every entry point the tool's runner actually exercises (not
+necessarily every `SEC()` in the file -- e.g. `cachestat_op.bpf.c` also has
+kprobe/tracepoint fallback variants the runner never attaches), and only maps
+whose contents matter for equivalence (`STACK_TRACE` maps are intentionally
+skipped, same as the worked example in heimdall-private's own README).
+
+Result goes into `metrics["semantic_equivalent"]` (1.0 only if every checked
+entry point comes back equivalent) plus a per-entry `equivalence_detail`
+artifact (result type + counter-example when not equivalent). **This is an
+informational signal, not a gate** -- it never zeroes the score or discards a
+candidate by itself, because the checker itself is approximate. Concretely,
+while testing this I confirmed it reliably catches return-value divergences
+(gave a clean counter-example for a candidate that always returned 1 instead
+of 0), but it did **not** catch a candidate where `vfs_read_entry` had its
+`READ`/`WRITE` classification swapped -- because filetop's map update is a
+lookup-then-mutate-in-place on the returned pointer (`valuep->reads++`)
+rather than an explicit `bpf_map_update_elem()`, and the symbolic engine
+doesn't appear to track that pattern as map-value-changing (`map_entries=0`
+in its own trace output for that path). This in-place-mutate-via-pointer
+idiom is common across these libbpf-tools histogram/counter programs, so
+`semantic_equivalent: 1.0` should be read as "no return-value or
+explicit-map-write divergence found", not as a real equivalence proof --
+exactly why it's a signal for the developer, not an automatic pass.
+
+Disable with `BPF_EQUIV_CHECK=0`. Other overrides: `BPF_EQUIV_CONDA_ENV`
+(default `c2rust`), `BPF_EQUIV_TIMEOUT` (per entry point, default `90`).
+
+## Transformation witnesses
+
+The prompt (`prompt_templates/full_rewrite_user.txt`) asks the LLM to back
+each numbered change with a `Witness:` line (English argument for why that
+specific change preserves behavior) and a `Formula:` line (a self-contained
+SMT-LIB 2 snippet). OpenEvolve core (`openevolve/utils/code_utils.py`)
+extracts these into `child_program.metadata["witnesses"]` and shallow-checks
+each formula with `z3-solver`: does it parse, and is it satisfiable? This
+only catches malformed or self-contradictory formulas -- it does **not**
+cross-check the formula against the program's actual symbolic-execution
+behavior (that would mean wiring into heimdall-private's
+`generate_formula.py`/`ProgramFormula` directly, which is future work).
+Witnesses show up in interactive review alongside the code diff and
+equivalence-check result.
+
 Smoke-test the evaluator directly with a short runtime:
 
 ```bash
@@ -145,4 +192,7 @@ export BPF_WORKLOAD_CMD=                              # override the default fio
 export BPF_FIO_RUNTIME=600
 export BPF_SAVE_PROGRAMS=1                            # save every candidate to BPF_SAVE_DIR
 export BPF_SAVE_DIR=./generated_programs/$BPF_TOOL
+export BPF_EQUIV_CHECK=1                              # symbolic equivalence check vs TOOL["source"]
+export BPF_EQUIV_CONDA_ENV=c2rust
+export BPF_EQUIV_TIMEOUT=90                           # per entry point
 ```

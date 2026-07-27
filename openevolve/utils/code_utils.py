@@ -142,6 +142,79 @@ def extract_change_explanation(
     return remaining.strip()
 
 
+_WITNESS_BLOCK_PATTERN = re.compile(
+    r"^\s*\(\d+\)\s*(?P<summary>.*?)\s*\n"
+    r"\s*Example:\s*(?P<example>.*?)\s*\n"
+    r"\s*Witness:\s*(?P<witness>.*?)\s*\n"
+    r"\s*Formula:\s*(?P<formula>.*?)\s*(?=\n\s*\(\d+\)\s|\Z)",
+    re.MULTILINE | re.DOTALL,
+)
+
+
+def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, str]]:
+    """
+    Pull out per-change "Witness"/"Formula" entries from an LLM explanation that
+    follows the (1)/(2)/... numbered format with Example/Witness/Formula lines
+    (see examples/bpf_compile/prompt_templates). Entries missing a Witness or
+    Formula line are simply not matched -- this is best-effort, not enforced.
+
+    Args:
+        explanation_text: Explanation text, e.g. from extract_change_explanation()
+
+    Returns:
+        List of {"summary", "example", "witness", "formula"} dicts, in order
+    """
+    witnesses = []
+    for match in _WITNESS_BLOCK_PATTERN.finditer(explanation_text):
+        # The prompt's own "..." continuation marker sometimes gets echoed back
+        # by the model as trailing filler after the last real item; drop it.
+        formula = re.sub(r"\n?\.\.\.\s*$", "", match.group("formula").strip())
+        witnesses.append(
+            {
+                "summary": match.group("summary").strip(),
+                "example": match.group("example").strip(),
+                "witness": match.group("witness").strip(),
+                "formula": formula.strip(),
+            }
+        )
+    return witnesses
+
+
+def validate_smt_formula(formula: str) -> Dict[str, Optional[str]]:
+    """
+    Shallow-validate an SMT-LIB 2 formula snippet with z3: does it parse, and
+    (if so) is it satisfiable? This does NOT check the formula against the
+    program's actual semantics -- it only catches malformed/self-contradictory
+    formulas so a reviewer isn't handed garbage. z3-solver is an optional
+    dependency of this check, not of OpenEvolve itself.
+
+    Args:
+        formula: SMT-LIB 2 snippet (declare-const/declare-fun + assert lines)
+
+    Returns:
+        {"parses": "true"/"false", "check": "sat"/"unsat"/"unknown"/None,
+         "error": error message or None}
+    """
+    try:
+        import z3
+    except ImportError:
+        return {"parses": None, "check": None, "error": "z3-solver not installed"}
+
+    try:
+        assertions = z3.parse_smt2_string(formula)
+    except z3.Z3Exception as e:
+        return {"parses": "false", "check": None, "error": str(e)}
+
+    try:
+        solver = z3.Solver()
+        solver.add(assertions)
+        result = str(solver.check())
+    except Exception as e:  # pragma: no cover - defensive, z3 check() rarely throws
+        return {"parses": "true", "check": None, "error": str(e)}
+
+    return {"parses": "true", "check": result, "error": None}
+
+
 def _format_block_lines(lines: List[str], max_line_len: int = 100, max_lines: int = 30) -> str:
     """Format a block of lines for diff summary: show all lines (truncated per line, optional cap)."""
     truncated = []

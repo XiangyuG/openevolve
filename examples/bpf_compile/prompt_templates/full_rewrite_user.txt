@@ -33,8 +33,21 @@ After the code block, add a short explanation in English, in exactly this format
 I made the following changes:
 (1) <what you changed and why, in English>
     Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
+    Witness: <English argument for why this specific change preserves the program's
+      observable behavior -- its return value and final map state -- for every input>
+    Formula: <a self-contained SMT-LIB 2 snippet that a solver could load directly:
+      one or more `(declare-const ...)` / `(declare-fun ...)` lines declaring every
+      free variable you reference, followed by one or more `(assert ...)` lines
+      encoding the equivalence condition for just this change (e.g. old expression
+      equals new expression under the declared variables). Model only the values
+      touched by this specific change -- do not try to encode the whole program.
+      If the change is purely structural (renaming, reordering unrelated
+      statements, comments) with nothing to formalize, write exactly:
+      Formula: (assert true)
 (2) <what you changed and why, in English>
     Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
+    Witness: <...>
+    Formula: <...>
 ...
 
 Each "Example" line must quote a real, short fragment (a line or part of a line) of
