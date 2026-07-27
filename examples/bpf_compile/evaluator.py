@@ -529,6 +529,7 @@ def evaluate(program_path: str) -> EvaluationResult:
                 "score": 0.0,
                 "combined_score": 0.0,
                 "compile_success": 0.0,
+                "semantic_equivalent": 0.0,
             }
             _save_candidate(source, timeout_metrics)
             return EvaluationResult(
@@ -549,6 +550,10 @@ def evaluate(program_path: str) -> EvaluationResult:
             "combined_score": compile_success,
             "compile_success": compile_success,
             "object_bytes": float(object_size),
+            # Default so this key exists even when compilation fails (below)
+            # and _check_equivalence() never runs; overwritten with the real
+            # result once the equivalence check actually runs.
+            "semantic_equivalent": 0.0,
         }
 
         artifacts = {
