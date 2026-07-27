@@ -7,17 +7,19 @@
   padding: 0;
 }
 
+/* The review body scrolls as one long page instead of every section
+   fighting over a fixed viewport-height box -- each section below gets a
+   generous fixed/vh size, and whatever doesn't fit is reached by scrolling. */
 .review-body {
   position: absolute;
   top: 14px; left: 14px; right: 64px; bottom: 14px;
-  display: flex; flex-direction: column; gap: 12px;
-  min-height: 0;
+  display: flex; flex-direction: column; gap: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .review-summary {
   flex: 0 0 auto;
-  max-height: 30vh;
-  overflow-y: auto;
 }
 .review-summary h2 { margin: 0 0 8px 0; font-size: 18px; color: #111827; }
 
@@ -26,7 +28,7 @@
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 4px 12px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: #111827;
   margin-bottom: 10px;
 }
@@ -34,17 +36,22 @@
 .metrics-table .delta-pos { color: #067647; }
 .metrics-table .delta-neg { color: #b42318; }
 
-.review-field { margin-bottom: 8px; }
+.review-field { margin-bottom: 10px; }
 .review-field .code-viewer {
-  max-height: 160px;
-  min-height: 32px;
+  max-height: 280px;
+  min-height: 48px;
   color: #e6edf3;
   white-space: pre-wrap;
 }
 
+/* Parent/child code panes: fixed generous height instead of "whatever
+   flex space is left", so they're always readable regardless of how long
+   the summary above is. Scroll the review-body (not the viewport) to see
+   the rest of the page. */
 .review-code {
-  flex: 1 1 auto;
-  min-height: 300px;
+  flex: 0 0 auto;
+  height: 75vh;
+  min-height: 480px;
   position: relative;
 }
 .review-code .pane { position: absolute; top: 0; bottom: 0; }
