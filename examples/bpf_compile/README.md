@@ -82,6 +82,41 @@ BPF_TOOL=cachestat python openevolve-run.py \
   --iterations 50
 ```
 
+## Human-in-the-loop review
+
+`config_interactive.yaml` is the same setup as `config.yaml` plus an
+`interactive:` block, so every iteration blocks until a developer approves or
+rejects the candidate at `/review` before it's added to the population.
+Rejection feedback is fed back into the next prompt for that lineage; a
+lineage that's rejected `max_rejections_per_parent` times in a row is
+abandoned in favor of normal island sampling.
+
+1. Start the evolution run (blocks after each candidate until reviewed):
+
+```bash
+python openevolve-run.py \
+  $HEIMDALL_ROOT/c2rust_translation/c_bpf_programs/libbpf-tools/filetop_op.bpf.c \
+  examples/bpf_compile/evaluator.py \
+  --config examples/bpf_compile/config_interactive.yaml \
+  --output openevolve_output/bpf_filetop_interactive \
+  --iterations 20
+```
+
+2. In another shell, start the review UI pointed at the same output dir:
+
+```bash
+python scripts/visualizer.py --path openevolve_output/bpf_filetop_interactive --port 8080
+```
+
+3. Open `http://127.0.0.1:8080/review` (or `http://<host>:8080/review` if
+   running on a remote box you're forwarding/tunneling into) and
+   approve/reject each pending iteration. The page shows the parent/child
+   code, the diff, the metrics delta, and the LLM's plain-English explanation
+   of the change. Rejections take an optional feedback note.
+
+Swap `BPF_TOOL`/the initial program the same way as the non-interactive runs
+to review a different tool's evolution.
+
 ## Environment overrides
 
 ```bash
