@@ -40,7 +40,7 @@ database:
   num_islands: 2
   feature_dimensions:
     - "compile_success"
-    - "structural_score"
+    - "semantic_equivalent"
   feature_bins: 4
 
 evaluator:

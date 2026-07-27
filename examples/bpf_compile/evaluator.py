@@ -202,16 +202,6 @@ def _save_candidate(source: str, metrics: dict) -> None:
     )
 
 
-def _structural_score(source: str) -> float:
-    checks = [
-        "SEC(" in source,
-        "license" in source.lower(),
-        "vmlinux.h" in source,
-        "bpf_" in source,
-    ]
-    return sum(checks) / len(checks)
-
-
 _UNSET = object()
 _baseline_object_cache: object = _UNSET
 
@@ -530,7 +520,6 @@ def evaluate(program_path: str) -> EvaluationResult:
                 "score": 0.0,
                 "combined_score": 0.0,
                 "compile_success": 0.0,
-                "structural_score": _structural_score(source),
             }
             _save_candidate(source, timeout_metrics)
             return EvaluationResult(
@@ -544,14 +533,12 @@ def evaluate(program_path: str) -> EvaluationResult:
             )
 
         compile_success = 1.0 if result.returncode == 0 and output_path.exists() else 0.0
-        structural_score = _structural_score(source)
         object_size = output_path.stat().st_size if output_path.exists() else 0
 
         metrics = {
-            "score": compile_success * structural_score,
-            "combined_score": compile_success * structural_score,
+            "score": compile_success,
+            "combined_score": compile_success,
             "compile_success": compile_success,
-            "structural_score": structural_score,
             "object_bytes": float(object_size),
         }
 
@@ -580,7 +567,6 @@ def evaluate(program_path: str) -> EvaluationResult:
             artifacts.update(runtime_artifacts)
             metrics["score"] = (
                 compile_success
-                * structural_score
                 * metrics.get("runtime_success", 0.0)
                 * (0.5 + 0.5 * metrics.get("runtime_score", 0.0))
             )
