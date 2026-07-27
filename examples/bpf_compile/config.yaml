@@ -1,0 +1,51 @@
+# OpenEvolve config for libbpf-tools BPF C compile optimization.
+
+max_iterations: 50
+checkpoint_interval: 10
+log_level: "INFO"
+language: "c"
+file_suffix: ".bpf.c"
+
+llm:
+  primary_model: "gpt-5-mini"
+  primary_model_weight: 0.8
+  secondary_model: "gpt-5-nano"
+  secondary_model_weight: 0.2
+  api_base: "https://api.openai.com/v1"
+  api_key: "${OPENAI_API_KEY}"
+  temperature: 0.7
+  max_tokens: 16000
+  timeout: 120
+  system_message: |
+    You are an expert eBPF/libbpf C programmer. Improve the candidate BPF program while
+    preserving its intended probe structure and ability to compile with clang -target bpf.
+    Keep required includes, SEC annotations, map definitions, helper usage constraints,
+    license declarations, and verifier-friendly bounded control flow. Do not replace the
+    program with a trivial stub just to compile.
+
+prompt:
+  num_top_programs: 4
+  num_diverse_programs: 2
+  include_artifacts: true
+  max_artifact_bytes: 8192
+  system_message: |
+    Optimize a libbpf-tools BPF C source file. The evaluator compiles the complete file
+    with clang -g -O2 -target bpf -D__TARGET_ARCH_x86 and reports compiler diagnostics.
+    Return a complete valid C source file.
+
+database:
+  population_size: 40
+  archive_size: 20
+  num_islands: 2
+  feature_dimensions:
+    - "compile_success"
+    - "structural_score"
+  feature_bins: 4
+
+evaluator:
+  timeout: 120
+  parallel_evaluations: 1
+  cascade_evaluation: false
+
+diff_based_evolution: false
+max_code_length: 60000
