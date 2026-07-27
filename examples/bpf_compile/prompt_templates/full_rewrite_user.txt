@@ -1,0 +1,43 @@
+# Current Program Information
+- Fitness: {fitness_score}
+- Feature coordinates: {feature_coords}
+- Focus areas: {improvement_areas}
+
+{artifacts}
+
+{developer_feedback}
+
+# Program Evolution History
+{evolution_history}
+
+# Current Program
+```{language}
+{current_program}
+```
+
+# Task
+Rewrite the program to improve its FITNESS SCORE.
+The system maintains diversity across these dimensions: {feature_dimensions}
+Different solutions with similar fitness but different features are valuable.
+Provide the complete new program code.
+
+IMPORTANT: Make sure your rewritten program maintains the same inputs and outputs
+as the original program, but with improved internal implementation.
+
+```{language}
+# Your rewritten program here
+```
+
+After the code block, add a short explanation in English, in exactly this format:
+
+I made the following changes:
+(1) <what you changed and why, in English>
+    Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
+(2) <what you changed and why, in English>
+    Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
+...
+
+Each "Example" line must quote a real, short fragment (a line or part of a line) of
+the actual before/after code, wrapped in single backticks -- not a triple-backtick
+block -- so a reviewer can see exactly where the change happened without re-reading
+the whole diff.

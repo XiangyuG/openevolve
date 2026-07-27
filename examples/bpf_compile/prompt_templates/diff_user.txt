@@ -1,0 +1,61 @@
+# Current Program Information
+- Fitness: {fitness_score}
+- Feature coordinates: {feature_coords}
+- Focus areas: {improvement_areas}
+
+{artifacts}
+
+{developer_feedback}
+
+# Program Evolution History
+{evolution_history}
+
+# Current Program
+```{language}
+{current_program}
+```
+
+# Task
+Suggest improvements to the program that will improve its FITNESS SCORE.
+The system maintains diversity across these dimensions: {feature_dimensions}
+Different solutions with similar fitness but different features are valuable.
+
+You MUST use the exact SEARCH/REPLACE diff format shown below to indicate changes:
+
+<<<<<<< SEARCH
+# Original code to find and replace (must match exactly)
+=======
+# New replacement code
+>>>>>>> REPLACE
+
+Example of valid diff format:
+<<<<<<< SEARCH
+for i in range(m):
+    for j in range(p):
+        for k in range(n):
+            C[i, j] += A[i, k] * B[k, j]
+=======
+# Reorder loops for better memory access pattern
+for i in range(m):
+    for k in range(n):
+        for j in range(p):
+            C[i, j] += A[i, k] * B[k, j]
+>>>>>>> REPLACE
+
+You can suggest multiple changes. Each SEARCH section must exactly match code in the current program.
+
+IMPORTANT: Do not rewrite the entire program - focus on targeted improvements.
+
+After all SEARCH/REPLACE blocks, add a short explanation in English, in exactly this format:
+
+I made the following changes:
+(1) <what you changed and why, in English>
+    Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
+(2) <what you changed and why, in English>
+    Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
+...
+
+Each "Example" line must quote a real, short fragment (a line or part of a line) of
+the actual before/after code, wrapped in single backticks -- not a triple-backtick
+block -- so a reviewer can see exactly where the change happened without re-reading
+the whole diff.

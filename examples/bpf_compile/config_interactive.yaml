@@ -24,6 +24,7 @@ llm:
     program with a trivial stub just to compile.
 
 prompt:
+  template_dir: prompt_templates
   num_top_programs: 4
   num_diverse_programs: 2
   include_artifacts: true
