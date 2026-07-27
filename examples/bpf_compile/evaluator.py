@@ -249,20 +249,25 @@ def _baseline_object() -> Path | None:
 
 def _check_equivalence(candidate_object: Path) -> tuple[dict, dict]:
     """Symbolically check candidate_object against the baseline for every entry
-    point in TOOL["equiv_entries"]. Returns (metrics, artifacts); metrics only
-    contains semantic_equivalent if at least one entry was actually checked."""
+    point in TOOL["equiv_entries"]. Returns (metrics, artifacts); metrics always
+    contains semantic_equivalent (defaulting to 0.0/"unknown" when the checker
+    itself couldn't be run) so it's safe to use as a config feature_dimension --
+    OpenEvolve requires every feature_dimension to be present in every program's
+    metrics, so this key must never be conditionally omitted."""
     entries = TOOL.get("equiv_entries") or []
     maps = TOOL.get("equiv_maps") or []
     if not entries:
-        return {}, {}
+        return {"semantic_equivalent": 0.0}, {}
 
     baseline_object = _baseline_object()
     if baseline_object is None:
-        return {}, {"equivalence_error": "baseline object unavailable (compile failed)"}
+        return (
+            {"semantic_equivalent": 0.0},
+            {"equivalence_error": "baseline object unavailable (compile failed)"},
+        )
 
     per_entry: dict[str, dict] = {}
     all_equivalent = True
-    any_checked = False
 
     for entry in entries:
         cmd = [
@@ -309,12 +314,16 @@ def _check_equivalence(candidate_object: Path) -> tuple[dict, dict]:
             "result_type": type_match.group(1) if type_match else None,
             "counter_example": ce_match.group(1).strip() if ce_match else None,
         }
-        if eq_match:
-            any_checked = True
+        if not eq_match:
+            # Nothing recognizable in stdout -- the verifier likely errored out
+            # before printing a result (e.g. conda env / entry symbol / map spec
+            # problem). Keep the raw output so this is debuggable from the
+            # artifacts instead of silently reading as "unknown".
+            per_entry[entry]["raw_output"] = (result.stdout + result.stderr)[-2000:]
         if equivalent is not True:
             all_equivalent = False
 
-    metrics = {"semantic_equivalent": 1.0 if all_equivalent else 0.0} if any_checked else {}
+    metrics = {"semantic_equivalent": 1.0 if all_equivalent else 0.0}
     artifacts = {"equivalence_detail": json.dumps(per_entry, indent=2, sort_keys=True)}
     return metrics, artifacts
 
