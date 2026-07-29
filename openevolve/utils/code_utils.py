@@ -116,8 +116,16 @@ def parse_full_rewrite(llm_response: str, language: str = "python") -> Optional[
     if matches:
         return matches[0].strip()
 
-    # Fallback to plain text
-    return llm_response
+    # No closed code block found. If the response never used a fence at all,
+    # treat the whole response as code -- some models return bare code with
+    # no markdown wrapping, and that's a legitimate response shape. But if it
+    # DID open a fence and never closed it (truncated/malformed response),
+    # that's not "the whole reply is code" -- returning it verbatim would
+    # silently glue prose onto the program (and try to compile/run that)
+    # instead of failing clearly with "no valid code found".
+    if "```" not in llm_response:
+        return llm_response
+    return None
 
 
 def extract_change_explanation(
