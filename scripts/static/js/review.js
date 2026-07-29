@@ -275,11 +275,11 @@ function renderWitnesses(witnesses) {
     summary.textContent = w.summary || "(change)";
     card.appendChild(summary);
 
-    if (w.example) {
-      const example = document.createElement("div");
-      example.className = "witness-example";
-      example.textContent = w.example;
-      card.appendChild(example);
+    if (w.detail) {
+      const detail = document.createElement("div");
+      detail.className = "witness-example";
+      detail.textContent = w.detail;
+      card.appendChild(detail);
     }
 
     if (w.witness) {

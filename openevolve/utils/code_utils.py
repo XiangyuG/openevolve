@@ -144,7 +144,7 @@ def extract_change_explanation(
 
 _WITNESS_BLOCK_PATTERN = re.compile(
     r"^\s*\(\d+\)\s*(?P<summary>.*?)\s*\n"
-    r"\s*Example:\s*(?P<example>.*?)\s*\n"
+    r"(?P<detail>.*?)"
     r"\s*Witness:\s*(?P<witness>.*?)\s*\n"
     r"\s*Formula:\s*(?P<formula>.*?)\s*(?=\n\s*\(\d+\)\s|\Z)",
     re.MULTILINE | re.DOTALL,
@@ -154,15 +154,20 @@ _WITNESS_BLOCK_PATTERN = re.compile(
 def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, str]]:
     """
     Pull out per-change "Witness"/"Formula" entries from an LLM explanation that
-    follows the (1)/(2)/... numbered format with Example/Witness/Formula lines
-    (see examples/bpf_compile/prompt_templates). Entries missing a Witness or
-    Formula line are simply not matched -- this is best-effort, not enforced.
+    follows the (1)/(2)/... numbered format (see
+    examples/bpf_compile/prompt_templates). Only "Witness:" and "Formula:" are
+    required verbatim -- whatever's between the numbered summary and "Witness:"
+    (nominally an "Example:" line) is captured as-is in "detail", since models
+    don't always use that exact label (e.g. "Old:"/"New:" pairs instead), and
+    requiring it verbatim silently dropped the whole item, formula included.
+    Entries missing a Witness or Formula line are simply not matched -- this is
+    best-effort, not enforced.
 
     Args:
         explanation_text: Explanation text, e.g. from extract_change_explanation()
 
     Returns:
-        List of {"summary", "example", "witness", "formula"} dicts, in order
+        List of {"summary", "detail", "witness", "formula"} dicts, in order
     """
     witnesses = []
     for match in _WITNESS_BLOCK_PATTERN.finditer(explanation_text):
@@ -172,7 +177,7 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, st
         witnesses.append(
             {
                 "summary": match.group("summary").strip(),
-                "example": match.group("example").strip(),
+                "detail": match.group("detail").strip(),
                 "witness": match.group("witness").strip(),
                 "formula": formula.strip(),
             }
