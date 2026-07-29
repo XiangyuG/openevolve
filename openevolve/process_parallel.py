@@ -286,13 +286,15 @@ def _run_iteration_worker(
         from openevolve.utils.code_utils import (
             extract_change_explanation,
             extract_transformation_witnesses,
-            validate_smt_formula,
+            validate_transformation_proof,
         )
 
         change_explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
         change_witnesses = extract_transformation_witnesses(change_explanation)
         for witness in change_witnesses:
-            witness["validation"] = validate_smt_formula(witness["formula"])
+            witness["proof"] = validate_transformation_proof(
+                witness["pre_formula"], witness["post_formula"]
+            )
 
         # Check code length
         if len(child_code) > _worker_config.max_code_length:

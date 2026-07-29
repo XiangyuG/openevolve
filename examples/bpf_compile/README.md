@@ -88,16 +88,34 @@ Disable with `BPF_EQUIV_CHECK=0`. Other overrides: `BPF_EQUIV_CONDA_ENV`
 
 The prompt (`prompt_templates/full_rewrite_user.txt`) asks the LLM to back
 each numbered change with a `Witness:` line (English argument for why that
-specific change preserves behavior) and a `Formula:` line (a self-contained
-SMT-LIB 2 snippet). OpenEvolve core (`openevolve/utils/code_utils.py`)
-extracts these into `child_program.metadata["witnesses"]` and shallow-checks
-each formula with `z3-solver`: does it parse, and is it satisfiable? This
-only catches malformed or self-contradictory formulas -- it does **not**
-cross-check the formula against the program's actual symbolic-execution
-behavior (that would mean wiring into heimdall-private's
-`generate_formula.py`/`ProgramFormula` directly, which is future work).
-Witnesses show up in interactive review alongside the code diff and
-equivalence-check result.
+specific change preserves behavior) and **two** SMT-LIB 2 formulas:
+`Formula (pre-transformation)` defines a constant `pre_result` in terms of
+declared input variables, modeling what the OLD code computed for this
+change; `Formula (post-transformation)` re-declares the same input names and
+defines `post_result` the same way for the NEW code. Purely structural
+changes (renaming, reordering, comments) get `(assert true)` on both sides
+instead of a real model.
+
+OpenEvolve core (`openevolve/utils/code_utils.py`,
+`extract_transformation_witnesses` + `validate_transformation_proof`) parses
+both formulas and **actually proves the claim**: it combines them with
+`(assert (not (= pre_result post_result)))` and checks with `z3-solver` --
+`unsat` means pre_result and post_result are provably equal for every input
+(not just some input where they happen to agree); `sat` means Z3 found a
+concrete counterexample, i.e. the LLM's own formulas disprove its own
+equivalence claim. This is real per-witness verification, not just a syntax
+check -- but it only proves the *local* claim the LLM chose to model (a few
+declared variables), not that the formula matches the program's actual
+compiled behavior; that cross-check against heimdall-private's real symbolic
+execution (`generate_formula.py`/`ProgramFormula`) is still future work.
+
+The review UI cross-references this per-witness proof against heimdall's
+real equivalence-check result and shows a banner when they disagree: if a
+witness's own formulas produce a counterexample, or if every witness claims
+"purely structural" but the equivalence checker (see above) found a real
+divergence anyway, the developer sees that conflict called out explicitly
+before approving/rejecting -- rather than having to notice it by reading
+both sections separately.
 
 Smoke-test the evaluator directly with a short runtime:
 

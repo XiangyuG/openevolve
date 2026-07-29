@@ -76,6 +76,7 @@ function announceNewTasks(newTasks) {
 window.addEventListener("focus", stopTitleFlash);
 
 const reviewTitle = $("#reviewTitle");
+const consistencyBanner = $("#consistencyBanner");
 const metricsTable = $("#metricsTable");
 const changesExplanation = $("#changesExplanation");
 const changesSummary = $("#changesSummary");
@@ -259,6 +260,35 @@ function renderEquivalence(childArtifacts) {
   equivalenceField.classList.remove("hidden");
 }
 
+function proofLabel(proof) {
+  const status = (proof && proof.status) || "unavailable";
+  switch (status) {
+    case "trivial":
+      return "— structural, no proof needed";
+    case "proven_equivalent":
+      return "✓ proven equivalent (Z3: unsat)";
+    case "counterexample_found":
+      return `✗ COUNTEREXAMPLE FOUND: ${proof.detail || ""}`;
+    case "parse_error":
+      return `✗ does not parse: ${proof.detail || ""}`;
+    case "malformed":
+      return `✗ malformed: ${proof.detail || ""}`;
+    case "unknown":
+      return "? solver returned unknown";
+    default:
+      return "? not validated (z3-solver unavailable)";
+  }
+}
+
+function proofClass(proof) {
+  const status = (proof && proof.status) || "unavailable";
+  if (status === "proven_equivalent") return "delta-pos";
+  if (status === "counterexample_found" || status === "parse_error" || status === "malformed") {
+    return "delta-neg";
+  }
+  return "";
+}
+
 function renderWitnesses(witnesses) {
   witnessesList.innerHTML = "";
   if (!witnesses || !witnesses.length) {
@@ -289,28 +319,30 @@ function renderWitnesses(witnesses) {
       card.appendChild(witnessText);
     }
 
-    if (w.formula) {
-      const formula = document.createElement("pre");
-      formula.className = "code-viewer readonly witness-formula";
-      formula.textContent = w.formula;
-      card.appendChild(formula);
+    if (w.pre_formula || w.post_formula) {
+      const preLabel = document.createElement("div");
+      preLabel.className = "witness-formula-label";
+      preLabel.textContent = "Pre-transformation:";
+      card.appendChild(preLabel);
 
-      const v = w.validation || {};
+      const pre = document.createElement("pre");
+      pre.className = "code-viewer readonly witness-formula";
+      pre.textContent = w.pre_formula || "";
+      card.appendChild(pre);
+
+      const postLabel = document.createElement("div");
+      postLabel.className = "witness-formula-label";
+      postLabel.textContent = "Post-transformation:";
+      card.appendChild(postLabel);
+
+      const post = document.createElement("pre");
+      post.className = "code-viewer readonly witness-formula";
+      post.textContent = w.post_formula || "";
+      card.appendChild(post);
+
       const badge = document.createElement("span");
-      let label;
-      let cls;
-      if (v.parses === "true") {
-        label = `✓ parses (${v.check || "unknown"})`;
-        cls = v.check === "unsat" ? "delta-neg" : "delta-pos";
-      } else if (v.parses === "false") {
-        label = `✗ does not parse${v.error ? ": " + v.error : ""}`;
-        cls = "delta-neg";
-      } else {
-        label = "? not validated (z3-solver unavailable)";
-        cls = "";
-      }
-      badge.className = `equiv-badge ${cls}`;
-      badge.textContent = label;
+      badge.className = `equiv-badge ${proofClass(w.proof)}`;
+      badge.textContent = proofLabel(w.proof);
       card.appendChild(badge);
     }
 
@@ -318,6 +350,72 @@ function renderWitnesses(witnesses) {
   });
 
   witnessesField.classList.remove("hidden");
+}
+
+function computeConsistencyMessages(witnesses, childMetrics) {
+  const messages = [];
+  if (!witnesses || !witnesses.length) return messages;
+
+  const anyCounterexample = witnesses.some(
+    (w) => w.proof && w.proof.status === "counterexample_found"
+  );
+  const allTrivial = witnesses.every(
+    (w) =>
+      (w.pre_formula || "").trim() === "(assert true)" &&
+      (w.post_formula || "").trim() === "(assert true)"
+  );
+  const anyProvenNonTrivial = witnesses.some(
+    (w) => w.proof && w.proof.status === "proven_equivalent"
+  );
+
+  let heimdallEquivalent = null;
+  if (childMetrics && typeof childMetrics.semantic_equivalent === "number") {
+    heimdallEquivalent = childMetrics.semantic_equivalent === 1;
+  }
+
+  if (anyCounterexample) {
+    messages.push({
+      level: "bad",
+      text:
+        "A witness's own pre/post-transformation formulas produced a Z3 counterexample -- " +
+        "the LLM's equivalence claim for that change is disproven by its own formula.",
+    });
+  }
+  if (allTrivial && heimdallEquivalent === false) {
+    messages.push({
+      level: "bad",
+      text:
+        "The LLM described every change as purely structural, but the equivalence checker " +
+        "(heimdall symbolic execution) found a real divergence. The LLM's self-assessment is " +
+        "likely wrong here -- read the Equivalence check counterexample below.",
+    });
+  }
+  if (!allTrivial && heimdallEquivalent === true && anyProvenNonTrivial) {
+    messages.push({
+      level: "good",
+      text:
+        "At least one non-trivial witness was proven equivalent by Z3, and the equivalence " +
+        "checker independently agrees this candidate is equivalent.",
+    });
+  }
+  return messages;
+}
+
+function renderConsistencyBanner(witnesses, childMetrics) {
+  const messages = computeConsistencyMessages(witnesses, childMetrics);
+  consistencyBanner.innerHTML = "";
+  if (!messages.length) {
+    consistencyBanner.classList.add("hidden");
+    return;
+  }
+
+  messages.forEach((m) => {
+    const line = document.createElement("div");
+    line.className = `consistency-line consistency-${m.level}`;
+    line.textContent = m.text;
+    consistencyBanner.appendChild(line);
+  });
+  consistencyBanner.classList.remove("hidden");
 }
 
 const ARTIFACT_SKIP_KEYS = new Set(["equivalence_detail"]);
@@ -352,6 +450,7 @@ async function openTask(taskId) {
   changesDescription.textContent = data.changes_description || "";
   renderEquivalence(data.child_artifacts || {});
   renderWitnesses(data.witnesses || []);
+  renderConsistencyBanner(data.witnesses || [], data.child_metrics || {});
   renderArtifacts(data.child_artifacts || {});
   parentCode.textContent = data.parent_code || "";
   childCode.textContent = data.child_code || "";

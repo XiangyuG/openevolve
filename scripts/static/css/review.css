@@ -49,6 +49,36 @@
   white-space: pre-wrap;
 }
 
+.consistency-banner {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.consistency-line {
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.consistency-line.consistency-bad {
+  background: #fdecea;
+  color: #b42318;
+  border: 1px solid #f3c6c1;
+}
+.consistency-line.consistency-good {
+  background: #e6f4ea;
+  color: #067647;
+  border: 1px solid #bfe3cc;
+}
+
+.witness-formula-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 4px 0 2px 0;
+}
+
 .witness-card {
   background: #f7f8fa;
   border: 1px solid #e6e8ee;

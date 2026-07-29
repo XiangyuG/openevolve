@@ -154,78 +154,144 @@ _WITNESS_BLOCK_PATTERN = re.compile(
     r"^\s*\(\d+\)\s*(?P<summary>.*?)\s*\n"
     r"(?P<detail>.*?)"
     r"\s*Witness:\s*(?P<witness>.*?)\s*\n"
-    r"\s*Formula:\s*(?P<formula>.*?)\s*(?=\n\s*\(\d+\)\s|\Z)",
+    r"\s*Formula \(pre-transformation\):\s*(?P<pre_formula>.*?)\s*\n"
+    r"\s*Formula \(post-transformation\):\s*(?P<post_formula>.*?)\s*(?=\n\s*\(\d+\)\s|\Z)",
     re.MULTILINE | re.DOTALL,
 )
+
+_TRAILING_ELLIPSIS_PATTERN = re.compile(r"\n?\.\.\.\s*$")
 
 
 def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, str]]:
     """
-    Pull out per-change "Witness"/"Formula" entries from an LLM explanation that
-    follows the (1)/(2)/... numbered format (see
-    examples/bpf_compile/prompt_templates). Only "Witness:" and "Formula:" are
-    required verbatim -- whatever's between the numbered summary and "Witness:"
-    (nominally an "Example:" line) is captured as-is in "detail", since models
-    don't always use that exact label (e.g. "Old:"/"New:" pairs instead), and
-    requiring it verbatim silently dropped the whole item, formula included.
-    Entries missing a Witness or Formula line are simply not matched -- this is
-    best-effort, not enforced.
+    Pull out per-change "Witness"/"Formula (pre/post-transformation)" entries
+    from an LLM explanation that follows the (1)/(2)/... numbered format (see
+    examples/bpf_compile/prompt_templates). Only "Witness:" and the two
+    "Formula (...):" labels are required verbatim -- whatever's between the
+    numbered summary and "Witness:" (nominally an "Example:" line) is captured
+    as-is in "detail", since models don't always use that exact label (e.g.
+    "Old:"/"New:" pairs instead), and requiring it verbatim silently dropped
+    the whole item, formulas included. Entries missing any of these lines are
+    simply not matched -- this is best-effort, not enforced.
 
     Args:
         explanation_text: Explanation text, e.g. from extract_change_explanation()
 
     Returns:
-        List of {"summary", "detail", "witness", "formula"} dicts, in order
+        List of {"summary", "detail", "witness", "pre_formula", "post_formula"}
+        dicts, in order
     """
     witnesses = []
     for match in _WITNESS_BLOCK_PATTERN.finditer(explanation_text):
         # The prompt's own "..." continuation marker sometimes gets echoed back
         # by the model as trailing filler after the last real item; drop it.
-        formula = re.sub(r"\n?\.\.\.\s*$", "", match.group("formula").strip())
+        pre_formula = _TRAILING_ELLIPSIS_PATTERN.sub("", match.group("pre_formula").strip())
+        post_formula = _TRAILING_ELLIPSIS_PATTERN.sub("", match.group("post_formula").strip())
         witnesses.append(
             {
                 "summary": match.group("summary").strip(),
                 "detail": match.group("detail").strip(),
                 "witness": match.group("witness").strip(),
-                "formula": formula.strip(),
+                "pre_formula": pre_formula.strip(),
+                "post_formula": post_formula.strip(),
             }
         )
     return witnesses
 
 
-def validate_smt_formula(formula: str) -> Dict[str, Optional[str]]:
+def _find_const_by_name(assertions, name: str):
+    """Walk a z3 AstVector of assertions looking for a 0-arity application
+    (a declared constant) with the given name, returning its actual AST node
+    (with its real sort) -- NOT a freshly-constructed z3.Int/z3.Bool, since
+    guessing the sort and constructing a same-named constant would silently
+    create an unrelated symbol instead of erroring on a sort mismatch."""
+    seen = set()
+
+    def walk(expr):
+        if id(expr) in seen:
+            return None
+        seen.add(id(expr))
+        if expr.num_args() == 0 and expr.decl().name() == name:
+            return expr
+        for i in range(expr.num_args()):
+            found = walk(expr.arg(i))
+            if found is not None:
+                return found
+        return None
+
+    for a in assertions:
+        found = walk(a)
+        if found is not None:
+            return found
+    return None
+
+
+def validate_transformation_proof(pre_formula: str, post_formula: str) -> Dict[str, Optional[str]]:
     """
-    Shallow-validate an SMT-LIB 2 formula snippet with z3: does it parse, and
-    (if so) is it satisfiable? This does NOT check the formula against the
-    program's actual semantics -- it only catches malformed/self-contradictory
-    formulas so a reviewer isn't handed garbage. z3-solver is an optional
-    dependency of this check, not of OpenEvolve itself.
+    Check whether a witness's pre/post-transformation formulas actually PROVE
+    the change preserves semantics, rather than just checking they parse.
+
+    Each formula is expected to be a self-contained SMT-LIB 2 script that
+    declares a constant named `pre_result` (respectively `post_result`) and
+    asserts what it equals. Both are parsed, then combined with
+    `(assert (not (= pre_result post_result)))`: UNSAT means pre_result and
+    post_result are provably equal for every input (the change is proven
+    equivalent for the modeled behavior); SAT means z3 found a concrete
+    counterexample where they'd differ -- a real, checkable divergence, not
+    just an LLM claim. z3-solver is an optional dependency of this check, not
+    of OpenEvolve itself.
 
     Args:
-        formula: SMT-LIB 2 snippet (declare-const/declare-fun + assert lines)
+        pre_formula: SMT-LIB 2 snippet defining pre_result
+        post_formula: SMT-LIB 2 snippet defining post_result
 
     Returns:
-        {"parses": "true"/"false", "check": "sat"/"unsat"/"unknown"/None,
-         "error": error message or None}
+        {"status": "trivial"|"proven_equivalent"|"counterexample_found"|
+                    "unknown"|"parse_error"|"malformed"|"unavailable",
+         "detail": human-readable explanation or None}
     """
     try:
         import z3
     except ImportError:
-        return {"parses": None, "check": None, "error": "z3-solver not installed"}
+        return {"status": "unavailable", "detail": "z3-solver not installed"}
+
+    if pre_formula.strip() == "(assert true)" and post_formula.strip() == "(assert true)":
+        return {"status": "trivial", "detail": "structural change, no proof needed"}
 
     try:
-        assertions = z3.parse_smt2_string(formula)
+        pre_assertions = z3.parse_smt2_string(pre_formula)
     except z3.Z3Exception as e:
-        return {"parses": "false", "check": None, "error": str(e)}
+        return {"status": "parse_error", "detail": f"pre-transformation: {e}"}
+
+    try:
+        post_assertions = z3.parse_smt2_string(post_formula)
+    except z3.Z3Exception as e:
+        return {"status": "parse_error", "detail": f"post-transformation: {e}"}
+
+    pre_result = _find_const_by_name(pre_assertions, "pre_result")
+    if pre_result is None:
+        return {"status": "malformed", "detail": "pre-transformation formula does not define pre_result"}
+
+    post_result = _find_const_by_name(post_assertions, "post_result")
+    if post_result is None:
+        return {"status": "malformed", "detail": "post-transformation formula does not define post_result"}
 
     try:
         solver = z3.Solver()
-        solver.add(assertions)
-        result = str(solver.check())
+        solver.add(pre_assertions)
+        solver.add(post_assertions)
+        solver.add(pre_result != post_result)
+        result = solver.check()
+    except z3.Z3Exception as e:
+        return {"status": "malformed", "detail": f"pre_result/post_result sort mismatch: {e}"}
     except Exception as e:  # pragma: no cover - defensive, z3 check() rarely throws
-        return {"parses": "true", "check": None, "error": str(e)}
+        return {"status": "unknown", "detail": str(e)}
 
-    return {"parses": "true", "check": result, "error": None}
+    if result == z3.unsat:
+        return {"status": "proven_equivalent", "detail": None}
+    if result == z3.sat:
+        return {"status": "counterexample_found", "detail": str(solver.model())}
+    return {"status": "unknown", "detail": "solver returned unknown"}
 
 
 def _format_block_lines(lines: List[str], max_line_len: int = 100, max_lines: int = 30) -> str:

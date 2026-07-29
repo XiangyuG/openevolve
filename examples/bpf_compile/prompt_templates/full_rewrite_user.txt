@@ -35,27 +35,37 @@ I made the following changes:
     Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
     Witness: <English argument for why this specific change preserves the program's
       observable behavior -- its return value and final map state -- for every input>
-    Formula: <a self-contained SMT-LIB 2 snippet that a solver could load directly:
-      one or more `(declare-const ...)` / `(declare-fun ...)` lines declaring every
-      free variable you reference, followed by one or more `(assert ...)` lines
-      encoding the equivalence condition for just this change (e.g. old expression
-      equals new expression under the declared variables). Model only the values
+    Formula (pre-transformation): <a self-contained SMT-LIB 2 snippet: one or more
+      `(declare-const ...)` lines for every input this change depends on, plus a
+      constant named exactly `pre_result`, and an `(assert ...)` defining what
+      `pre_result` equals under the OLD code's logic for this specific change>
+    Formula (post-transformation): <a self-contained SMT-LIB 2 snippet re-declaring
+      the SAME input names and sorts as the pre-transformation formula, plus a
+      constant named exactly `post_result`, and an `(assert ...)` defining what
+      `post_result` equals under the NEW code's logic for this same change>
+
+      These two formulas will be checked together by proving
+      `(assert (not (= pre_result post_result)))` is UNSAT against both of them
+      combined -- i.e. pre_result and post_result must be equal for every possible
+      input, not just some input where they happen to match. Model only the values
       touched by this specific change -- do not try to encode the whole program.
       Use only Int and Bool sorts. Do NOT declare BitVec constants or use
       bitvector operators (bvand, bvor, bvxor, ...) -- mixing Int-sorted
       variables with bitvector operators makes the whole formula unparseable.
       If you need to model a bitwise-AND-style mask/flag check (e.g. mode &
       S_IFMT), approximate it with `mod`/arithmetic on Int instead (e.g.
-      `(= (mod mode 8) 0)` for a low-bit check). Do not wrap the formula in a
+      `(= (mod mode 8) 0)` for a low-bit check). Do not wrap either formula in a
       triple-backtick code block, and do not add anything (comments, stray
-      characters) after the final closing parenthesis.
+      characters) after the final closing parenthesis of either one.
       If the change is purely structural (renaming, reordering unrelated
       statements, comments) with nothing to formalize, write exactly:
-      Formula: (assert true)
+      Formula (pre-transformation): (assert true)
+      Formula (post-transformation): (assert true)
 (2) <what you changed and why, in English>
     Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
     Witness: <...>
-    Formula: <...>
+    Formula (pre-transformation): <...>
+    Formula (post-transformation): <...>
 ...
 
 Each "Example" line must quote a real, short fragment (a line or part of a line) of
