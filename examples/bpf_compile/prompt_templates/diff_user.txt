@@ -59,6 +59,14 @@ I made the following changes:
       encoding the equivalence condition for just this change (e.g. old expression
       equals new expression under the declared variables). Model only the values
       touched by this specific change -- do not try to encode the whole program.
+      Use only Int and Bool sorts. Do NOT declare BitVec constants or use
+      bitvector operators (bvand, bvor, bvxor, ...) -- mixing Int-sorted
+      variables with bitvector operators makes the whole formula unparseable.
+      If you need to model a bitwise-AND-style mask/flag check (e.g. mode &
+      S_IFMT), approximate it with `mod`/arithmetic on Int instead (e.g.
+      `(= (mod mode 8) 0)` for a low-bit check). Do not wrap the formula in a
+      triple-backtick code block, and do not add anything (comments, stray
+      characters) after the final closing parenthesis.
       If the change is purely structural (renaming, reordering unrelated
       statements, comments) with nothing to formalize, write exactly:
       Formula: (assert true)
