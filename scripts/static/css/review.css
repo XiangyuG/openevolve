@@ -123,6 +123,37 @@
 .equiv-badge.delta-pos { background: #e6f4ea; color: #067647; }
 .equiv-badge.delta-neg { background: #fdecea; color: #b42318; }
 
+.witness-decision-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e6e8ee;
+}
+.witness-decision-btn {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid #d8dee9;
+  background: #fff;
+  color: #374151;
+}
+.witness-decision-btn.approve.active {
+  background: #e6f4ea;
+  color: #067647;
+  border-color: #bfe3cc;
+}
+.witness-decision-btn.reject.active {
+  background: #fdecea;
+  color: #b42318;
+  border-color: #f3c6c1;
+}
+.witness-decision-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
 /* Parent/child code panes: normal side-by-side flow sized to the code's
    own line count (no absolute positioning, no fixed/vh height, no inner
    vertical scrollbar) -- same single .review-body scrollbar covers these. */

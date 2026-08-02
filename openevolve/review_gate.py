@@ -11,7 +11,7 @@ import asyncio
 import json
 import time
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -45,6 +45,12 @@ def _metrics_delta(
 class ReviewDecision:
     approved: bool
     feedback: str = ""
+    # witness index (str, since it round-trips through JSON) -> developer's
+    # approve/reject call for that individual transformation witness. Separate
+    # from `approved`, which gates the whole child program; this gates whether
+    # each witness's formula is trusted for downstream use (e.g. feeding a
+    # semantic checker) regardless of whether the iteration itself was kept.
+    witness_decisions: Dict[str, bool] = field(default_factory=dict)
 
 
 class ReviewGate:
@@ -102,9 +108,15 @@ class ReviewGate:
                     await asyncio.sleep(poll_interval)
                     continue
 
+                raw_witness_decisions = data.get("witness_decisions") or {}
+                witness_decisions = {
+                    str(key): bool(value) for key, value in raw_witness_decisions.items()
+                }
+
                 return ReviewDecision(
                     approved=bool(data.get("approved")),
                     feedback=str(data.get("feedback") or ""),
+                    witness_decisions=witness_decisions,
                 )
 
             if self.timeout is not None and (time.time() - start) > float(self.timeout):

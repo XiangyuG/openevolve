@@ -105,12 +105,23 @@ def _read_task(qdir: Path, task_id: str) -> Optional[Dict]:
         return None
 
 
-def _write_decision(qdir: Path, task_id: str, approved: bool, feedback: str) -> None:
+def _write_decision(
+    qdir: Path,
+    task_id: str,
+    approved: bool,
+    feedback: str,
+    witness_decisions: Optional[Dict[str, bool]] = None,
+) -> None:
     qdir.mkdir(parents=True, exist_ok=True)
     out = qdir / f"{task_id}.decision.json"
     tmp = qdir / f".{task_id}.decision.json.tmp"
 
-    payload = {"id": task_id, "approved": approved, "feedback": feedback}
+    payload = {
+        "id": task_id,
+        "approved": approved,
+        "feedback": feedback,
+        "witness_decisions": witness_decisions or {},
+    }
     tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(out)
 
@@ -162,14 +173,21 @@ def create_review_blueprint(get_visualizer_path: Callable[[], str]) -> Blueprint
         if body is not None:
             approved = bool(body.get("approved"))
             feedback = str(body.get("feedback") or "").strip()
+            raw_witness_decisions = body.get("witness_decisions")
+            witness_decisions = (
+                {str(k): bool(v) for k, v in raw_witness_decisions.items()}
+                if isinstance(raw_witness_decisions, dict)
+                else {}
+            )
         else:
             approved = (request.form.get("approved") or "").lower() in ("1", "true", "yes")
             feedback = (request.form.get("feedback") or "").strip()
+            witness_decisions = {}
 
         if not approved and not feedback:
             return ("Feedback is required when rejecting an iteration", 400)
 
-        _write_decision(qdir, task_id, approved, feedback)
+        _write_decision(qdir, task_id, approved, feedback, witness_decisions)
         return jsonify({"ok": True})
 
     return bp

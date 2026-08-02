@@ -92,6 +92,9 @@ const parentCode = $("#parentCode");
 const childCode = $("#childCode");
 
 let currentTaskId = null;
+// witness index (string) -> true/false. Absent key means "not reviewed yet";
+// only entries the developer actually clicked are sent with the decision.
+let witnessDecisions = {};
 
 // Relative base: when opened at /review, "api/..." resolves to /review/api/...
 const API_BASE = `${window.location.pathname.replace(/\/$/, "")}/api`;
@@ -289,14 +292,36 @@ function proofClass(proof) {
   return "";
 }
 
+let currentWitnesses = [];
+
+function witnessDecisionLabel(state) {
+  if (state === true) return "Approved for next-stage checker";
+  if (state === false) return "Rejected -- excluded from next-stage checker";
+  return "Not reviewed yet";
+}
+
+function setWitnessDecision(index, value) {
+  const key = String(index);
+  if (witnessDecisions[key] === value) {
+    delete witnessDecisions[key]; // clicking the active choice again clears it
+  } else {
+    witnessDecisions[key] = value;
+  }
+  renderWitnesses(currentWitnesses);
+}
+
 function renderWitnesses(witnesses) {
+  currentWitnesses = witnesses || [];
   witnessesList.innerHTML = "";
   if (!witnesses || !witnesses.length) {
     witnessesField.classList.add("hidden");
     return;
   }
 
-  witnesses.forEach((w) => {
+  witnesses.forEach((w, i) => {
+    const index = w.index ?? i;
+    const state = witnessDecisions[String(index)];
+
     const card = document.createElement("div");
     card.className = "witness-card";
 
@@ -345,6 +370,30 @@ function renderWitnesses(witnesses) {
       badge.textContent = proofLabel(w.proof);
       card.appendChild(badge);
     }
+
+    const decisionRow = document.createElement("div");
+    decisionRow.className = "witness-decision-row";
+
+    const approveWitnessBtn = document.createElement("button");
+    approveWitnessBtn.type = "button";
+    approveWitnessBtn.className = `witness-decision-btn approve${state === true ? " active" : ""}`;
+    approveWitnessBtn.textContent = "✓ Approve witness";
+    approveWitnessBtn.addEventListener("click", () => setWitnessDecision(index, true));
+    decisionRow.appendChild(approveWitnessBtn);
+
+    const rejectWitnessBtn = document.createElement("button");
+    rejectWitnessBtn.type = "button";
+    rejectWitnessBtn.className = `witness-decision-btn reject${state === false ? " active" : ""}`;
+    rejectWitnessBtn.textContent = "✗ Reject witness";
+    rejectWitnessBtn.addEventListener("click", () => setWitnessDecision(index, false));
+    decisionRow.appendChild(rejectWitnessBtn);
+
+    const decisionLabel = document.createElement("span");
+    decisionLabel.className = "witness-decision-label";
+    decisionLabel.textContent = witnessDecisionLabel(state);
+    decisionRow.appendChild(decisionLabel);
+
+    card.appendChild(decisionRow);
 
     witnessesList.appendChild(card);
   });
@@ -441,6 +490,7 @@ async function openTask(taskId) {
   stopTitleFlash();
   const data = await fetchJSON(`${API_BASE}/tasks/${taskId}`);
   currentTaskId = data.id;
+  witnessDecisions = {};
 
   reviewTitle.textContent = `Iteration ${data.iteration ?? "?"}`;
   renderMetricsTable(data.parent_metrics || {}, data.child_metrics || {}, data.metrics_delta || {});
@@ -476,7 +526,7 @@ async function submitDecision(approved) {
   const r = await fetch(`${API_BASE}/tasks/${currentTaskId}/decision`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ approved, feedback }),
+    body: JSON.stringify({ approved, feedback, witness_decisions: witnessDecisions }),
   });
   if (!r.ok) {
     alert("Submit failed: " + (await r.text()));

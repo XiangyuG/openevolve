@@ -291,7 +291,11 @@ def _run_iteration_worker(
 
         change_explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
         change_witnesses = extract_transformation_witnesses(change_explanation)
-        for witness in change_witnesses:
+        for index, witness in enumerate(change_witnesses):
+            # Stable per-child index so the developer can approve/reject witnesses
+            # individually in the review UI (openevolve/review_gate.py) and have
+            # that decision line back up to this exact witness later.
+            witness["index"] = index
             witness["proof"] = validate_transformation_proof(
                 witness["pre_formula"], witness["post_formula"]
             )
@@ -996,6 +1000,17 @@ class ProcessParallelController:
                 witnesses=child_program.metadata.get("witnesses", []),
                 child_artifacts=result.artifacts or {},
             )
+
+            # Stamp each witness with the developer's per-witness call (True/False),
+            # independent of decision.approved -- a rejected iteration can still carry
+            # useful witness-level signal, and an approved one may still have some of
+            # its witnesses' formulas rejected. Undecided witnesses (developer didn't
+            # touch that control) get None, not False, so downstream consumers can
+            # tell "explicitly rejected" apart from "never reviewed".
+            for witness in child_program.metadata.get("witnesses", []):
+                witness["developer_approved"] = decision.witness_decisions.get(
+                    str(witness.get("index"))
+                )
 
             if not decision.approved:
                 logger.info(
