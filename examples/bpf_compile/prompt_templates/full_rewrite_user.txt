@@ -67,6 +67,20 @@ I made the following changes:
       exactly this format (map name, then old and new value size in bytes):
       Map value width change: <map_name>: <old_bytes> -> <new_bytes>
       Omit this line entirely for every other kind of change.
+      If, and only if, this specific change narrows a VARIABLE's type based on
+      a value-range invariant you are proving in this same witness (e.g. an
+      8-bit variable narrowed to 4 bits because it is always in [0, 15]), the
+      range invariant MUST appear as an assumption on the shared input
+      constant in the pre-transformation formula (e.g. `(assert (>= v 0))` /
+      `(assert (<= v 15))`), and the post-transformation formula must model
+      the narrowing as truncation under that assumption (e.g.
+      `(assert (= post_result (mod v 16)))` for an unsigned narrowing to 4
+      bits, or the two's-complement equivalent for a signed one). Then add one
+      more line directly after the post-transformation formula (or after the
+      "Map value width change" line if both apply), in exactly this format
+      (variable name, then old and new bit width):
+      Variable width change: <var_name>: <old_bits> -> <new_bits>
+      Omit this line entirely for every other kind of change.
 (2) <what you changed and why, in English>
     Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
     Witness: <...>

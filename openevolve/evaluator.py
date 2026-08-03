@@ -343,7 +343,8 @@ class Evaluator:
         Optional second-pass re-verification, run only for interactive review
         (openevolve/review_gate.py) after a developer approves specific
         transformation witnesses that claim a targeted semantic relaxation
-        (e.g. a narrowed BPF map value type). Calls the evaluation module's
+        (e.g. a narrowed BPF map value type, or a variable narrowed under a
+        proven value-range invariant). Calls the evaluation module's
         `reverify_with_witnesses(program_path, hints) -> EvaluationResult | dict`
         if it defines one; evaluators that don't define this are unaffected
         (returns empty metrics/artifacts, same as an unset cascade stage).
@@ -352,7 +353,7 @@ class Evaluator:
             program_code: Code to re-verify
             program_id: Program ID, for logging
             hints: Developer-approved hints, e.g. each witness's
-                "map_width_change" dict
+                "map_width_change" or "variable_width_change" dict
 
         Returns:
             (metrics, artifacts) -- both empty if no reverify hook is defined

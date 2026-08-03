@@ -157,6 +157,7 @@ _WITNESS_BLOCK_PATTERN = re.compile(
     r"\s*Formula \(pre-transformation\):\s*(?P<pre_formula>.*?)\s*\n"
     r"\s*Formula \(post-transformation\):\s*(?P<post_formula>.*?)"
     r"(?:\s*\n\s*Map value width change:\s*(?P<map_width_change>[^\n]*))?"
+    r"(?:\s*\n\s*Variable width change:\s*(?P<variable_width_change>[^\n]*))?"
     r"\s*(?=\n\s*\(\d+\)\s|\Z)",
     re.MULTILINE | re.DOTALL,
 )
@@ -164,6 +165,8 @@ _WITNESS_BLOCK_PATTERN = re.compile(
 _TRAILING_ELLIPSIS_PATTERN = re.compile(r"\n?\.\.\.\s*$")
 
 _MAP_WIDTH_CHANGE_PATTERN = re.compile(r"^(?P<map>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)\s*$")
+
+_VARIABLE_WIDTH_CHANGE_PATTERN = re.compile(r"^(?P<var>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)\s*$")
 
 
 def _parse_map_width_change(raw: Optional[str]) -> Optional[Dict[str, Any]]:
@@ -186,6 +189,30 @@ def _parse_map_width_change(raw: Optional[str]) -> Optional[Dict[str, Any]]:
     }
 
 
+def _parse_variable_width_change(raw: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Parse an optional "Variable width change: <var>: <old_bits> -> <new_bits>"
+    tag (see examples/bpf_compile/prompt_templates) into a structured hint, or
+    None if absent/malformed. The value-range invariant that justifies the
+    narrowing is expected to live in the witness's own pre-transformation
+    Formula (as an assumption on the shared input constant, checked by Z3
+    alongside pre_result/post_result equivalence) -- this tag only carries
+    which variable + bit widths the witness claims to narrow. Like
+    _parse_map_width_change, it is only a HINT: the claimed bit widths must
+    still be cross-checked downstream (e.g. by the semantic checker's own
+    range analysis) before being trusted, since the LLM's stated numbers could
+    be wrong even when the surrounding formula is sound."""
+    if not raw:
+        return None
+    match = _VARIABLE_WIDTH_CHANGE_PATTERN.match(raw.strip())
+    if not match:
+        return None
+    return {
+        "var": match.group("var").strip(),
+        "old_bits": int(match.group("old")),
+        "new_bits": int(match.group("new")),
+    }
+
+
 def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, Any]]:
     """
     Pull out per-change "Witness"/"Formula (pre/post-transformation)" entries
@@ -203,9 +230,12 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
 
     Returns:
         List of {"summary", "detail", "witness", "pre_formula", "post_formula",
-        "map_width_change"} dicts, in order. "map_width_change" is
-        {"map", "old_bytes", "new_bytes"} or None when the LLM didn't tag this
-        witness as a map value-width change.
+        "map_width_change", "variable_width_change"} dicts, in order.
+        "map_width_change" is {"map", "old_bytes", "new_bytes"} or None when
+        the LLM didn't tag this witness as a map value-width change.
+        "variable_width_change" is {"var", "old_bits", "new_bits"} or None
+        when the LLM didn't tag this witness as a range-justified variable
+        narrowing.
     """
     witnesses = []
     for match in _WITNESS_BLOCK_PATTERN.finditer(explanation_text):
@@ -221,6 +251,9 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
                 "pre_formula": pre_formula.strip(),
                 "post_formula": post_formula.strip(),
                 "map_width_change": _parse_map_width_change(match.group("map_width_change")),
+                "variable_width_change": _parse_variable_width_change(
+                    match.group("variable_width_change")
+                ),
             }
         )
     return witnesses
@@ -235,9 +268,18 @@ def _find_const_by_name(assertions, name: str):
     seen = set()
 
     def walk(expr):
-        if id(expr) in seen:
+        # Dedup by z3's own AST id (expr.get_id()), NOT Python's id(expr):
+        # z3py hands back a fresh wrapper object on every .arg(i) call, so
+        # Python object ids get freed and immediately recycled for unrelated
+        # sibling nodes -- keying "seen" on those caused real, silent misses
+        # (a later assert's reference to an already-visited-looking id got
+        # skipped) once formulas had more than one top-level assert, e.g. a
+        # range hypothesis asserted before the pre_result/post_result
+        # definition.
+        ast_id = expr.get_id()
+        if ast_id in seen:
             return None
-        seen.add(id(expr))
+        seen.add(ast_id)
         if expr.num_args() == 0 and expr.decl().name() == name:
             return expr
         for i in range(expr.num_args()):

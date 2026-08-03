@@ -476,9 +476,15 @@ class ProcessParallelController:
 
         Only witnesses the developer explicitly approved (not just left
         unreviewed) AND whose own Z3 self-proof succeeded AND that carry a
-        parsed "map_width_change" hint are used -- an approved witness whose
-        own formula wasn't proven, or with no parseable hint, contributes
-        nothing here.
+        parsed "map_width_change" or "variable_width_change" hint are used --
+        an approved witness whose own formula wasn't proven, or with no
+        parseable hint, contributes nothing here. A witness's Z3 proof only
+        establishes that pre_result == post_result GIVEN whatever it assumed
+        (e.g. a variable's claimed value range) -- it says nothing about
+        whether that assumption is actually true, so the hint's own numbers
+        (map/variable name, old/new widths) still need independent
+        cross-checking downstream in `reverify_with_witnesses` itself, not
+        just trusting the proof status here.
 
         Returns:
             Extra artifacts to merge into this iteration's stored artifacts
@@ -486,11 +492,12 @@ class ProcessParallelController:
         """
         witnesses = child_program.metadata.get("witnesses") or []
         hints = [
-            w["map_width_change"]
+            hint
             for w in witnesses
             if w.get("developer_approved") is True
-            and w.get("map_width_change")
             and (w.get("proof") or {}).get("status") == "proven_equivalent"
+            for hint in (w.get("map_width_change"), w.get("variable_width_change"))
+            if hint
         ]
         if not hints:
             return {}
