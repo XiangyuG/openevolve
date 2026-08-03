@@ -70,6 +70,7 @@ class ReviewGate:
         explanation: str = "",
         witnesses: Optional[List[Dict[str, Any]]] = None,
         child_artifacts: Optional[Dict[str, Any]] = None,
+        parent_artifacts: Optional[Dict[str, Any]] = None,
     ) -> ReviewDecision:
         """Write a review task for this iteration's child and wait for a decision"""
         review_id = str(uuid.uuid4())
@@ -87,6 +88,13 @@ class ReviewGate:
             "changes_description": child.changes_description,
             "witnesses": witnesses or [],
             "child_artifacts": child_artifacts or {},
+            # Artifacts stored on the parent from ITS OWN approval, notably any
+            # relaxed re-verification (equivalence_relaxed_detail/relaxed_hints,
+            # see evaluator.py's reverify_with_witnesses) that ran after the
+            # parent was approved -- surfaced here so the developer isn't
+            # reviewing this child blind to what was already relaxed/verified
+            # upstream in this lineage.
+            "parent_artifacts": parent_artifacts or {},
             "parent_metrics": parent.metrics,
             "child_metrics": child.metrics,
             "metrics_delta": _metrics_delta(parent.metrics, child.metrics),

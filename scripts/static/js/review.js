@@ -84,6 +84,8 @@ const changesDescription = $("#changesDescription");
 const changesDescriptionField = $("#changesDescriptionField");
 const equivalenceField = $("#equivalenceField");
 const equivalenceTable = $("#equivalenceTable");
+const parentRelaxedField = $("#parentRelaxedField");
+const parentRelaxedTable = $("#parentRelaxedTable");
 const witnessesField = $("#witnessesField");
 const witnessesList = $("#witnessesList");
 const artifactsField = $("#artifactsField");
@@ -261,6 +263,70 @@ function renderEquivalence(childArtifacts) {
   });
 
   equivalenceField.classList.remove("hidden");
+}
+
+function renderParentRelaxed(parentArtifacts) {
+  parentRelaxedTable.innerHTML = "";
+  const raw = parentArtifacts && parentArtifacts.equivalence_relaxed_detail;
+  if (!raw) {
+    parentRelaxedField.classList.add("hidden");
+    return;
+  }
+
+  let detail;
+  try {
+    detail = JSON.parse(raw);
+  } catch (e) {
+    parentRelaxedField.classList.add("hidden");
+    return;
+  }
+
+  const entries = Object.keys(detail);
+  if (!entries.length) {
+    parentRelaxedField.classList.add("hidden");
+    return;
+  }
+
+  let hints = [];
+  try {
+    hints = JSON.parse(parentArtifacts.relaxed_hints || "[]");
+  } catch (e) {
+    hints = [];
+  }
+  if (hints.length) {
+    const hintLine = document.createElement("div");
+    hintLine.className = "witness-example";
+    hintLine.textContent = `Relaxed for: ${hints
+      .map((h) => `${h.map} (${h.old_bytes} -> ${h.new_bytes} bytes)`)
+      .join(", ")}`;
+    parentRelaxedTable.appendChild(hintLine);
+  }
+
+  entries.forEach((entry) => {
+    const row = detail[entry] || {};
+    const card = document.createElement("div");
+    card.className = "witness-card";
+
+    const head = document.createElement("div");
+    head.className = "witness-summary";
+    head.textContent = entry;
+    const badge = document.createElement("span");
+    badge.className = `equiv-badge ${verdictClass(row.equivalent)}`;
+    badge.textContent = ` — ${verdictLabel(row.equivalent)} (${row.result_type || "?"})`;
+    head.appendChild(badge);
+    card.appendChild(head);
+
+    if (row.counter_example) {
+      const ce = document.createElement("pre");
+      ce.className = "code-viewer readonly witness-formula";
+      ce.textContent = row.counter_example;
+      card.appendChild(ce);
+    }
+
+    parentRelaxedTable.appendChild(card);
+  });
+
+  parentRelaxedField.classList.remove("hidden");
 }
 
 function proofLabel(proof) {
@@ -499,6 +565,7 @@ async function openTask(taskId) {
   changesDescriptionField.classList.toggle("hidden", !data.changes_description);
   changesDescription.textContent = data.changes_description || "";
   renderEquivalence(data.child_artifacts || {});
+  renderParentRelaxed(data.parent_artifacts || {});
   renderWitnesses(data.witnesses || []);
   renderConsistencyBanner(data.witnesses || [], data.child_metrics || {});
   renderArtifacts(data.child_artifacts || {});

@@ -1054,6 +1054,7 @@ class ProcessParallelController:
                 explanation=child_program.metadata.get("explanation", ""),
                 witnesses=child_program.metadata.get("witnesses", []),
                 child_artifacts=result.artifacts or {},
+                parent_artifacts=self.database.get_artifacts(parent_program.id),
             )
 
             # Stamp each witness with the developer's per-witness call (True/False),
