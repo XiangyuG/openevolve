@@ -247,27 +247,57 @@ def _baseline_object() -> Path | None:
     return _baseline_object_cache
 
 
-def _check_equivalence(candidate_object: Path) -> tuple[dict, dict]:
+def _relax_args(relax_hints: "list[dict] | None") -> list[str]:
+    """Build --relax-map-value-width flags for verify_mixed_entries.py from
+    developer-approved "map_width_change" witness hints (see
+    openevolve/utils/code_utils.py's extract_transformation_witnesses).
+
+    This is only a HINT of which map + byte sizes to relax -- heimdall's
+    checker is expected to cross-check the map name/sizes against the actual
+    BTF metadata it parses from the object files before relaxing anything, so
+    a wrong or stale hint here can't force a false "equivalent" verdict."""
+    args = []
+    for hint in relax_hints or []:
+        args += [
+            "--relax-map-value-width",
+            f"{hint['map']}:{hint['old_bytes']}:{hint['new_bytes']}",
+        ]
+    return args
+
+
+def _check_equivalence(
+    candidate_object: Path,
+    relax_hints: "list[dict] | None" = None,
+    metric_key: str = "semantic_equivalent",
+    detail_key: str = "equivalence_detail",
+) -> tuple[dict, dict]:
     """Symbolically check candidate_object against the baseline for every entry
     point in TOOL["equiv_entries"]. Returns (metrics, artifacts); metrics always
-    contains semantic_equivalent (defaulting to 0.0/"unknown" when the checker
-    itself couldn't be run) so it's safe to use as a config feature_dimension --
+    contains metric_key (defaulting to 0.0/"unknown" when the checker itself
+    couldn't be run) so it's safe to use as a config feature_dimension --
     OpenEvolve requires every feature_dimension to be present in every program's
-    metrics, so this key must never be conditionally omitted."""
+    metrics, so this key must never be conditionally omitted.
+
+    relax_hints (only passed by reverify_with_witnesses(), never by the
+    unconditional baseline check in evaluate()) narrows specific hard
+    structural gates in heimdall's checker -- e.g. the BTF value_size
+    equality check -- for map value-width-narrowing changes a developer has
+    already approved; see verify_mixed_entries.py --relax-map-value-width."""
     entries = TOOL.get("equiv_entries") or []
     maps = TOOL.get("equiv_maps") or []
     if not entries:
-        return {"semantic_equivalent": 0.0}, {}
+        return {metric_key: 0.0}, {}
 
     baseline_object = _baseline_object()
     if baseline_object is None:
         return (
-            {"semantic_equivalent": 0.0},
-            {"equivalence_error": "baseline object unavailable (compile failed)"},
+            {metric_key: 0.0},
+            {f"{detail_key}_error": "baseline object unavailable (compile failed)"},
         )
 
     per_entry: dict[str, dict] = {}
     all_equivalent = True
+    relax_args = _relax_args(relax_hints)
 
     for entry in entries:
         cmd = [
@@ -282,6 +312,7 @@ def _check_equivalence(candidate_object: Path) -> tuple[dict, dict]:
             entry,
             entry,
             *maps,
+            *relax_args,
         ]
         try:
             result = subprocess.run(
@@ -323,9 +354,82 @@ def _check_equivalence(candidate_object: Path) -> tuple[dict, dict]:
         if equivalent is not True:
             all_equivalent = False
 
-    metrics = {"semantic_equivalent": 1.0 if all_equivalent else 0.0}
-    artifacts = {"equivalence_detail": json.dumps(per_entry, indent=2, sort_keys=True)}
+    metrics = {metric_key: 1.0 if all_equivalent else 0.0}
+    artifacts = {detail_key: json.dumps(per_entry, indent=2, sort_keys=True)}
     return metrics, artifacts
+
+
+def reverify_with_witnesses(program_path: str, hints: list) -> EvaluationResult:
+    """Optional second-pass equivalence re-check, called only by OpenEvolve's
+    interactive review flow (openevolve/process_parallel.py's
+    _reverify_approved_witnesses) after a developer has approved specific
+    transformation witnesses claiming a BPF map's value type was narrowed.
+
+    `hints` is a list of {"map", "old_bytes", "new_bytes"} dicts, one per
+    approved witness (see extract_transformation_witnesses' "map_width_change"
+    field). This recompiles the candidate and re-runs the same heimdall
+    checker as the unconditional evaluate() path, but with
+    --relax-map-value-width hints that let it skip the exact BTF value_size
+    equality gate for just the named map(s) -- everything else about the
+    check (map-type consistency, the rest of the symbolic proof) is
+    unchanged, and the checker itself is expected to verify each hint against
+    the object files' real BTF metadata before honoring it. Result is stored
+    under a distinct metric (semantic_equivalent_relaxed), never overwriting
+    the unconditional semantic_equivalent from evaluate()."""
+    source_path = Path(program_path)
+
+    if not hints:
+        return EvaluationResult(
+            metrics={"semantic_equivalent_relaxed": 0.0},
+            artifacts={"error": "reverify_with_witnesses called with no hints"},
+        )
+
+    with tempfile.TemporaryDirectory(prefix="openevolve_bpf_reverify_") as tmp_dir:
+        output_path = Path(tmp_dir) / f"{source_path.stem}.o"
+        cmd = [
+            CLANG,
+            "-g",
+            "-O2",
+            "-target",
+            "bpf",
+            "-D__TARGET_ARCH_x86",
+            "-I",
+            str(LIBBPF_TOOLS_DIR),
+            "-I",
+            "/usr/include/x86_64-linux-gnu",
+            "-c",
+            str(source_path),
+            "-o",
+            str(output_path),
+        ]
+
+        try:
+            result = subprocess.run(
+                cmd, cwd=str(HEIMDALL_ROOT), capture_output=True, text=True, timeout=TIMEOUT_SECONDS
+            )
+        except subprocess.TimeoutExpired:
+            return EvaluationResult(
+                metrics={"semantic_equivalent_relaxed": 0.0},
+                artifacts={"error": f"clang timed out after {TIMEOUT_SECONDS}s (reverify)"},
+            )
+
+        if result.returncode != 0 or not output_path.exists():
+            return EvaluationResult(
+                metrics={"semantic_equivalent_relaxed": 0.0},
+                artifacts={
+                    "error": "clang compilation failed (reverify)",
+                    "stderr": result.stderr[-4000:],
+                },
+            )
+
+        metrics, artifacts = _check_equivalence(
+            output_path,
+            relax_hints=hints,
+            metric_key="semantic_equivalent_relaxed",
+            detail_key="equivalence_relaxed_detail",
+        )
+        artifacts["relaxed_hints"] = json.dumps(hints, sort_keys=True)
+        return EvaluationResult(metrics=metrics, artifacts=artifacts)
 
 
 def _parse_runner_stats(output: str) -> dict[str, dict[str, float | int | None]]:

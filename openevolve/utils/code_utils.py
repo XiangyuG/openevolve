@@ -3,7 +3,7 @@ Utilities for code parsing, diffing, and manipulation
 """
 
 import re
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 def parse_evolve_blocks(code: str) -> List[Tuple[int, int, str]]:
@@ -155,14 +155,38 @@ _WITNESS_BLOCK_PATTERN = re.compile(
     r"(?P<detail>.*?)"
     r"\s*Witness:\s*(?P<witness>.*?)\s*\n"
     r"\s*Formula \(pre-transformation\):\s*(?P<pre_formula>.*?)\s*\n"
-    r"\s*Formula \(post-transformation\):\s*(?P<post_formula>.*?)\s*(?=\n\s*\(\d+\)\s|\Z)",
+    r"\s*Formula \(post-transformation\):\s*(?P<post_formula>.*?)"
+    r"(?:\s*\n\s*Map value width change:\s*(?P<map_width_change>[^\n]*))?"
+    r"\s*(?=\n\s*\(\d+\)\s|\Z)",
     re.MULTILINE | re.DOTALL,
 )
 
 _TRAILING_ELLIPSIS_PATTERN = re.compile(r"\n?\.\.\.\s*$")
 
+_MAP_WIDTH_CHANGE_PATTERN = re.compile(r"^(?P<map>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)\s*$")
 
-def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, str]]:
+
+def _parse_map_width_change(raw: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Parse an optional "Map value width change: <map>: <old> -> <new>" tag
+    (see examples/bpf_compile/prompt_templates) into a structured hint, or
+    None if absent/malformed. This is only a HINT of which map + byte sizes a
+    developer-approved witness claims to narrow -- the actual sizes must be
+    cross-checked against real BTF metadata downstream (e.g. by the semantic
+    checker itself) before being trusted, since the LLM's stated numbers could
+    be wrong even when the surrounding formula is sound."""
+    if not raw:
+        return None
+    match = _MAP_WIDTH_CHANGE_PATTERN.match(raw.strip())
+    if not match:
+        return None
+    return {
+        "map": match.group("map").strip(),
+        "old_bytes": int(match.group("old")),
+        "new_bytes": int(match.group("new")),
+    }
+
+
+def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, Any]]:
     """
     Pull out per-change "Witness"/"Formula (pre/post-transformation)" entries
     from an LLM explanation that follows the (1)/(2)/... numbered format (see
@@ -178,8 +202,10 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, st
         explanation_text: Explanation text, e.g. from extract_change_explanation()
 
     Returns:
-        List of {"summary", "detail", "witness", "pre_formula", "post_formula"}
-        dicts, in order
+        List of {"summary", "detail", "witness", "pre_formula", "post_formula",
+        "map_width_change"} dicts, in order. "map_width_change" is
+        {"map", "old_bytes", "new_bytes"} or None when the LLM didn't tag this
+        witness as a map value-width change.
     """
     witnesses = []
     for match in _WITNESS_BLOCK_PATTERN.finditer(explanation_text):
@@ -194,6 +220,7 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, st
                 "witness": match.group("witness").strip(),
                 "pre_formula": pre_formula.strip(),
                 "post_formula": post_formula.strip(),
+                "map_width_change": _parse_map_width_change(match.group("map_width_change")),
             }
         )
     return witnesses

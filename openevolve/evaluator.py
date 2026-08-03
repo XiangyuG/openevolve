@@ -92,6 +92,11 @@ class Evaluator:
             self.evaluate_function = module.evaluate
             logger.info(f"Successfully loaded evaluation function from {self.evaluation_file}")
 
+            # Optional second-pass re-verification hook (see reverify_program()
+            # below): most evaluators don't define this, in which case it's a
+            # no-op, same pattern as the optional evaluate_stage1/2/3 hooks.
+            self.reverify_function = getattr(module, "reverify_with_witnesses", None)
+
             # Validate cascade configuration
             self._validate_cascade_configuration(module)
         except Exception as e:
@@ -327,6 +332,56 @@ class Evaluator:
             Artifacts dictionary or None if not found
         """
         return self._pending_artifacts.pop(program_id, None)
+
+    async def reverify_program(
+        self,
+        program_code: str,
+        program_id: str,
+        hints: List[Dict[str, Any]],
+    ) -> Tuple[Dict[str, float], Dict[str, Any]]:
+        """
+        Optional second-pass re-verification, run only for interactive review
+        (openevolve/review_gate.py) after a developer approves specific
+        transformation witnesses that claim a targeted semantic relaxation
+        (e.g. a narrowed BPF map value type). Calls the evaluation module's
+        `reverify_with_witnesses(program_path, hints) -> EvaluationResult | dict`
+        if it defines one; evaluators that don't define this are unaffected
+        (returns empty metrics/artifacts, same as an unset cascade stage).
+
+        Args:
+            program_code: Code to re-verify
+            program_id: Program ID, for logging
+            hints: Developer-approved hints, e.g. each witness's
+                "map_width_change" dict
+
+        Returns:
+            (metrics, artifacts) -- both empty if no reverify hook is defined
+        """
+        if self.reverify_function is None:
+            return {}, {}
+
+        program_id_str = f" {program_id}" if program_id else ""
+        with tempfile.NamedTemporaryFile(suffix=self.program_suffix, delete=False) as temp_file:
+            temp_file.write(program_code.encode("utf-8"))
+            temp_file_path = temp_file.name
+
+        try:
+            loop = asyncio.get_event_loop()
+            result = await asyncio.wait_for(
+                loop.run_in_executor(None, self.reverify_function, temp_file_path, hints),
+                timeout=self.config.timeout,
+            )
+            eval_result = self._process_evaluation_result(result)
+            logger.info(
+                f"Re-verified program{program_id_str} with {len(hints)} approved hint(s): "
+                f"{format_metrics_safe(eval_result.metrics)}"
+            )
+            return eval_result.metrics, eval_result.artifacts
+        except Exception as e:
+            logger.warning(f"reverify_with_witnesses failed for program{program_id_str}: {e}")
+            return {}, {"reverify_error": str(e)}
+        finally:
+            os.unlink(temp_file_path)
 
     async def _direct_evaluate(
         self, program_path: str

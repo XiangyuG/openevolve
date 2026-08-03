@@ -445,7 +445,62 @@ class ProcessParallelController:
         self._pending_feedback: Dict[str, str] = {}
         self._rejection_counts: Dict[str, int] = {}
 
+        # Lazily created main-process Evaluator used only for the optional
+        # post-approval re-verification pass (see _reverify_approved_witnesses
+        # below) -- most runs never approve a witness with a relaxation hint,
+        # so this is never instantiated for them.
+        self._reverify_evaluator = None
+
         logger.info(f"Initialized process parallel controller with {self.num_workers} workers")
+
+    def _get_reverify_evaluator(self):
+        from openevolve.evaluator import Evaluator
+
+        if self._reverify_evaluator is None:
+            self._reverify_evaluator = Evaluator(
+                config=self.config.evaluator,
+                evaluation_file=self.evaluation_file,
+                suffix=self.file_suffix,
+            )
+        return self._reverify_evaluator
+
+    async def _reverify_approved_witnesses(self, child_program: Program) -> Dict[str, Any]:
+        """
+        After a developer approves specific transformation witnesses (see
+        openevolve/review_gate.py and scripts/review.py), re-run the
+        evaluator's optional `reverify_with_witnesses` hook using only the
+        approved, self-consistent hints, and merge the resulting metrics into
+        child_program.metrics in place before it's added to the database. A
+        no-op (no evaluator call at all) unless there's at least one
+        qualifying witness, so this costs nothing for the common case.
+
+        Only witnesses the developer explicitly approved (not just left
+        unreviewed) AND whose own Z3 self-proof succeeded AND that carry a
+        parsed "map_width_change" hint are used -- an approved witness whose
+        own formula wasn't proven, or with no parseable hint, contributes
+        nothing here.
+
+        Returns:
+            Extra artifacts to merge into this iteration's stored artifacts
+            (empty dict if no reverify ran).
+        """
+        witnesses = child_program.metadata.get("witnesses") or []
+        hints = [
+            w["map_width_change"]
+            for w in witnesses
+            if w.get("developer_approved") is True
+            and w.get("map_width_change")
+            and (w.get("proof") or {}).get("status") == "proven_equivalent"
+        ]
+        if not hints:
+            return {}
+
+        metrics, artifacts = await self._get_reverify_evaluator().reverify_program(
+            child_program.code, child_program.id, hints
+        )
+        if metrics:
+            child_program.metrics.update(metrics)
+        return artifacts
 
     def _serialize_config(self, config: Config) -> dict:
         """Serialize config object to a dictionary that can be pickled"""
@@ -1049,12 +1104,15 @@ class ProcessParallelController:
             self._rejection_counts.pop(parent_program.id, None)
             forced_parent_id = None
 
+            reverify_artifacts = await self._reverify_approved_witnesses(child_program)
+
             self.database.add(
                 child_program, iteration=current_iteration, target_island=result.target_island
             )
 
-            if result.artifacts:
-                self.database.store_artifacts(child_program.id, result.artifacts)
+            combined_artifacts = {**(result.artifacts or {}), **reverify_artifacts}
+            if combined_artifacts:
+                self.database.store_artifacts(child_program.id, combined_artifacts)
 
             if self.evolution_tracer:
                 trace_island_id = child_program.metadata.get(

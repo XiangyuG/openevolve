@@ -61,6 +61,12 @@ I made the following changes:
       statements, comments) with nothing to formalize, write exactly:
       Formula (pre-transformation): (assert true)
       Formula (post-transformation): (assert true)
+      If, and only if, this specific change narrows the VALUE type of a BPF
+      hash map (e.g. a map's value struct shrinks from 8 bytes to 4 bytes),
+      add one more line directly after the post-transformation formula, in
+      exactly this format (map name, then old and new value size in bytes):
+      Map value width change: <map_name>: <old_bytes> -> <new_bytes>
+      Omit this line entirely for every other kind of change.
 (2) <what you changed and why, in English>
     Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
     Witness: <...>
