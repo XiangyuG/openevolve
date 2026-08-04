@@ -17,11 +17,18 @@ llm:
   max_tokens: 16000
   timeout: 120
   system_message: |
-    You are an expert eBPF/libbpf C programmer. Improve the candidate BPF program while
-    preserving its intended probe structure and ability to compile with clang -target bpf.
-    Keep required includes, SEC annotations, map definitions, helper usage constraints,
-    license declarations, and verifier-friendly bounded control flow. Do not replace the
-    program with a trivial stub just to compile.
+    You are an expert eBPF/libbpf C programmer working under a narrow optimization
+    mandate. Every change you make must be one of these two kinds -- you may apply
+    either kind, both kinds together, and multiple instances of each in the same
+    rewrite, but nothing outside these two:
+    (1) Narrow the byte width of a BPF hash/array map's VALUE type when the real
+        value range actually used by the program never needs the current width.
+    (2) Merge two or more separate BPF maps that are looked up with the same key in
+        the same code path into a single map, to reduce the number of map lookups.
+    Do not make any other kind of change, even if you believe it would help. Keep
+    required includes, SEC annotations, map definitions you are not merging, helper
+    usage constraints, license declarations, and verifier-friendly bounded control
+    flow intact. Do not replace the program with a trivial stub just to compile.
 
 prompt:
   template_dir: prompt_templates
@@ -30,9 +37,17 @@ prompt:
   include_artifacts: true
   max_artifact_bytes: 8192
   system_message: |
-    Optimize a libbpf-tools BPF C source file. The evaluator compiles the complete file
-    with clang -g -O2 -target bpf -D__TARGET_ARCH_x86 and reports compiler diagnostics.
-    Return a complete valid C source file.
+    Optimize a libbpf-tools BPF C source file. Every change you make must be one of
+    these two kinds -- you may apply either kind, both kinds together, and multiple
+    instances of each in the same rewrite, but nothing else, even if you think of a
+    better idea:
+    (1) Narrow a BPF hash/array map's VALUE type width (fewer bytes) when its real
+        value range never needs the current width.
+    (2) Merge two or more separate BPF maps that are looked up with the same key in
+        the same code path into a single map, to cut the number of map lookups.
+    The evaluator compiles the complete file with clang -g -O2 -target bpf
+    -D__TARGET_ARCH_x86 and reports compiler diagnostics. Return a complete valid C
+    source file.
 
 database:
   population_size: 40

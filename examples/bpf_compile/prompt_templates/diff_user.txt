@@ -16,7 +16,30 @@
 ```
 
 # Task
-Suggest improvements to the program that will improve its FITNESS SCORE.
+Suggest improvements to the program that will improve its FITNESS SCORE. Every
+change you propose must be one of these two optimization types -- you may propose
+either type, both types together, and multiple instances of each. Do not propose
+any other kind of change, even if you believe it would help:
+
+(1) Map value width narrowing: shrink the VALUE struct of a BPF hash/array map
+    (fewer bytes) when the real value range actually used by the program never
+    needs the current width -- e.g. an 8-byte counter that provably never exceeds
+    a 4-byte range, or a struct field/padding that can be dropped or packed
+    tighter. You must justify the range/size claim in that change's Witness.
+
+(2) Map merging: if two or more separate maps are looked up with the SAME key in
+    the SAME code path, merge them into a single map whose value struct is the
+    union of the original maps' fields, replacing multiple
+    bpf_map_lookup_elem()/bpf_map_update_elem() calls on that key with one. You
+    must justify in the Witness that every original field stays readable and
+    writable at the same points and that the key sets match.
+
+Do not restructure algorithms, add or remove probes/SEC sections, change helper
+usage, rename or reformat unrelated code, or change map types beyond what a merge
+requires. If this program has no safe opportunity for (1) or (2), propose the
+smallest possible change that still qualifies (or none at all) and say so in the
+explanation -- do not invent an unrelated optimization.
+
 The system maintains diversity across these dimensions: {feature_dimensions}
 Different solutions with similar fitness but different features are valuable.
 
