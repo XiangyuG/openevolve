@@ -114,4 +114,7 @@ I made the following changes:
 Each "Example" line must quote a real, short fragment (a line or part of a line) of
 the actual before/after code, wrapped in single backticks -- not a triple-backtick
 block -- so a reviewer can see exactly where the change happened without re-reading
-the whole diff.
+the whole diff. This is REQUIRED, not optional: even if you label it "Old:"/"New:"
+instead of "Example:", or the change is a one-line constant/macro edit, you must
+still quote the actual old and new text in backticks. Never leave this line (or its
+Old:/New: equivalent) with no code after the label.

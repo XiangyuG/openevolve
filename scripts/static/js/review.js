@@ -403,6 +403,13 @@ function renderWitnesses(witnesses) {
       card.appendChild(detail);
     }
 
+    if (w.example_missing) {
+      const badge = document.createElement("span");
+      badge.className = "equiv-badge delta-warn";
+      badge.textContent = "⚠ no before/after code snippet -- LLM left the Example blank";
+      card.appendChild(badge);
+    }
+
     if (w.witness) {
       const witnessText = document.createElement("div");
       witnessText.className = "witness-text";

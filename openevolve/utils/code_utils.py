@@ -164,6 +164,20 @@ _WITNESS_BLOCK_PATTERN = re.compile(
 
 _TRAILING_ELLIPSIS_PATTERN = re.compile(r"\n?\.\.\.\s*$")
 
+_EXAMPLE_SNIPPET_PATTERN = re.compile(r"`[^`\n]+`")
+
+
+def _has_example_snippet(detail: str) -> bool:
+    """Whether `detail` (the free-form text between the numbered summary and
+    "Witness:", nominally an "Example: `<old>` -> `<new>`" line) contains at
+    least one non-empty single-backtick-quoted code fragment. Models sometimes
+    emit the "Example:"/"Old:"/"New:" label(s) with nothing after them (seen in
+    practice: "Old: \\n\\n    New:\\n" with no code at all) -- extract_transformation_witnesses
+    doesn't require any particular label here (see its docstring), so that case
+    would otherwise pass through silently as an empty-looking detail string
+    instead of being flagged for the reviewer."""
+    return bool(_EXAMPLE_SNIPPET_PATTERN.search(detail))
+
 _MAP_WIDTH_CHANGE_PATTERN = re.compile(r"^(?P<map>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)\s*$")
 
 _VARIABLE_WIDTH_CHANGE_PATTERN = re.compile(r"^(?P<var>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)\s*$")
@@ -230,12 +244,17 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
 
     Returns:
         List of {"summary", "detail", "witness", "pre_formula", "post_formula",
-        "map_width_change", "variable_width_change"} dicts, in order.
+        "map_width_change", "variable_width_change", "example_missing"} dicts,
+        in order.
         "map_width_change" is {"map", "old_bytes", "new_bytes"} or None when
         the LLM didn't tag this witness as a map value-width change.
         "variable_width_change" is {"var", "old_bits", "new_bits"} or None
         when the LLM didn't tag this witness as a range-justified variable
         narrowing.
+        "example_missing" is True when "detail" has no non-empty
+        backtick-quoted code fragment -- i.e. the LLM skipped quoting the
+        actual before/after code the prompt asks for (see
+        _has_example_snippet).
     """
     witnesses = []
     for match in _WITNESS_BLOCK_PATTERN.finditer(explanation_text):
@@ -243,10 +262,11 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
         # by the model as trailing filler after the last real item; drop it.
         pre_formula = _TRAILING_ELLIPSIS_PATTERN.sub("", match.group("pre_formula").strip())
         post_formula = _TRAILING_ELLIPSIS_PATTERN.sub("", match.group("post_formula").strip())
+        detail = match.group("detail").strip()
         witnesses.append(
             {
                 "summary": match.group("summary").strip(),
-                "detail": match.group("detail").strip(),
+                "detail": detail,
                 "witness": match.group("witness").strip(),
                 "pre_formula": pre_formula.strip(),
                 "post_formula": post_formula.strip(),
@@ -254,6 +274,7 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
                 "variable_width_change": _parse_variable_width_change(
                     match.group("variable_width_change")
                 ),
+                "example_missing": not _has_example_snippet(detail),
             }
         )
     return witnesses

@@ -122,6 +122,13 @@
 }
 .equiv-badge.delta-pos { background: #e6f4ea; color: #067647; }
 .equiv-badge.delta-neg { background: #fdecea; color: #b42318; }
+.equiv-badge.delta-warn {
+  background: #fff4e5;
+  color: #9a5b00;
+  display: block;
+  width: fit-content;
+  margin-bottom: 6px;
+}
 
 .witness-decision-row {
   display: flex;
