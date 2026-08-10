@@ -61,45 +61,11 @@ class ReviewGate:
         self.queue_dir.mkdir(parents=True, exist_ok=True)
         self.timeout = timeout
 
-    async def request_decision(
-        self,
-        iteration: int,
-        parent: Program,
-        child: Program,
-        changes_summary: str,
-        explanation: str = "",
-        witnesses: Optional[List[Dict[str, Any]]] = None,
-        child_artifacts: Optional[Dict[str, Any]] = None,
-        parent_artifacts: Optional[Dict[str, Any]] = None,
+    async def _write_task_and_await_decision(
+        self, iteration: int, task_payload: Dict[str, Any]
     ) -> ReviewDecision:
-        """Write a review task for this iteration's child and wait for a decision"""
-        review_id = str(uuid.uuid4())
-
-        task_payload = {
-            "id": review_id,
-            "created_at": _iso_now(),
-            "iteration": iteration,
-            "parent_id": parent.id,
-            "child_id": child.id,
-            "parent_code": parent.code,
-            "child_code": child.code,
-            "changes_summary": changes_summary,
-            "changes_explanation": explanation,
-            "changes_description": child.changes_description,
-            "witnesses": witnesses or [],
-            "child_artifacts": child_artifacts or {},
-            # Artifacts stored on the parent from ITS OWN approval, notably any
-            # relaxed re-verification (equivalence_relaxed_detail/relaxed_hints,
-            # see evaluator.py's reverify_with_witnesses) that ran after the
-            # parent was approved -- surfaced here so the developer isn't
-            # reviewing this child blind to what was already relaxed/verified
-            # upstream in this lineage.
-            "parent_artifacts": parent_artifacts or {},
-            "parent_metrics": parent.metrics,
-            "child_metrics": child.metrics,
-            "metrics_delta": _metrics_delta(parent.metrics, child.metrics),
-        }
-
+        """Write a review task and block (via polling) until a decision file appears"""
+        review_id = task_payload["id"]
         task_path = self.queue_dir / f"{review_id}.json"
         decision_path = self.queue_dir / f"{review_id}.decision.json"
 
@@ -134,3 +100,80 @@ class ReviewGate:
                 )
 
             await asyncio.sleep(poll_interval)
+
+    async def request_decision(
+        self,
+        iteration: int,
+        parent: Program,
+        child: Program,
+        changes_summary: str,
+        explanation: str = "",
+        witnesses: Optional[List[Dict[str, Any]]] = None,
+        child_artifacts: Optional[Dict[str, Any]] = None,
+        parent_artifacts: Optional[Dict[str, Any]] = None,
+    ) -> ReviewDecision:
+        """Write a review task for this iteration's already-generated, already-evaluated
+        child and wait for a decision"""
+        task_payload = {
+            "id": str(uuid.uuid4()),
+            "created_at": _iso_now(),
+            "iteration": iteration,
+            "parent_id": parent.id,
+            "child_id": child.id,
+            "parent_code": parent.code,
+            "child_code": child.code,
+            "changes_summary": changes_summary,
+            "changes_explanation": explanation,
+            "changes_description": child.changes_description,
+            "witnesses": witnesses or [],
+            "child_artifacts": child_artifacts or {},
+            # Artifacts stored on the parent from ITS OWN approval, notably any
+            # relaxed re-verification (equivalence_relaxed_detail/relaxed_hints,
+            # see evaluator.py's reverify_with_witnesses) that ran after the
+            # parent was approved -- surfaced here so the developer isn't
+            # reviewing this child blind to what was already relaxed/verified
+            # upstream in this lineage.
+            "parent_artifacts": parent_artifacts or {},
+            "parent_metrics": parent.metrics,
+            "child_metrics": child.metrics,
+            "metrics_delta": _metrics_delta(parent.metrics, child.metrics),
+        }
+        return await self._write_task_and_await_decision(iteration, task_payload)
+
+    async def request_witness_review(
+        self,
+        iteration: int,
+        parent: Program,
+        explanation: str,
+        witnesses: List[Dict[str, Any]],
+        parent_artifacts: Optional[Dict[str, Any]] = None,
+    ) -> ReviewDecision:
+        """
+        Write a review task for a proposed set of transformation witnesses BEFORE any
+        code has been generated or evaluated for them (see openevolve/process_parallel.py's
+        two-phase interactive flow: propose -> this review -> implement -> evaluate).
+
+        Same task/decision JSON schema as request_decision, but with the child-specific
+        fields left empty since there is no child yet -- the review UI (scripts/review.py,
+        scripts/static/js/review.js) already renders empty/missing child_code and
+        child_metrics gracefully.
+        """
+        task_payload = {
+            "id": str(uuid.uuid4()),
+            "created_at": _iso_now(),
+            "iteration": iteration,
+            "parent_id": parent.id,
+            "child_id": None,
+            "parent_code": parent.code,
+            "child_code": "",
+            "changes_summary": "",
+            "changes_explanation": explanation,
+            "changes_description": None,
+            "witnesses": witnesses or [],
+            "child_artifacts": {},
+            "parent_artifacts": parent_artifacts or {},
+            "parent_metrics": parent.metrics,
+            "child_metrics": {},
+            "metrics_delta": {},
+        }
+        return await self._write_task_and_await_decision(iteration, task_payload)

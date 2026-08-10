@@ -361,9 +361,9 @@ function proofClass(proof) {
 let currentWitnesses = [];
 
 function witnessDecisionLabel(state) {
-  if (state === true) return "Approved for next-stage checker";
-  if (state === false) return "Rejected -- excluded from next-stage checker";
-  return "Not reviewed yet";
+  if (state === true) return "Approved -- will be implemented";
+  if (state === false) return "Rejected -- will NOT be implemented";
+  return "Not reviewed yet (treated as not approved)";
 }
 
 function setWitnessDecision(index, value) {
@@ -577,7 +577,9 @@ async function openTask(taskId) {
   renderConsistencyBanner(data.witnesses || [], data.child_metrics || {});
   renderArtifacts(data.child_artifacts || {});
   parentCode.textContent = data.parent_code || "";
-  childCode.textContent = data.child_code || "";
+  childCode.textContent =
+    data.child_code ||
+    "(not generated yet -- implemented only after you approve witnesses below)";
   feedbackInput.value = "";
 
   overlay.classList.remove("hidden");
@@ -595,6 +597,18 @@ async function submitDecision(approved) {
   if (!approved && !feedback) {
     alert("Feedback is required when rejecting an iteration.");
     return;
+  }
+
+  if (approved && currentWitnesses.length > 0) {
+    const anyApproved = Object.values(witnessDecisions).some((v) => v === true);
+    if (!anyApproved) {
+      const proceed = confirm(
+        "No individual witnesses are approved -- this will be treated as a rejection " +
+          "and no code will be generated. Approve at least one witness above if you want " +
+          "changes implemented. Submit anyway?"
+      );
+      if (!proceed) return;
+    }
   }
 
   const r = await fetch(`${API_BASE}/tasks/${currentTaskId}/decision`, {

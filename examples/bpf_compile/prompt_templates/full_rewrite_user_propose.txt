@@ -1,0 +1,118 @@
+# Current Program Information
+- Fitness: {fitness_score}
+- Feature coordinates: {feature_coords}
+- Focus areas: {improvement_areas}
+
+{artifacts}
+
+{developer_feedback}
+
+# Program Evolution History
+{evolution_history}
+
+# Current Program
+```{language}
+{current_program}
+```
+
+# Task
+Propose improvements to the program that will improve its FITNESS SCORE. Every change
+you propose must be one of these two optimization types -- you may propose either type,
+both types together, and multiple instances of each. Do not propose any other kind of
+change, even if you believe it would help:
+
+(1) Map value width narrowing: shrink the VALUE struct of a BPF hash/array map
+    (fewer bytes) when the real value range actually used by the program never
+    needs the current width -- e.g. an 8-byte counter that provably never exceeds
+    a 4-byte range, or a struct field/padding that can be dropped or packed
+    tighter. You must justify the range/size claim in that change's Witness.
+
+(2) Map merging: if two or more separate maps are looked up with the SAME key in
+    the SAME code path, merge them into a single map whose value struct is the
+    union of the original maps' fields, replacing multiple
+    bpf_map_lookup_elem()/bpf_map_update_elem() calls on that key with one. You
+    must justify in the Witness that every original field stays readable and
+    writable at the same points and that the key sets match.
+
+Do not restructure algorithms, add or remove probes/SEC sections, change helper
+usage, rename or reformat unrelated code, or change map types beyond what a merge
+requires. If this program has no safe opportunity for (1) or (2), propose the
+smallest possible change that still qualifies (or none at all) and say so in the
+explanation -- do not invent an unrelated optimization.
+
+The system maintains diversity across these dimensions: {feature_dimensions}
+Different solutions with similar fitness but different features are valuable.
+
+IMPORTANT: This is a PROPOSAL step only. Do NOT write any code and do NOT include a
+code block. A developer will review your proposed change(s) below and approve or
+reject each one individually; only after that will you be asked, in a follow-up
+request, to actually implement the approved ones. Describe what you would change,
+you are not changing it yet.
+
+Describe each proposed change in exactly this format:
+
+I propose the following changes:
+(1) <what you would change and why, in English>
+    Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
+    Witness: <English argument for why this specific change would preserve the program's
+      observable behavior -- its return value and final map state -- for every input>
+    Formula (pre-transformation): <a self-contained SMT-LIB 2 snippet: one or more
+      `(declare-const ...)` lines for every input this change depends on, plus a
+      constant named exactly `pre_result`, and an `(assert ...)` defining what
+      `pre_result` equals under the OLD code's logic for this specific change>
+    Formula (post-transformation): <a self-contained SMT-LIB 2 snippet re-declaring
+      the SAME input names and sorts as the pre-transformation formula, plus a
+      constant named exactly `post_result`, and an `(assert ...)` defining what
+      `post_result` equals under the NEW code's logic for this same change>
+
+      These two formulas will be checked together by proving
+      `(assert (not (= pre_result post_result)))` is UNSAT against both of them
+      combined -- i.e. pre_result and post_result must be equal for every possible
+      input, not just some input where they happen to match. Model only the values
+      touched by this specific change -- do not try to encode the whole program.
+      Use only Int and Bool sorts. Do NOT declare BitVec constants or use
+      bitvector operators (bvand, bvor, bvxor, ...) -- mixing Int-sorted
+      variables with bitvector operators makes the whole formula unparseable.
+      If you need to model a bitwise-AND-style mask/flag check (e.g. mode &
+      S_IFMT), approximate it with `mod`/arithmetic on Int instead (e.g.
+      `(= (mod mode 8) 0)` for a low-bit check). Do not wrap either formula in a
+      triple-backtick code block, and do not add anything (comments, stray
+      characters) after the final closing parenthesis of either one.
+      If the change is purely structural (renaming, reordering unrelated
+      statements, comments) with nothing to formalize, write exactly:
+      Formula (pre-transformation): (assert true)
+      Formula (post-transformation): (assert true)
+      If, and only if, this specific change narrows the VALUE type of a BPF
+      hash map (e.g. a map's value struct shrinks from 8 bytes to 4 bytes),
+      add one more line directly after the post-transformation formula, in
+      exactly this format (map name, then old and new value size in bytes):
+      Map value width change: <map_name>: <old_bytes> -> <new_bytes>
+      Omit this line entirely for every other kind of change.
+      If, and only if, this specific change narrows a VARIABLE's type based on
+      a value-range invariant you are proving in this same witness (e.g. an
+      8-bit variable narrowed to 4 bits because it is always in [0, 15]), the
+      range invariant MUST appear as an assumption on the shared input
+      constant in the pre-transformation formula (e.g. `(assert (>= v 0))` /
+      `(assert (<= v 15))`), and the post-transformation formula must model
+      the narrowing as truncation under that assumption (e.g.
+      `(assert (= post_result (mod v 16)))` for an unsigned narrowing to 4
+      bits, or the two's-complement equivalent for a signed one). Then add one
+      more line directly after the post-transformation formula (or after the
+      "Map value width change" line if both apply), in exactly this format
+      (variable name, then old and new bit width):
+      Variable width change: <var_name>: <old_bits> -> <new_bits>
+      Omit this line entirely for every other kind of change.
+(2) <what you would change and why, in English>
+    Example: `<...>` -> `<...>`
+    Witness: <...>
+    Formula (pre-transformation): <...>
+    Formula (post-transformation): <...>
+...
+
+Each "Example" line must quote a real, short fragment (a line or part of a line) of
+the actual before/after code you are proposing, wrapped in single backticks -- not a
+triple-backtick block -- so a reviewer can see exactly where the change would happen
+without you having written the whole diff. This is REQUIRED, not optional: even if
+you label it "Old:"/"New:" instead of "Example:", or the change is a one-line
+constant/macro edit, you must still quote the actual old and new text in backticks.
+Never leave this line (or its Old:/New: equivalent) with no code after the label.

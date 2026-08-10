@@ -10,7 +10,7 @@ import signal
 import time
 from concurrent.futures import Future, ProcessPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeoutError
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -34,6 +34,25 @@ class SerializableResult:
     iteration: int = 0
     error: Optional[str] = None
     target_island: Optional[int] = None  # Island where child should be placed
+
+
+@dataclass
+class ProposalResult:
+    """
+    Result of phase 1 (propose) of the interactive two-phase flow (see
+    _run_evolution_interactive / _run_iteration_worker_propose below): a set of
+    transformation witnesses proposed by the LLM, with no code generated yet.
+    """
+
+    parent_id: Optional[str] = None
+    inspiration_ids: List[str] = field(default_factory=list)
+    iteration: int = 0
+    prompt: Optional[Dict[str, str]] = None
+    llm_response: Optional[str] = None
+    explanation: str = ""
+    witnesses: List[Dict[str, Any]] = field(default_factory=list)
+    target_island: Optional[int] = None
+    error: Optional[str] = None
 
 
 def _worker_init(config_dict: dict, evaluation_file: str, parent_env: dict = None) -> None:
@@ -353,6 +372,316 @@ def _run_iteration_worker(
 
     except Exception as e:
         logger.exception(f"Error in worker iteration {iteration}")
+        return SerializableResult(error=str(e), iteration=iteration)
+
+
+def _build_worker_prompt(
+    iteration: int,
+    db_snapshot: Dict[str, Any],
+    parent_id: str,
+    inspiration_ids: List[str],
+    template_key: str,
+    extra_kwargs: Optional[Dict[str, Any]] = None,
+) -> Tuple[Dict[str, str], Program, int, Optional[str]]:
+    """
+    Build a prompt for one phase of the interactive two-phase flow
+    (_run_iteration_worker_propose / _run_iteration_worker_implement below).
+
+    This reproduces the parent/inspiration/evolution-history context assembly that
+    _run_iteration_worker (the non-interactive worker) does inline -- duplicated rather
+    than shared so that function, and the tests exercising it, are never touched by the
+    interactive two-phase flow.
+
+    Returns: (prompt, parent, parent_island, parent_changes_desc)
+    """
+    programs = {pid: Program(**prog_dict) for pid, prog_dict in db_snapshot["programs"].items()}
+    parent = programs[parent_id]
+    inspirations = [programs[pid] for pid in inspiration_ids if pid in programs]
+
+    parent_artifacts = db_snapshot["artifacts"].get(parent_id)
+    developer_feedback = db_snapshot.get("developer_feedback", {}).get(parent_id)
+
+    parent_island = parent.metadata.get("island", db_snapshot["current_island"])
+    island_programs = [
+        programs[pid] for pid in db_snapshot["islands"][parent_island] if pid in programs
+    ]
+    island_programs.sort(
+        key=lambda p: p.metrics.get("combined_score", safe_numeric_average(p.metrics)),
+        reverse=True,
+    )
+
+    programs_for_prompt = island_programs[
+        : _worker_config.prompt.num_top_programs + _worker_config.prompt.num_diverse_programs
+    ]
+    best_programs_only = island_programs[: _worker_config.prompt.num_top_programs]
+
+    if _worker_config.prompt.programs_as_changes_description:
+        parent_changes_desc = (
+            parent.changes_description or _worker_config.prompt.initial_changes_description
+        )
+    else:
+        parent_changes_desc = None
+
+    prompt = _worker_prompt_sampler.build_prompt(
+        current_program=parent.code,
+        parent_program=parent.code,
+        program_metrics=parent.metrics,
+        previous_programs=[p.to_dict() for p in best_programs_only],
+        top_programs=[p.to_dict() for p in programs_for_prompt],
+        inspirations=[p.to_dict() for p in inspirations],
+        language=_worker_config.language,
+        evolution_round=iteration,
+        diff_based_evolution=_worker_config.diff_based_evolution,
+        program_artifacts=parent_artifacts,
+        feature_dimensions=db_snapshot.get("feature_dimensions", []),
+        current_changes_description=parent_changes_desc,
+        developer_feedback=developer_feedback,
+        template_key=template_key,
+        **(extra_kwargs or {}),
+    )
+
+    return prompt, parent, parent_island, parent_changes_desc
+
+
+def _run_iteration_worker_propose(
+    iteration: int, db_snapshot: Dict[str, Any], parent_id: str, inspiration_ids: List[str]
+) -> ProposalResult:
+    """
+    Phase 1 of the interactive two-phase flow (see ProcessParallelController.
+    _run_evolution_interactive): ask the LLM to propose transformation witnesses ONLY,
+    with no code. The developer reviews and approves/rejects each witness individually
+    (openevolve/review_gate.py's request_witness_review) before any code is generated --
+    see _run_iteration_worker_implement for phase 2.
+    """
+    try:
+        _lazy_init_worker_components()
+
+        template_key = (
+            "diff_user_propose"
+            if _worker_config.diff_based_evolution
+            else "full_rewrite_user_propose"
+        )
+        prompt, parent, _parent_island, _parent_changes_desc = _build_worker_prompt(
+            iteration, db_snapshot, parent_id, inspiration_ids, template_key
+        )
+
+        try:
+            llm_response = asyncio.run(
+                _worker_llm_ensemble.generate_with_context(
+                    system_message=prompt["system"],
+                    messages=[{"role": "user", "content": prompt["user"]}],
+                )
+            )
+        except Exception as e:
+            logger.error(f"LLM generation failed (propose): {e}")
+            return ProposalResult(
+                error=f"LLM generation failed: {str(e)}", iteration=iteration, parent_id=parent_id
+            )
+
+        if llm_response is None:
+            return ProposalResult(
+                error="LLM returned None response", iteration=iteration, parent_id=parent_id
+            )
+
+        from openevolve.utils.code_utils import (
+            extract_change_explanation,
+            extract_transformation_witnesses,
+            validate_transformation_proof,
+        )
+
+        # The propose prompt asks for no code, but strip any diff/code fences the model
+        # might still emit anyway, same defensive extraction as the non-interactive path.
+        explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
+        witnesses = extract_transformation_witnesses(explanation)
+        for index, witness in enumerate(witnesses):
+            witness["index"] = index
+            witness["proof"] = validate_transformation_proof(
+                witness["pre_formula"], witness["post_formula"]
+            )
+
+        return ProposalResult(
+            parent_id=parent.id,
+            inspiration_ids=inspiration_ids,
+            iteration=iteration,
+            prompt=prompt,
+            llm_response=llm_response,
+            explanation=explanation,
+            witnesses=witnesses,
+            target_island=db_snapshot.get("sampling_island"),
+        )
+
+    except Exception as e:
+        logger.exception(f"Error in worker iteration {iteration} (propose)")
+        return ProposalResult(error=str(e), iteration=iteration, parent_id=parent_id)
+
+
+def _run_iteration_worker_implement(
+    iteration: int,
+    db_snapshot: Dict[str, Any],
+    parent_id: str,
+    inspiration_ids: List[str],
+    explanation: str,
+    witnesses: List[Dict[str, Any]],
+    developer_notes: str,
+) -> SerializableResult:
+    """
+    Phase 2 of the interactive two-phase flow: given the phase-1 witnesses (already
+    stamped with the developer's per-witness "developer_approved" call, see
+    ProcessParallelController._run_evolution_interactive), ask the LLM to implement ONLY
+    the approved ones, then evaluate the resulting program exactly like the
+    non-interactive path (_run_iteration_worker) does.
+    """
+    try:
+        _lazy_init_worker_components()
+
+        from openevolve.utils.code_utils import format_witness_decisions_for_prompt
+
+        template_key = (
+            "diff_user_implement"
+            if _worker_config.diff_based_evolution
+            else "full_rewrite_user_implement"
+        )
+        approved_changes_section = format_witness_decisions_for_prompt(witnesses)
+        prompt, parent, parent_island, parent_changes_desc = _build_worker_prompt(
+            iteration,
+            db_snapshot,
+            parent_id,
+            inspiration_ids,
+            template_key,
+            extra_kwargs={
+                "approved_changes_section": approved_changes_section or "(none)",
+                "developer_notes": developer_notes or "(none)",
+            },
+        )
+
+        iteration_start = time.time()
+
+        try:
+            llm_response = asyncio.run(
+                _worker_llm_ensemble.generate_with_context(
+                    system_message=prompt["system"],
+                    messages=[{"role": "user", "content": prompt["user"]}],
+                )
+            )
+        except Exception as e:
+            logger.error(f"LLM generation failed (implement): {e}")
+            return SerializableResult(error=f"LLM generation failed: {str(e)}", iteration=iteration)
+
+        if llm_response is None:
+            return SerializableResult(error="LLM returned None response", iteration=iteration)
+
+        if _worker_config.diff_based_evolution:
+            from openevolve.utils.code_utils import (
+                apply_diff,
+                apply_diff_blocks,
+                extract_diffs,
+                format_diff_summary,
+                split_diffs_by_target,
+            )
+
+            diff_blocks = extract_diffs(llm_response, _worker_config.diff_pattern)
+            if not diff_blocks:
+                return SerializableResult(
+                    error="No valid diffs found in response", iteration=iteration
+                )
+
+            if _worker_config.prompt.programs_as_changes_description:
+                try:
+                    code_blocks, desc_blocks, _unmatched = split_diffs_by_target(
+                        diff_blocks,
+                        code_text=parent.code,
+                        changes_description_text=parent_changes_desc,
+                    )
+                except Exception as e:
+                    return SerializableResult(error=str(e), iteration=iteration)
+
+                child_code, _ = apply_diff_blocks(parent.code, code_blocks)
+                child_changes_desc, desc_applied = apply_diff_blocks(
+                    parent_changes_desc, desc_blocks
+                )
+
+                if (
+                    desc_applied == 0
+                    or not child_changes_desc.strip()
+                    or child_changes_desc.strip() == parent_changes_desc.strip()
+                ):
+                    return SerializableResult(
+                        error="changes_description was not updated or empty, program is discarded",
+                        iteration=iteration,
+                    )
+
+                changes_summary = format_diff_summary(
+                    code_blocks,
+                    max_line_len=_worker_config.prompt.diff_summary_max_line_len,
+                    max_lines=_worker_config.prompt.diff_summary_max_lines,
+                )
+            else:
+                child_code = apply_diff(parent.code, llm_response, _worker_config.diff_pattern)
+                child_changes_desc = None
+                changes_summary = format_diff_summary(
+                    diff_blocks,
+                    max_line_len=_worker_config.prompt.diff_summary_max_line_len,
+                    max_lines=_worker_config.prompt.diff_summary_max_lines,
+                )
+        else:
+            from openevolve.utils.code_utils import parse_full_rewrite
+
+            new_code = parse_full_rewrite(llm_response, _worker_config.language)
+            if not new_code:
+                return SerializableResult(
+                    error="No valid code found in response", iteration=iteration
+                )
+
+            child_code = new_code
+            child_changes_desc = None
+            changes_summary = "Full rewrite"
+
+        if len(child_code) > _worker_config.max_code_length:
+            return SerializableResult(
+                error=f"Generated code exceeds maximum length ({len(child_code)} > {_worker_config.max_code_length})",
+                iteration=iteration,
+            )
+
+        import uuid
+
+        child_id = str(uuid.uuid4())
+        child_metrics = asyncio.run(_worker_evaluator.evaluate_program(child_code, child_id))
+
+        artifacts = _worker_evaluator.get_pending_artifacts(child_id)
+
+        child_program = Program(
+            id=child_id,
+            code=child_code,
+            changes_description=child_changes_desc,
+            language=_worker_config.language,
+            parent_id=parent.id,
+            generation=parent.generation + 1,
+            metrics=child_metrics,
+            iteration_found=iteration,
+            metadata={
+                "changes": changes_summary,
+                "explanation": explanation,
+                "witnesses": witnesses,
+                "parent_metrics": parent.metrics,
+                "island": parent_island,
+            },
+        )
+
+        iteration_time = time.time() - iteration_start
+
+        return SerializableResult(
+            child_program_dict=child_program.to_dict(),
+            parent_id=parent.id,
+            iteration_time=iteration_time,
+            prompt=prompt,
+            llm_response=llm_response,
+            artifacts=artifacts,
+            iteration=iteration,
+            target_island=db_snapshot.get("sampling_island"),
+        )
+
+    except Exception as e:
+        logger.exception(f"Error in worker iteration {iteration} (implement)")
         return SerializableResult(error=str(e), iteration=iteration)
 
 
@@ -958,11 +1287,18 @@ class ProcessParallelController:
         checkpoint_callback=None,
     ):
         """
-        Run evolution one iteration at a time, gating every accepted child on a
-        developer decision from self.review_gate before it is written to the
-        database. Runs single-flight (no batching across islands) because the
-        parent sampled for iteration N+1 depends on whether iteration N's child
-        was accepted.
+        Run evolution one iteration at a time, two phases per iteration:
+
+          1. Propose: the LLM proposes transformation witnesses only (no code). The
+             developer reviews and approves/rejects each witness individually via
+             self.review_gate -- BEFORE any code is generated or evaluated.
+          2. Implement: only if approved (with at least one approved witness), a second
+             LLM call implements just the approved witnesses; the resulting program is
+             then evaluated exactly like the non-interactive path. There is no further
+             review after this -- the human gate is before code generation, not after.
+
+        Runs single-flight (no batching across islands) because the parent sampled for
+        iteration N+1 depends on whether iteration N's proposal was accepted.
         """
         total_iterations = start_iteration + max_iterations
         logger.info(
@@ -980,6 +1316,7 @@ class ProcessParallelController:
         iterations_without_improvement = 0
 
         loop = asyncio.get_event_loop()
+        timeout_seconds = self.config.evaluator.timeout + 30
 
         while (
             current_iteration < total_iterations
@@ -988,130 +1325,211 @@ class ProcessParallelController:
         ):
             target_island = island_id % self.num_islands
 
-            future = self._submit_iteration(
-                current_iteration, target_island, forced_parent_id=forced_parent_id
+            # Sample once per iteration attempt and reuse for both phases below, so the
+            # LLM sees identical parent/evolution-history context in both calls.
+            parent, inspirations = self._sample_parent_and_inspirations(
+                target_island, forced_parent_id
             )
-            if future is None:
+            inspiration_ids = [insp.id for insp in inspirations]
+
+            # --- Phase 1: propose ---
+            proposal_future = self._submit_proposal(
+                current_iteration, target_island, parent.id, inspiration_ids
+            )
+            if proposal_future is None:
                 current_iteration += 1
                 completed_iterations += 1
                 island_id += 1
                 forced_parent_id = None
                 continue
 
-            timeout_seconds = self.config.evaluator.timeout + 30
             try:
                 # Offload the blocking wait onto a thread so the event loop (and
                 # the review gate's own polling) keeps running.
-                result = await loop.run_in_executor(None, future.result, timeout_seconds)
+                proposal = await loop.run_in_executor(
+                    None, proposal_future.result, timeout_seconds
+                )
             except FutureTimeoutError:
                 logger.error(
-                    f"⏰ Iteration {current_iteration} timed out after {timeout_seconds}s "
-                    f"(evaluator timeout: {self.config.evaluator.timeout}s + 30s buffer). "
-                    f"Canceling future and continuing with next iteration."
+                    f"⏰ Iteration {current_iteration} proposal timed out after "
+                    f"{timeout_seconds}s. Canceling future and continuing with next iteration."
                 )
-                future.cancel()
+                proposal_future.cancel()
                 current_iteration += 1
                 completed_iterations += 1
                 island_id += 1
                 forced_parent_id = None
                 continue
             except Exception as e:
-                logger.error(f"Error processing result from iteration {current_iteration}: {e}")
+                logger.error(
+                    f"Error processing proposal from iteration {current_iteration}: {e}"
+                )
                 current_iteration += 1
                 completed_iterations += 1
                 island_id += 1
                 forced_parent_id = None
                 continue
 
-            if result.error:
-                logger.warning(f"Iteration {current_iteration} error: {result.error}")
+            if proposal.error:
+                logger.warning(f"Iteration {current_iteration} proposal error: {proposal.error}")
                 current_iteration += 1
                 completed_iterations += 1
                 island_id += 1
                 forced_parent_id = None
+                continue
+
+            if not proposal.witnesses:
+                # Nothing parseable to review or implement -- treat like a rejection so
+                # the same parent gets retried with feedback, same bookkeeping (and the
+                # same eventual give-up) as any other rejected proposal.
+                logger.info(
+                    f"Iteration {current_iteration}: no transformation witnesses found in "
+                    f"proposal; retrying with feedback"
+                )
+                feedback = (
+                    "No transformation witnesses were found in your proposal. Follow the "
+                    "required numbered '(1) .../Witness:/Formula (pre-transformation):/"
+                    "Formula (post-transformation):' format exactly for every proposed change."
+                )
+                self._pending_feedback[parent.id] = feedback
+                self._rejection_counts[parent.id] = self._rejection_counts.get(parent.id, 0) + 1
+                if (
+                    self._rejection_counts[parent.id]
+                    >= self.config.interactive.max_rejections_per_parent
+                ):
+                    logger.info(
+                        f"Parent {parent.id} rejected {self._rejection_counts[parent.id]} "
+                        f"times in a row; giving up on this lineage and sampling a new parent next"
+                    )
+                    del self._rejection_counts[parent.id]
+                    del self._pending_feedback[parent.id]
+                    forced_parent_id = None
+                else:
+                    forced_parent_id = parent.id
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                continue
+
+            # Ask the developer to review the proposed witnesses -- BEFORE any code exists
+            decision = await self.review_gate.request_witness_review(
+                iteration=current_iteration,
+                parent=parent,
+                explanation=proposal.explanation,
+                witnesses=proposal.witnesses,
+                parent_artifacts=self.database.get_artifacts(parent.id),
+            )
+
+            # Stamp each witness with the developer's per-witness call (True/False).
+            # Undecided witnesses (developer didn't touch that control) get None, not
+            # False, so downstream consumers can tell "explicitly rejected" apart from
+            # "never reviewed".
+            for witness in proposal.witnesses:
+                witness["developer_approved"] = decision.witness_decisions.get(
+                    str(witness.get("index"))
+                )
+
+            approved_witnesses = [
+                w for w in proposal.witnesses if w.get("developer_approved") is True
+            ]
+
+            if not decision.approved or not approved_witnesses:
+                if decision.approved and not approved_witnesses:
+                    logger.info(
+                        f"Iteration {current_iteration}: proposal approved but no individual "
+                        f"witness was approved; treating as rejected"
+                    )
+                else:
+                    logger.info(
+                        f"Iteration {current_iteration}: proposal rejected by developer"
+                    )
+                self._pending_feedback[parent.id] = decision.feedback
+                self._rejection_counts[parent.id] = self._rejection_counts.get(parent.id, 0) + 1
+
+                if (
+                    self._rejection_counts[parent.id]
+                    >= self.config.interactive.max_rejections_per_parent
+                ):
+                    logger.info(
+                        f"Parent {parent.id} rejected "
+                        f"{self._rejection_counts[parent.id]} times in a row; "
+                        f"giving up on this lineage and sampling a new parent next"
+                    )
+                    del self._rejection_counts[parent.id]
+                    del self._pending_feedback[parent.id]
+                    forced_parent_id = None
+                else:
+                    forced_parent_id = parent.id
+
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                continue
+
+            # Approved: implement only the approved witnesses, then evaluate
+            logger.info(
+                f"Iteration {current_iteration}: {len(approved_witnesses)} witness(es) "
+                f"approved by developer; implementing"
+            )
+            self._pending_feedback.pop(parent.id, None)
+            self._rejection_counts.pop(parent.id, None)
+            forced_parent_id = None
+
+            # --- Phase 2: implement ---
+            implement_future = self._submit_implementation(
+                current_iteration,
+                target_island,
+                parent.id,
+                inspiration_ids,
+                proposal.explanation,
+                proposal.witnesses,
+                decision.feedback,
+            )
+            if implement_future is None:
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                continue
+
+            try:
+                result = await loop.run_in_executor(None, implement_future.result, timeout_seconds)
+            except FutureTimeoutError:
+                logger.error(
+                    f"⏰ Iteration {current_iteration} implementation timed out after "
+                    f"{timeout_seconds}s (evaluator timeout: {self.config.evaluator.timeout}s "
+                    f"+ 30s buffer). Canceling future and continuing with next iteration."
+                )
+                implement_future.cancel()
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                continue
+            except Exception as e:
+                logger.error(
+                    f"Error processing implementation from iteration {current_iteration}: {e}"
+                )
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
+                continue
+
+            if result.error:
+                logger.warning(f"Iteration {current_iteration} implement error: {result.error}")
+                current_iteration += 1
+                completed_iterations += 1
+                island_id += 1
                 continue
 
             if not result.child_program_dict:
                 current_iteration += 1
                 completed_iterations += 1
                 island_id += 1
-                forced_parent_id = None
                 continue
 
             child_program = Program(**result.child_program_dict)
-            parent_program = self.database.get(result.parent_id) if result.parent_id else None
 
-            if parent_program is None:
-                logger.warning(
-                    f"Iteration {current_iteration}: parent {result.parent_id} no longer in "
-                    f"database, discarding child {child_program.id} without review"
-                )
-                current_iteration += 1
-                completed_iterations += 1
-                island_id += 1
-                forced_parent_id = None
-                continue
-
-            # Ask the developer to approve or reject this iteration's child
-            decision = await self.review_gate.request_decision(
-                iteration=current_iteration,
-                parent=parent_program,
-                child=child_program,
-                changes_summary=child_program.metadata.get("changes", ""),
-                explanation=child_program.metadata.get("explanation", ""),
-                witnesses=child_program.metadata.get("witnesses", []),
-                child_artifacts=result.artifacts or {},
-                parent_artifacts=self.database.get_artifacts(parent_program.id),
-            )
-
-            # Stamp each witness with the developer's per-witness call (True/False),
-            # independent of decision.approved -- a rejected iteration can still carry
-            # useful witness-level signal, and an approved one may still have some of
-            # its witnesses' formulas rejected. Undecided witnesses (developer didn't
-            # touch that control) get None, not False, so downstream consumers can
-            # tell "explicitly rejected" apart from "never reviewed".
-            for witness in child_program.metadata.get("witnesses", []):
-                witness["developer_approved"] = decision.witness_decisions.get(
-                    str(witness.get("index"))
-                )
-
-            if not decision.approved:
-                logger.info(
-                    f"Iteration {current_iteration}: child {child_program.id} rejected by developer"
-                )
-                self._pending_feedback[parent_program.id] = decision.feedback
-                self._rejection_counts[parent_program.id] = (
-                    self._rejection_counts.get(parent_program.id, 0) + 1
-                )
-
-                if (
-                    self._rejection_counts[parent_program.id]
-                    >= self.config.interactive.max_rejections_per_parent
-                ):
-                    logger.info(
-                        f"Parent {parent_program.id} rejected "
-                        f"{self._rejection_counts[parent_program.id]} times in a row; "
-                        f"giving up on this lineage and sampling a new parent next"
-                    )
-                    del self._rejection_counts[parent_program.id]
-                    del self._pending_feedback[parent_program.id]
-                    forced_parent_id = None
-                else:
-                    forced_parent_id = parent_program.id
-
-                current_iteration += 1
-                completed_iterations += 1
-                island_id += 1
-                continue
-
-            # Approved: from here on, same bookkeeping as the standard (non-interactive) path
-            logger.info(
-                f"Iteration {current_iteration}: child {child_program.id} approved by developer"
-            )
-            self._pending_feedback.pop(parent_program.id, None)
-            self._rejection_counts.pop(parent_program.id, None)
-            forced_parent_id = None
-
+            # From here on, same bookkeeping as the standard (non-interactive) path --
+            # no further review round, the human gate already happened before phase 2.
             reverify_artifacts = await self._reverify_approved_witnesses(child_program)
 
             self.database.add(
@@ -1128,7 +1546,7 @@ class ProcessParallelController:
                 )
                 self.evolution_tracer.log_trace(
                     iteration=current_iteration,
-                    parent_program=parent_program,
+                    parent_program=parent,
                     child_program=child_program,
                     prompt=result.prompt,
                     llm_response=result.llm_response,
@@ -1138,16 +1556,27 @@ class ProcessParallelController:
                         "iteration_time": result.iteration_time,
                         "changes": child_program.metadata.get("changes", ""),
                         "developer_approved": True,
+                        "proposal_prompt": proposal.prompt,
+                        "proposal_llm_response": proposal.llm_response,
                     },
                 )
 
+            propose_template_key = (
+                "diff_user_propose" if self.config.diff_based_evolution else "full_rewrite_user_propose"
+            )
+            implement_template_key = (
+                "diff_user_implement" if self.config.diff_based_evolution else "full_rewrite_user_implement"
+            )
+            if proposal.prompt:
+                self.database.log_prompt(
+                    template_key=propose_template_key,
+                    program_id=child_program.id,
+                    prompt=proposal.prompt,
+                    responses=[proposal.llm_response] if proposal.llm_response else [],
+                )
             if result.prompt:
                 self.database.log_prompt(
-                    template_key=(
-                        "full_rewrite_user"
-                        if not self.config.diff_based_evolution
-                        else "diff_user"
-                    ),
+                    template_key=implement_template_key,
                     program_id=child_program.id,
                     prompt=result.prompt,
                     responses=[result.llm_response] if result.llm_response else [],
@@ -1252,6 +1681,33 @@ class ProcessParallelController:
 
         return self.database.get_best_program()
 
+    def _sample_parent_and_inspirations(
+        self, island_id: int, forced_parent_id: Optional[str] = None
+    ) -> Tuple[Program, List[Program]]:
+        """
+        Sample a parent + inspirations from an island, or reuse a forced parent (used by
+        interactive review mode to retry the exact same parent, with fresh inspirations,
+        after a rejection instead of re-sampling).
+        """
+        forced_parent = self.database.get(forced_parent_id) if forced_parent_id else None
+        if forced_parent is not None:
+            # Keep the same parent, but still draw fresh inspirations
+            _, inspirations = self.database.sample_from_island(
+                island_id=island_id,
+                num_inspirations=self.config.prompt.num_diverse_programs,
+            )
+            return forced_parent, inspirations
+
+        # Use thread-safe sampling that doesn't modify shared state
+        # This fixes the race condition from GitHub issue #246
+        # Inspirations are the diverse/creative examples; size them by
+        # num_diverse_programs (not num_top_programs) so the config parameter
+        # actually controls the inspiration count (GitHub issue #452).
+        return self.database.sample_from_island(
+            island_id=island_id,
+            num_inspirations=self.config.prompt.num_diverse_programs,
+        )
+
     def _submit_iteration(
         self,
         iteration: int,
@@ -1268,24 +1724,9 @@ class ProcessParallelController:
             # Use specified island or current island
             target_island = island_id if island_id is not None else self.database.current_island
 
-            forced_parent = self.database.get(forced_parent_id) if forced_parent_id else None
-            if forced_parent is not None:
-                # Keep the same parent, but still draw fresh inspirations
-                _, inspirations = self.database.sample_from_island(
-                    island_id=target_island,
-                    num_inspirations=self.config.prompt.num_diverse_programs,
-                )
-                parent = forced_parent
-            else:
-                # Use thread-safe sampling that doesn't modify shared state
-                # This fixes the race condition from GitHub issue #246
-                # Inspirations are the diverse/creative examples; size them by
-                # num_diverse_programs (not num_top_programs) so the config parameter
-                # actually controls the inspiration count (GitHub issue #452).
-                parent, inspirations = self.database.sample_from_island(
-                    island_id=target_island,
-                    num_inspirations=self.config.prompt.num_diverse_programs,
-                )
+            parent, inspirations = self._sample_parent_and_inspirations(
+                target_island, forced_parent_id
+            )
 
             # Create database snapshot
             db_snapshot = self._create_database_snapshot()
@@ -1304,4 +1745,59 @@ class ProcessParallelController:
 
         except Exception as e:
             logger.error(f"Error submitting iteration {iteration}: {e}")
+            return None
+
+    def _submit_proposal(
+        self, iteration: int, target_island: int, parent_id: str, inspiration_ids: List[str]
+    ) -> Optional[Future]:
+        """
+        Submit phase 1 (propose) of the interactive two-phase flow: parent/inspirations
+        are passed explicitly (not resampled here) so _submit_implementation can reuse
+        the exact same context for phase 2.
+        """
+        try:
+            db_snapshot = self._create_database_snapshot()
+            db_snapshot["sampling_island"] = target_island
+
+            return self.executor.submit(
+                _run_iteration_worker_propose,
+                iteration,
+                db_snapshot,
+                parent_id,
+                inspiration_ids,
+            )
+        except Exception as e:
+            logger.error(f"Error submitting proposal for iteration {iteration}: {e}")
+            return None
+
+    def _submit_implementation(
+        self,
+        iteration: int,
+        target_island: int,
+        parent_id: str,
+        inspiration_ids: List[str],
+        explanation: str,
+        witnesses: List[Dict[str, Any]],
+        developer_notes: str,
+    ) -> Optional[Future]:
+        """
+        Submit phase 2 (implement) of the interactive two-phase flow, using the exact
+        same parent/inspirations as phase 1 and the developer-approved witnesses.
+        """
+        try:
+            db_snapshot = self._create_database_snapshot()
+            db_snapshot["sampling_island"] = target_island
+
+            return self.executor.submit(
+                _run_iteration_worker_implement,
+                iteration,
+                db_snapshot,
+                parent_id,
+                inspiration_ids,
+                explanation,
+                witnesses,
+                developer_notes,
+            )
+        except Exception as e:
+            logger.error(f"Error submitting implementation for iteration {iteration}: {e}")
             return None

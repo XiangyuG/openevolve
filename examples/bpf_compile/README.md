@@ -109,13 +109,17 @@ declared variables), not that the formula matches the program's actual
 compiled behavior; that cross-check against heimdall-private's real symbolic
 execution (`generate_formula.py`/`ProgramFormula`) is still future work.
 
-The review UI cross-references this per-witness proof against heimdall's
-real equivalence-check result and shows a banner when they disagree: if a
-witness's own formulas produce a counterexample, or if every witness claims
-"purely structural" but the equivalence checker (see above) found a real
-divergence anyway, the developer sees that conflict called out explicitly
-before approving/rejecting -- rather than having to notice it by reading
-both sections separately.
+In non-interactive mode (`config.yaml`), the review UI (used only for
+inspecting saved runs, not for gating anything) cross-references this
+per-witness proof against heimdall's real equivalence-check result and shows
+a banner when they disagree: if a witness's own formulas produce a
+counterexample, or if every witness claims "purely structural" but the
+equivalence checker (see above) found a real divergence anyway, that
+conflict is called out explicitly. In interactive mode (see "Human-in-the-loop
+review" below), witnesses are approved *before* any code is generated or
+compiled, so heimdall's result doesn't exist yet at approval time and this
+cross-check banner can't inform the decision -- it's only available
+afterward, in the stored artifacts of the resulting candidate.
 
 Smoke-test the evaluator directly with a short runtime:
 
@@ -162,10 +166,29 @@ sidecar with that candidate's metrics. Set `BPF_SAVE_PROGRAMS=0` to disable.
 ## Human-in-the-loop review
 
 `config_interactive.yaml` is the same setup as `config.yaml` plus an
-`interactive:` block, so every iteration blocks until a developer approves or
-rejects the candidate at `/review` before it's added to the population.
-Rejection feedback is fed back into the next prompt for that lineage; a
-lineage that's rejected `max_rejections_per_parent` times in a row is
+`interactive:` block. Each iteration now runs in two LLM phases, with the
+developer gate *between* them, before any code exists:
+
+1. **Propose**: the LLM is asked only to describe its proposed change(s) as
+   numbered transformation witnesses (`Witness:`/`Formula (pre/post-transformation):`,
+   see above) -- no code, no diff. These are Z3-proven exactly as in
+   non-interactive mode.
+2. **Review**: the developer opens `/review` and sees the proposed witnesses
+   (with their Z3 proof status) against the *parent's* code, with no child
+   code or metrics yet -- there's nothing to compile or evaluate until
+   something is approved. Each witness gets its own approve/reject button
+   in addition to the overall approve/reject decision for the whole proposal.
+3. **Implement**: only if the proposal is approved with at least one approved
+   witness, a second LLM call is asked to implement *exactly* the approved
+   witnesses (and none of the rejected/unreviewed ones). The resulting
+   program is then compiled and evaluated exactly like non-interactive mode,
+   and added to the population -- there is no further review round after
+   this; the human gate is before code generation, not after evaluation.
+
+If the proposal is rejected outright, or approved with zero individual
+witnesses approved, it's treated as a rejection: the evaluator never runs,
+and rejection feedback is fed back into the next proposal attempt for that
+lineage. A lineage rejected `max_rejections_per_parent` times in a row is
 abandoned in favor of normal island sampling.
 
 1. Start the evolution run (blocks after each candidate until reviewed):
@@ -187,9 +210,12 @@ python scripts/visualizer.py --path openevolve_output/bpf_filetop_interactive --
 
 3. Open `http://127.0.0.1:8080/review` (or `http://<host>:8080/review` if
    running on a remote box you're forwarding/tunneling into) and
-   approve/reject each pending iteration. The page shows the parent/child
-   code, the diff, the metrics delta, and the LLM's plain-English explanation
-   of the change. Rejections take an optional feedback note.
+   approve/reject each pending proposal's witnesses. The page shows the
+   parent code, the LLM's plain-English witnesses (child code and metrics
+   stay empty until you approve -- see above), and takes an optional
+   feedback note (required when rejecting) that's passed to the LLM for the
+   next attempt on that lineage, or to the implement step as developer notes
+   when approving.
 
 Swap `BPF_TOOL`/the initial program the same way as the non-interactive runs
 to review a different tool's evolution.

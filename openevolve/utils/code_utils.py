@@ -384,6 +384,38 @@ def validate_transformation_proof(pre_formula: str, post_formula: str) -> Dict[s
     return {"status": "unknown", "detail": "solver returned unknown"}
 
 
+def format_witness_decisions_for_prompt(witnesses: List[Dict[str, Any]]) -> str:
+    """
+    Render a phase-1 (proposal) witness list tagged with the developer's per-witness
+    approve/reject call, for use as the "Approved Changes To Implement" section of the
+    phase-2 (implement) prompt (see examples/bpf_compile/prompt_templates/*_implement.txt).
+    Witnesses without an explicit `developer_approved is True` (i.e. rejected or never
+    reviewed) are tagged as not-to-implement rather than omitted, so the LLM sees the full
+    original proposal and doesn't reintroduce a rejected change under a different guise.
+
+    Args:
+        witnesses: Witness dicts as produced by extract_transformation_witnesses, each
+            stamped with a "developer_approved" key (True/False/None)
+
+    Returns:
+        Formatted text, one block per witness (empty string if no witnesses)
+    """
+    blocks = []
+    for w in witnesses:
+        tag = (
+            "APPROVED -- implement this exactly as described"
+            if w.get("developer_approved") is True
+            else "REJECTED/NOT REVIEWED -- do NOT implement this"
+        )
+        lines = [f"({w.get('index', '?')}) {w.get('summary', '')} [{tag}]"]
+        if w.get("detail"):
+            lines.append(f"    {w['detail']}")
+        if w.get("witness"):
+            lines.append(f"    Witness: {w['witness']}")
+        blocks.append("\n".join(lines))
+    return "\n\n".join(blocks)
+
+
 def _format_block_lines(lines: List[str], max_line_len: int = 100, max_lines: int = 30) -> str:
     """Format a block of lines for diff summary: show all lines (truncated per line, optional cap)."""
     truncated = []

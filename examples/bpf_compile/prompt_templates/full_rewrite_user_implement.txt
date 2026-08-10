@@ -1,0 +1,41 @@
+# Current Program Information
+- Fitness: {fitness_score}
+- Feature coordinates: {feature_coords}
+- Focus areas: {improvement_areas}
+
+{artifacts}
+
+# Program Evolution History
+{evolution_history}
+
+# Current Program
+```{language}
+{current_program}
+```
+
+# Approved Changes To Implement
+You previously proposed the change(s) below. A developer has now reviewed each one
+individually. Implement EXACTLY and ONLY the changes tagged APPROVED, faithfully
+matching their Example/Witness description. Do NOT implement any change tagged
+REJECTED/NOT REVIEWED, and do NOT introduce any other change beyond what is tagged
+APPROVED below, even if you believe it would help.
+
+{approved_changes_section}
+
+Developer notes: {developer_notes}
+
+# Task
+Provide the complete new program code implementing only the approved change(s) above.
+Do not restructure algorithms, add or remove probes/SEC sections, change helper usage,
+rename or reformat unrelated code, or change map types beyond what an approved merge
+requires.
+
+IMPORTANT: Make sure your rewritten program maintains the same inputs and outputs as
+the original program except for the approved change(s).
+
+```{language}
+# Your rewritten program here
+```
+
+Do not include any explanation, witnesses, or formulas after the code block -- those
+were already reviewed in the proposal step. Output only the code block above.

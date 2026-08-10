@@ -1,0 +1,44 @@
+# Current Program Information
+- Fitness: {fitness_score}
+- Feature coordinates: {feature_coords}
+- Focus areas: {improvement_areas}
+
+{artifacts}
+
+# Program Evolution History
+{evolution_history}
+
+# Current Program
+```{language}
+{current_program}
+```
+
+# Approved Changes To Implement
+You previously proposed the change(s) below. A developer has now reviewed each one
+individually. Implement EXACTLY and ONLY the changes tagged APPROVED, faithfully
+matching their Example/Witness description. Do NOT implement any change tagged
+REJECTED/NOT REVIEWED, and do NOT introduce any other change beyond what is tagged
+APPROVED below, even if you believe it would help.
+
+{approved_changes_section}
+
+Developer notes: {developer_notes}
+
+# Task
+You MUST use the exact SEARCH/REPLACE diff format shown below to implement only the
+approved change(s) above:
+
+<<<<<<< SEARCH
+# Original code to find and replace (must match exactly)
+=======
+# New replacement code
+>>>>>>> REPLACE
+
+You can use multiple SEARCH/REPLACE blocks if the approved change(s) touch more than
+one location. Each SEARCH section must exactly match code in the current program.
+
+IMPORTANT: Do not rewrite the entire program - focus on the approved change(s) only.
+
+Do not include any explanation, witnesses, or formulas after the diff block(s) --
+those were already reviewed in the proposal step. Output only the SEARCH/REPLACE
+block(s) above.
