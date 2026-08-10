@@ -774,6 +774,17 @@ class ProcessParallelController:
         self._pending_feedback: Dict[str, str] = {}
         self._rejection_counts: Dict[str, int] = {}
 
+        # The most recently completed iteration's implement+evaluate(+reverify) result
+        # (see _run_evolution_interactive below), shown alongside the NEXT witness
+        # proposal's review task so the developer can see what their last approval
+        # actually produced -- there is no separate review round for it (see
+        # _reverify_approved_witnesses' docstring), so without this the compile/
+        # equivalence/performance results computed for every iteration would never
+        # reach the browser at all. None until the first witness is approved and
+        # implemented; persists across intervening rejections (still the most recent
+        # real result), tagged with its own iteration number so that's never ambiguous.
+        self._last_iteration_result: Optional[Dict[str, Any]] = None
+
         # Lazily created main-process Evaluator used only for the optional
         # post-approval re-verification pass (see _reverify_approved_witnesses
         # below) -- most runs never approve a witness with a relaxation hint,
@@ -1419,6 +1430,7 @@ class ProcessParallelController:
                 explanation=proposal.explanation,
                 witnesses=proposal.witnesses,
                 parent_artifacts=self.database.get_artifacts(parent.id),
+                previous_result=self._last_iteration_result,
             )
 
             # Stamp each witness with the developer's per-witness call (True/False).
@@ -1540,6 +1552,18 @@ class ProcessParallelController:
             combined_artifacts = {**(result.artifacts or {}), **reverify_artifacts}
             if combined_artifacts:
                 self.database.store_artifacts(child_program.id, combined_artifacts)
+
+            # Surface this iteration's compile/equivalence/performance result (and,
+            # if any witness qualified, heimdall's own re-verification of it) on the
+            # NEXT witness-review task -- see _last_iteration_result's docstring.
+            self._last_iteration_result = {
+                "iteration": current_iteration,
+                "child_id": child_program.id,
+                "explanation": proposal.explanation,
+                "code": child_program.code,
+                "metrics": child_program.metrics,
+                "artifacts": combined_artifacts,
+            }
 
             if self.evolution_tracer:
                 trace_island_id = child_program.metadata.get(

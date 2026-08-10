@@ -147,6 +147,7 @@ class ReviewGate:
         explanation: str,
         witnesses: List[Dict[str, Any]],
         parent_artifacts: Optional[Dict[str, Any]] = None,
+        previous_result: Optional[Dict[str, Any]] = None,
     ) -> ReviewDecision:
         """
         Write a review task for a proposed set of transformation witnesses BEFORE any
@@ -157,7 +158,14 @@ class ReviewGate:
         fields left empty since there is no child yet -- the review UI (scripts/review.py,
         scripts/static/js/review.js) already renders empty/missing child_code and
         child_metrics gracefully.
-        """
+
+        previous_result (see ProcessParallelController._last_iteration_result) is the
+        most recently COMPLETED iteration's implement+evaluate(+reverify) outcome -- i.e.
+        what the developer's last approval actually produced (compile/equivalence/
+        performance metrics, and heimdall's own witness cross-check if any witness
+        qualified for reverify). There is no separate review round after evaluate(), so
+        without attaching it here the developer would never see it in the browser at
+        all. None on the very first proposal of a run."""
         task_payload = {
             "id": str(uuid.uuid4()),
             "created_at": _iso_now(),
@@ -175,5 +183,6 @@ class ReviewGate:
             "parent_metrics": parent.metrics,
             "child_metrics": {},
             "metrics_delta": {},
+            "previous_result": previous_result or {},
         }
         return await self._write_task_and_await_decision(iteration, task_payload)

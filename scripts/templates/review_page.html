@@ -30,6 +30,16 @@
     <div class="review-body">
       <div class="review-summary">
         <h2 id="reviewTitle">Iteration</h2>
+        <div id="previousResultField" class="review-field hidden">
+          <div class="pane-title">Previous iteration result -- what your last approval produced (informational, no action needed)</div>
+          <pre id="previousResultSummary" class="code-viewer readonly"></pre>
+          <div id="previousResultMetricsTable" class="metrics-table"></div>
+          <div id="previousResultEquivalenceTable" class="equivalence-table"></div>
+          <details>
+            <summary>Generated code</summary>
+            <pre id="previousResultCode" class="code-viewer readonly"></pre>
+          </details>
+        </div>
         <div id="consistencyBanner" class="consistency-banner hidden"></div>
         <div id="metricsTable" class="metrics-table"></div>
         <div class="review-field">

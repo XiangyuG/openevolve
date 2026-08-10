@@ -76,6 +76,11 @@ function announceNewTasks(newTasks) {
 window.addEventListener("focus", stopTitleFlash);
 
 const reviewTitle = $("#reviewTitle");
+const previousResultField = $("#previousResultField");
+const previousResultSummary = $("#previousResultSummary");
+const previousResultMetricsTable = $("#previousResultMetricsTable");
+const previousResultEquivalenceTable = $("#previousResultEquivalenceTable");
+const previousResultCode = $("#previousResultCode");
 const consistencyBanner = $("#consistencyBanner");
 const metricsTable = $("#metricsTable");
 const changesExplanation = $("#changesExplanation");
@@ -173,13 +178,13 @@ function formatMetric(v) {
   return String(v);
 }
 
-function renderMetricsTable(parentMetrics, childMetrics, delta) {
-  metricsTable.innerHTML = "";
+function renderMetricsTable(tableEl, parentMetrics, childMetrics, delta) {
+  tableEl.innerHTML = "";
   const addCell = (text, cls) => {
     const el = document.createElement("div");
     if (cls) el.className = cls;
     el.textContent = text;
-    metricsTable.appendChild(el);
+    tableEl.appendChild(el);
   };
 
   addCell("metric", "header");
@@ -216,26 +221,56 @@ function verdictClass(v) {
   return "";
 }
 
-function renderEquivalence(childArtifacts) {
-  equivalenceTable.innerHTML = "";
-  const raw = childArtifacts && childArtifacts.equivalence_detail;
-  if (!raw) {
-    equivalenceField.classList.add("hidden");
-    return;
-  }
+// Shared by renderEquivalence, renderParentRelaxed, and renderPreviousResult: all
+// three render the same equivalence_detail/equivalence_relaxed_detail JSON shape
+// (per-entry equivalent/result_type/counter_example, plus an optional
+// witness_verification list -- heimdall's OWN cross-check of a relaxed witness's
+// claim against its real extracted formulas, independent of the witness's
+// self-reported Z3 proof shown in "Transformation witnesses"). witnessFileRaw is
+// the relaxed_hints JSON (build_heimdall_witness_file's output) when there is one,
+// to render a "Relaxed for: ..." summary line above the per-entry cards.
+// Returns true if anything was rendered.
+function renderEquivalenceEntries(tableEl, rawDetail, witnessFileRaw) {
+  tableEl.innerHTML = "";
+  if (!rawDetail) return false;
 
   let detail;
   try {
-    detail = JSON.parse(raw);
+    detail = JSON.parse(rawDetail);
   } catch (e) {
-    equivalenceField.classList.add("hidden");
-    return;
+    return false;
   }
 
   const entries = Object.keys(detail);
-  if (!entries.length) {
-    equivalenceField.classList.add("hidden");
-    return;
+  if (!entries.length) return false;
+
+  if (witnessFileRaw) {
+    let witnessFile = { witnesses: [] };
+    try {
+      witnessFile = JSON.parse(witnessFileRaw || "{}");
+    } catch (e) {
+      witnessFile = { witnesses: [] };
+    }
+    const hintLines = (witnessFile.witnesses || [])
+      .map((w) => {
+        if (w.map_width_change) {
+          const h = w.map_width_change;
+          return `${h.map} (${h.old_bytes} -> ${h.new_bytes} bytes)`;
+        }
+        if (w.map_fusion) {
+          const f = w.map_fusion;
+          const sources = (f.sources || []).map((s) => s.map).join(" + ");
+          return `${sources} -> ${f.target} (merged)`;
+        }
+        return null;
+      })
+      .filter(Boolean);
+    if (hintLines.length) {
+      const hintLine = document.createElement("div");
+      hintLine.className = "witness-example";
+      hintLine.textContent = `Relaxed for: ${hintLines.join(", ")}`;
+      tableEl.appendChild(hintLine);
+    }
   }
 
   entries.forEach((entry) => {
@@ -259,88 +294,6 @@ function renderEquivalence(childArtifacts) {
       card.appendChild(ce);
     }
 
-    equivalenceTable.appendChild(card);
-  });
-
-  equivalenceField.classList.remove("hidden");
-}
-
-function renderParentRelaxed(parentArtifacts) {
-  parentRelaxedTable.innerHTML = "";
-  const raw = parentArtifacts && parentArtifacts.equivalence_relaxed_detail;
-  if (!raw) {
-    parentRelaxedField.classList.add("hidden");
-    return;
-  }
-
-  let detail;
-  try {
-    detail = JSON.parse(raw);
-  } catch (e) {
-    parentRelaxedField.classList.add("hidden");
-    return;
-  }
-
-  const entries = Object.keys(detail);
-  if (!entries.length) {
-    parentRelaxedField.classList.add("hidden");
-    return;
-  }
-
-  // relaxed_hints is build_heimdall_witness_file()'s output: {"witnesses":
-  // [{"id", "map_width_change"} or {"id", "map_fusion"}, ...]}.
-  let witnessFile = { witnesses: [] };
-  try {
-    witnessFile = JSON.parse(parentArtifacts.relaxed_hints || "{}");
-  } catch (e) {
-    witnessFile = { witnesses: [] };
-  }
-  const hintLines = (witnessFile.witnesses || [])
-    .map((w) => {
-      if (w.map_width_change) {
-        const h = w.map_width_change;
-        return `${h.map} (${h.old_bytes} -> ${h.new_bytes} bytes)`;
-      }
-      if (w.map_fusion) {
-        const f = w.map_fusion;
-        const sources = (f.sources || []).map((s) => s.map).join(" + ");
-        return `${sources} -> ${f.target} (merged)`;
-      }
-      return null;
-    })
-    .filter(Boolean);
-  if (hintLines.length) {
-    const hintLine = document.createElement("div");
-    hintLine.className = "witness-example";
-    hintLine.textContent = `Relaxed for: ${hintLines.join(", ")}`;
-    parentRelaxedTable.appendChild(hintLine);
-  }
-
-  entries.forEach((entry) => {
-    const row = detail[entry] || {};
-    const card = document.createElement("div");
-    card.className = "witness-card";
-
-    const head = document.createElement("div");
-    head.className = "witness-summary";
-    head.textContent = entry;
-    const badge = document.createElement("span");
-    badge.className = `equiv-badge ${verdictClass(row.equivalent)}`;
-    badge.textContent = ` — ${verdictLabel(row.equivalent)} (${row.result_type || "?"})`;
-    head.appendChild(badge);
-    card.appendChild(head);
-
-    if (row.counter_example) {
-      const ce = document.createElement("pre");
-      ce.className = "code-viewer readonly witness-formula";
-      ce.textContent = row.counter_example;
-      card.appendChild(ce);
-    }
-
-    // heimdall's OWN cross-check of each relaxed witness's claim against its
-    // real extracted formulas (verify_equivalence.py's run_witness_verification)
-    // -- independent of, and stronger evidence than, the witness's self-reported
-    // Z3 proof shown in "Transformation witnesses" below.
     (row.witness_verification || []).forEach((wr) => {
       const line = document.createElement("div");
       line.className = "witness-example";
@@ -357,10 +310,56 @@ function renderParentRelaxed(parentArtifacts) {
       card.appendChild(line);
     });
 
-    parentRelaxedTable.appendChild(card);
+    tableEl.appendChild(card);
   });
 
-  parentRelaxedField.classList.remove("hidden");
+  return true;
+}
+
+function renderEquivalence(childArtifacts) {
+  const rendered = renderEquivalenceEntries(
+    equivalenceTable,
+    childArtifacts && childArtifacts.equivalence_detail,
+    null
+  );
+  equivalenceField.classList.toggle("hidden", !rendered);
+}
+
+function renderParentRelaxed(parentArtifacts) {
+  const rendered = renderEquivalenceEntries(
+    parentRelaxedTable,
+    parentArtifacts && parentArtifacts.equivalence_relaxed_detail,
+    parentArtifacts && parentArtifacts.relaxed_hints
+  );
+  parentRelaxedField.classList.toggle("hidden", !rendered);
+}
+
+function renderPreviousResult(previousResult) {
+  if (!previousResult || !previousResult.child_id) {
+    previousResultField.classList.add("hidden");
+    return;
+  }
+
+  const metrics = previousResult.metrics || {};
+  const artifacts = previousResult.artifacts || {};
+  const compileLabel =
+    metrics.compile_success === 1 || metrics.compile_success === 1.0 ? "OK" : "FAILED";
+  previousResultSummary.textContent =
+    `Iteration ${previousResult.iteration ?? "?"} (child #${(previousResult.child_id || "").slice(0, 8)}) — compile: ${compileLabel}\n\n` +
+    `${previousResult.explanation || ""}`;
+
+  renderMetricsTable(previousResultMetricsTable, null, metrics, null);
+
+  const rendered = renderEquivalenceEntries(
+    previousResultEquivalenceTable,
+    artifacts.equivalence_relaxed_detail || artifacts.equivalence_detail,
+    artifacts.relaxed_hints
+  );
+  previousResultEquivalenceTable.classList.toggle("hidden", !rendered);
+
+  previousResultCode.textContent = previousResult.code || "";
+
+  previousResultField.classList.remove("hidden");
 }
 
 function proofLabel(proof) {
@@ -600,11 +599,17 @@ async function openTask(taskId) {
   witnessDecisions = {};
 
   reviewTitle.textContent = `Iteration ${data.iteration ?? "?"}`;
-  renderMetricsTable(data.parent_metrics || {}, data.child_metrics || {}, data.metrics_delta || {});
+  renderMetricsTable(
+    metricsTable,
+    data.parent_metrics || {},
+    data.child_metrics || {},
+    data.metrics_delta || {}
+  );
   changesExplanation.textContent = data.changes_explanation || "(none)";
   changesSummary.textContent = data.changes_summary || "(none)";
   changesDescriptionField.classList.toggle("hidden", !data.changes_description);
   changesDescription.textContent = data.changes_description || "";
+  renderPreviousResult(data.previous_result);
   renderEquivalence(data.child_artifacts || {});
   renderParentRelaxed(data.parent_artifacts || {});
   renderWitnesses(data.witnesses || []);
