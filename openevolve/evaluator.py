@@ -352,8 +352,9 @@ class Evaluator:
         Args:
             program_code: Code to re-verify
             program_id: Program ID, for logging
-            hints: Developer-approved hints, e.g. each witness's
-                "map_width_change" or "variable_width_change" dict
+            hints: Developer-approved, self-proven witness dicts (see
+                openevolve/process_parallel.py's _reverify_approved_witnesses),
+                each carrying a "map_width_change" or "map_fusion" hint
 
         Returns:
             (metrics, artifacts) -- both empty if no reverify hook is defined

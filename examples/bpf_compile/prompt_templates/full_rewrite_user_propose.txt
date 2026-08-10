@@ -102,6 +102,15 @@ I propose the following changes:
       (variable name, then old and new bit width):
       Variable width change: <var_name>: <old_bits> -> <new_bits>
       Omit this line entirely for every other kind of change.
+      If, and only if, this specific change merges two or more BPF maps into
+      one (optimization type (2)), add one more line directly after the
+      post-transformation formula (or after the "Map value width change" /
+      "Variable width change" line if either also applies), in exactly this
+      format -- the merged map's name, then each source map that was folded
+      into it, with the byte offset and byte width of that source's data
+      inside the merged map's value struct, joined with " + ":
+      Map fusion: <target_map> = <source_map_1>@<offset_bytes_1>:<width_bytes_1> + <source_map_2>@<offset_bytes_2>:<width_bytes_2>
+      Omit this line entirely for every other kind of change.
 (2) <what you would change and why, in English>
     Example: `<...>` -> `<...>`
     Witness: <...>

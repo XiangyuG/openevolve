@@ -158,6 +158,7 @@ _WITNESS_BLOCK_PATTERN = re.compile(
     r"\s*Formula \(post-transformation\):\s*(?P<post_formula>.*?)"
     r"(?:\s*\n\s*Map value width change:\s*(?P<map_width_change>[^\n]*))?"
     r"(?:\s*\n\s*Variable width change:\s*(?P<variable_width_change>[^\n]*))?"
+    r"(?:\s*\n\s*Map fusion:\s*(?P<map_fusion>[^\n]*))?"
     r"\s*(?=\n\s*\(\d+\)\s|\Z)",
     re.MULTILINE | re.DOTALL,
 )
@@ -227,6 +228,46 @@ def _parse_variable_width_change(raw: Optional[str]) -> Optional[Dict[str, Any]]
     }
 
 
+_MAP_FUSION_PATTERN = re.compile(r"^(?P<target>[^=]+?)\s*=\s*(?P<sources>.+)$")
+
+_MAP_FUSION_SOURCE_PATTERN = re.compile(
+    r"^(?P<map>[^@]+?)@(?P<offset>\d+):(?P<width>\d+)$"
+)
+
+
+def _parse_map_fusion(raw: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Parse an optional "Map fusion: <target> = <src1>@<offset1>:<width1> +
+    <src2>@<offset2>:<width2> [+ ...]" tag (see
+    examples/bpf_compile/prompt_templates) into a structured hint, or None if
+    absent/malformed. Mirrors _parse_map_width_change: this is only a HINT of
+    which source maps the witness claims were folded into which target map,
+    and at what byte offset/width each source's data now lives -- the actual
+    layout must still be cross-checked downstream (heimdall-private's
+    verify_equivalence.py, via this hint's "map_fusion" shape) before being
+    trusted."""
+    if not raw:
+        return None
+    match = _MAP_FUSION_PATTERN.match(raw.strip())
+    if not match:
+        return None
+    target = match.group("target").strip()
+    sources = []
+    for part in match.group("sources").split("+"):
+        source_match = _MAP_FUSION_SOURCE_PATTERN.match(part.strip())
+        if not source_match:
+            return None
+        sources.append(
+            {
+                "map": source_match.group("map").strip(),
+                "value_offset_bytes": int(source_match.group("offset")),
+                "value_bytes": int(source_match.group("width")),
+            }
+        )
+    if not target or not sources:
+        return None
+    return {"target": target, "sources": sources}
+
+
 def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, Any]]:
     """
     Pull out per-change "Witness"/"Formula (pre/post-transformation)" entries
@@ -244,13 +285,16 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
 
     Returns:
         List of {"summary", "detail", "witness", "pre_formula", "post_formula",
-        "map_width_change", "variable_width_change", "example_missing"} dicts,
-        in order.
+        "map_width_change", "variable_width_change", "map_fusion",
+        "example_missing"} dicts, in order.
         "map_width_change" is {"map", "old_bytes", "new_bytes"} or None when
         the LLM didn't tag this witness as a map value-width change.
         "variable_width_change" is {"var", "old_bits", "new_bits"} or None
         when the LLM didn't tag this witness as a range-justified variable
         narrowing.
+        "map_fusion" is {"target", "sources": [{"map", "value_offset_bytes",
+        "value_bytes"}, ...]} or None when the LLM didn't tag this witness as
+        a map merge.
         "example_missing" is True when "detail" has no non-empty
         backtick-quoted code fragment -- i.e. the LLM skipped quoting the
         actual before/after code the prompt asks for (see
@@ -274,6 +318,7 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
                 "variable_width_change": _parse_variable_width_change(
                     match.group("variable_width_change")
                 ),
+                "map_fusion": _parse_map_fusion(match.group("map_fusion")),
                 "example_missing": not _has_example_snippet(detail),
             }
         )
@@ -414,6 +459,38 @@ def format_witness_decisions_for_prompt(witnesses: List[Dict[str, Any]]) -> str:
             lines.append(f"    Witness: {w['witness']}")
         blocks.append("\n".join(lines))
     return "\n\n".join(blocks)
+
+
+def build_heimdall_witness_file(witnesses: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Combine extracted witnesses (see extract_transformation_witnesses) into
+    heimdall-private's --witness-file JSON schema (c2rust_translation/
+    verify_equivalence.py's load_witnesses/relax_hints_from_witnesses/
+    fusion_hints_from_witnesses): {"witnesses": [{"id", "map_width_change"} or
+    {"id", "map_fusion"}, ...]}.
+
+    Only witnesses carrying a "map_width_change" or "map_fusion" hint are
+    included -- heimdall only ever reads those two keys off each entry, so a
+    purely structural witness (or one with only a "variable_width_change" tag,
+    which heimdall has no map-level model for) would contribute nothing and is
+    left out. "id" is the witness's own "index" (see process_parallel.py's
+    _run_iteration_worker_propose), so ids in the resulting file line up with
+    the witness numbering shown in the review UI.
+
+    Args:
+        witnesses: Witness dicts, each stamped with an "index"
+
+    Returns:
+        {"witnesses": [...]} dict, ready to json.dump to a --witness-file path
+        ("witnesses": [] if none qualify)
+    """
+    entries = []
+    for w in witnesses:
+        if w.get("map_width_change"):
+            entries.append({"id": w.get("index"), "map_width_change": w["map_width_change"]})
+        elif w.get("map_fusion"):
+            entries.append({"id": w.get("index"), "map_fusion": w["map_fusion"]})
+    return {"witnesses": entries}
 
 
 def _format_block_lines(lines: List[str], max_line_len: int = 100, max_lines: int = 30) -> str:

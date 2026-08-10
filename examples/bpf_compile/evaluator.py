@@ -29,6 +29,7 @@ import uuid
 from pathlib import Path
 
 from openevolve.evaluation_result import EvaluationResult
+from openevolve.utils.code_utils import build_heimdall_witness_file
 
 
 HEIMDALL_ROOT = Path(os.environ.get("HEIMDALL_ROOT", "/users/xiang95/heimdall-private"))
@@ -247,27 +248,36 @@ def _baseline_object() -> Path | None:
     return _baseline_object_cache
 
 
-def _relax_args(relax_hints: "list[dict] | None") -> list[str]:
-    """Build --relax-map-value-width flags for verify_mixed_entries.py from
-    developer-approved "map_width_change" witness hints (see
-    openevolve/utils/code_utils.py's extract_transformation_witnesses).
+def _witness_file_args(
+    witnesses: "list[dict] | None", tmp_dir: str
+) -> tuple[list[str], "Path | None"]:
+    """Write developer-approved witnesses (see
+    openevolve/utils/code_utils.py's extract_transformation_witnesses) out as a
+    heimdall-private --witness-file JSON (build_heimdall_witness_file) and
+    return the ["--witness-file", path] flag for verify_mixed_entries.py,
+    plus the path itself (so the caller can leave it in tmp_dir's lifetime).
 
-    This is only a HINT of which map + byte sizes to relax -- heimdall's
-    checker is expected to cross-check the map name/sizes against the actual
-    BTF metadata it parses from the object files before relaxing anything, so
-    a wrong or stale hint here can't force a false "equivalent" verdict."""
-    args = []
-    for hint in relax_hints or []:
-        args += [
-            "--relax-map-value-width",
-            f"{hint['map']}:{hint['old_bytes']}:{hint['new_bytes']}",
-        ]
-    return args
+    --witness-file lets heimdall derive BOTH --relax-map-value-width hints
+    (from each witness's "map_width_change") AND map-fusion groups (from
+    "map_fusion") itself, and cross-validate them against the object files'
+    real BTF metadata / its own extracted formulas before relaxing anything or
+    treating two maps as merged -- a wrong or stale hint here can't force a
+    false "equivalent" verdict.
+
+    Returns ([], None) if there are no qualifying witnesses (nothing to
+    write)."""
+    witness_file_data = build_heimdall_witness_file(witnesses or [])
+    if not witness_file_data["witnesses"]:
+        return [], None
+
+    witness_file_path = Path(tmp_dir) / "witnesses.json"
+    witness_file_path.write_text(json.dumps(witness_file_data, indent=2))
+    return ["--witness-file", str(witness_file_path)], witness_file_path
 
 
 def _check_equivalence(
     candidate_object: Path,
-    relax_hints: "list[dict] | None" = None,
+    witnesses: "list[dict] | None" = None,
     metric_key: str = "semantic_equivalent",
     detail_key: str = "equivalence_detail",
 ) -> tuple[dict, dict]:
@@ -278,11 +288,16 @@ def _check_equivalence(
     OpenEvolve requires every feature_dimension to be present in every program's
     metrics, so this key must never be conditionally omitted.
 
-    relax_hints (only passed by reverify_with_witnesses(), never by the
+    witnesses (only passed by reverify_with_witnesses(), never by the
     unconditional baseline check in evaluate()) narrows specific hard
     structural gates in heimdall's checker -- e.g. the BTF value_size
-    equality check -- for map value-width-narrowing changes a developer has
-    already approved; see verify_mixed_entries.py --relax-map-value-width."""
+    equality check, or requiring two maps to still be BTF-distinct -- for
+    changes a developer has already approved; see _witness_file_args. When
+    witnesses are passed, each entry's result also carries a
+    "witness_verification" list (heimdall's OWN per-witness cross-check of
+    each map_width_change/map_fusion claim against its real extracted
+    formulas -- see verify_equivalence.py's run_witness_verification -- not
+    just the witness's self-reported Z3 proof), if heimdall produced one."""
     entries = TOOL.get("equiv_entries") or []
     maps = TOOL.get("equiv_maps") or []
     if not entries:
@@ -297,91 +312,118 @@ def _check_equivalence(
 
     per_entry: dict[str, dict] = {}
     all_equivalent = True
-    relax_args = _relax_args(relax_hints)
 
-    for entry in entries:
-        cmd = [
-            "conda",
-            "run",
-            "-n",
-            EQUIV_CONDA_ENV,
-            "python",
-            str(EQUIV_VERIFIER),
-            str(baseline_object),
-            str(candidate_object),
-            entry,
-            entry,
-            *maps,
-            *relax_args,
-        ]
-        try:
-            result = subprocess.run(
-                cmd,
-                cwd=str(HEIMDALL_ROOT / "c2rust_translation"),
-                capture_output=True,
-                text=True,
-                timeout=EQUIV_TIMEOUT,
-            )
-        except subprocess.TimeoutExpired:
-            per_entry[entry] = {
-                "equivalent": None,
-                "result_type": "timeout",
-                "counter_example": None,
-            }
-            all_equivalent = False
-            continue
+    with tempfile.TemporaryDirectory(prefix="openevolve_bpf_witness_") as witness_tmp_dir:
+        witness_args, _ = _witness_file_args(witnesses, witness_tmp_dir)
 
-        # verify_mixed_entries.py prints the whole "[=] Final Result [=]" block
-        # (including counter_example) to stdout; stderr is angr/z3/conda noise
-        # that would otherwise leak into the (DOTALL) counter_example capture.
-        output = result.stdout
-        eq_match = EQUIV_RESULT_PATTERN.search(output)
-        type_match = EQUIV_RESULT_TYPE_PATTERN.search(output)
-        ce_match = EQUIV_COUNTEREXAMPLE_PATTERN.search(output)
+        for entry in entries:
+            safe_entry = re.sub(r"[^A-Za-z0-9_.-]", "_", entry)
+            json_output_path = Path(witness_tmp_dir) / f"result_{safe_entry}.json"
+            cmd = [
+                "conda",
+                "run",
+                "-n",
+                EQUIV_CONDA_ENV,
+                "python",
+                str(EQUIV_VERIFIER),
+                str(baseline_object),
+                str(candidate_object),
+                entry,
+                entry,
+                *maps,
+                *witness_args,
+                "--json-output",
+                str(json_output_path),
+            ]
+            try:
+                result = subprocess.run(
+                    cmd,
+                    cwd=str(HEIMDALL_ROOT / "c2rust_translation"),
+                    capture_output=True,
+                    text=True,
+                    timeout=EQUIV_TIMEOUT,
+                )
+            except subprocess.TimeoutExpired:
+                per_entry[entry] = {
+                    "equivalent": None,
+                    "result_type": "timeout",
+                    "counter_example": None,
+                }
+                all_equivalent = False
+                continue
 
-        equivalent = (eq_match.group(1) == "True") if eq_match else None
-        per_entry[entry] = {
-            "equivalent": equivalent,
-            "result_type": type_match.group(1) if type_match else None,
-            "counter_example": ce_match.group(1).strip() if ce_match else None,
-        }
-        if not eq_match:
-            # Nothing recognizable in stdout -- the verifier likely errored out
-            # before printing a result (e.g. conda env / entry symbol / map spec
-            # problem). Keep the raw output so this is debuggable from the
-            # artifacts instead of silently reading as "unknown".
-            per_entry[entry]["raw_output"] = (result.stdout + result.stderr)[-2000:]
-        if equivalent is not True:
-            all_equivalent = False
+            json_result = None
+            if json_output_path.exists():
+                try:
+                    json_result = json.loads(json_output_path.read_text())
+                except (json.JSONDecodeError, OSError):
+                    json_result = None
+
+            if json_result is not None:
+                # Prefer the checker's own structured output over regex-scraping
+                # stdout -- "detail" fields on witness_results can contain
+                # multi-line z3 model text that isn't safe to line-match.
+                equivalent = json_result.get("equivalent")
+                per_entry[entry] = {
+                    "equivalent": equivalent,
+                    "result_type": json_result.get("result_type"),
+                    "counter_example": json_result.get("counter_example") or None,
+                }
+                if json_result.get("witness_results"):
+                    per_entry[entry]["witness_verification"] = json_result["witness_results"]
+            else:
+                # Fall back to scraping stdout (e.g. heimdall crashed before
+                # writing --json-output, or is an older checkout without it).
+                output = result.stdout
+                eq_match = EQUIV_RESULT_PATTERN.search(output)
+                type_match = EQUIV_RESULT_TYPE_PATTERN.search(output)
+                ce_match = EQUIV_COUNTEREXAMPLE_PATTERN.search(output)
+
+                equivalent = (eq_match.group(1) == "True") if eq_match else None
+                per_entry[entry] = {
+                    "equivalent": equivalent,
+                    "result_type": type_match.group(1) if type_match else None,
+                    "counter_example": ce_match.group(1).strip() if ce_match else None,
+                }
+                if not eq_match:
+                    # Nothing recognizable in stdout -- the verifier likely errored out
+                    # before printing a result (e.g. conda env / entry symbol / map spec
+                    # problem). Keep the raw output so this is debuggable from the
+                    # artifacts instead of silently reading as "unknown".
+                    per_entry[entry]["raw_output"] = (result.stdout + result.stderr)[-2000:]
+            if equivalent is not True:
+                all_equivalent = False
 
     metrics = {metric_key: 1.0 if all_equivalent else 0.0}
     artifacts = {detail_key: json.dumps(per_entry, indent=2, sort_keys=True)}
     return metrics, artifacts
 
 
-def reverify_with_witnesses(program_path: str, hints: list) -> EvaluationResult:
+def reverify_with_witnesses(program_path: str, witnesses: list) -> EvaluationResult:
     """Optional second-pass equivalence re-check, called only by OpenEvolve's
     interactive review flow (openevolve/process_parallel.py's
     _reverify_approved_witnesses) after a developer has approved specific
-    transformation witnesses claiming a BPF map's value type was narrowed.
+    transformation witnesses claiming a BPF map's value type was narrowed
+    and/or two or more maps were merged.
 
-    `hints` is a list of {"map", "old_bytes", "new_bytes"} dicts, one per
-    approved witness (see extract_transformation_witnesses' "map_width_change"
-    field). This recompiles the candidate and re-runs the same heimdall
-    checker as the unconditional evaluate() path, but with
-    --relax-map-value-width hints that let it skip the exact BTF value_size
-    equality gate for just the named map(s) -- everything else about the
-    check (map-type consistency, the rest of the symbolic proof) is
-    unchanged, and the checker itself is expected to verify each hint against
-    the object files' real BTF metadata before honoring it. Result is stored
-    under a distinct metric (semantic_equivalent_relaxed), never overwriting
-    the unconditional semantic_equivalent from evaluate()."""
+    `witnesses` is a list of developer-approved, self-proven witness dicts,
+    each carrying a "map_width_change" and/or "map_fusion" hint (see
+    extract_transformation_witnesses). This recompiles the candidate and
+    re-runs the same heimdall checker as the unconditional evaluate() path,
+    but with a --witness-file (see _witness_file_args) that lets it skip the
+    exact BTF value_size equality gate for narrowed map(s) and treat declared
+    source maps as merged into their target -- everything else about the
+    check (the rest of the symbolic proof) is unchanged, and the checker
+    itself is expected to verify each hint against the object files' real BTF
+    metadata before honoring it. Result is stored under a distinct metric
+    (semantic_equivalent_relaxed), never overwriting the unconditional
+    semantic_equivalent from evaluate()."""
     source_path = Path(program_path)
 
-    if not hints:
+    if not witnesses:
         return EvaluationResult(
             metrics={"semantic_equivalent_relaxed": 0.0},
-            artifacts={"error": "reverify_with_witnesses called with no hints"},
+            artifacts={"error": "reverify_with_witnesses called with no witnesses"},
         )
 
     with tempfile.TemporaryDirectory(prefix="openevolve_bpf_reverify_") as tmp_dir:
@@ -424,11 +466,13 @@ def reverify_with_witnesses(program_path: str, hints: list) -> EvaluationResult:
 
         metrics, artifacts = _check_equivalence(
             output_path,
-            relax_hints=hints,
+            witnesses=witnesses,
             metric_key="semantic_equivalent_relaxed",
             detail_key="equivalence_relaxed_detail",
         )
-        artifacts["relaxed_hints"] = json.dumps(hints, sort_keys=True)
+        artifacts["relaxed_hints"] = json.dumps(
+            build_heimdall_witness_file(witnesses), sort_keys=True
+        )
         return EvaluationResult(metrics=metrics, artifacts=artifacts)
 
 

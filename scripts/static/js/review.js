@@ -287,18 +287,32 @@ function renderParentRelaxed(parentArtifacts) {
     return;
   }
 
-  let hints = [];
+  // relaxed_hints is build_heimdall_witness_file()'s output: {"witnesses":
+  // [{"id", "map_width_change"} or {"id", "map_fusion"}, ...]}.
+  let witnessFile = { witnesses: [] };
   try {
-    hints = JSON.parse(parentArtifacts.relaxed_hints || "[]");
+    witnessFile = JSON.parse(parentArtifacts.relaxed_hints || "{}");
   } catch (e) {
-    hints = [];
+    witnessFile = { witnesses: [] };
   }
-  if (hints.length) {
+  const hintLines = (witnessFile.witnesses || [])
+    .map((w) => {
+      if (w.map_width_change) {
+        const h = w.map_width_change;
+        return `${h.map} (${h.old_bytes} -> ${h.new_bytes} bytes)`;
+      }
+      if (w.map_fusion) {
+        const f = w.map_fusion;
+        const sources = (f.sources || []).map((s) => s.map).join(" + ");
+        return `${sources} -> ${f.target} (merged)`;
+      }
+      return null;
+    })
+    .filter(Boolean);
+  if (hintLines.length) {
     const hintLine = document.createElement("div");
     hintLine.className = "witness-example";
-    hintLine.textContent = `Relaxed for: ${hints
-      .map((h) => `${h.map} (${h.old_bytes} -> ${h.new_bytes} bytes)`)
-      .join(", ")}`;
+    hintLine.textContent = `Relaxed for: ${hintLines.join(", ")}`;
     parentRelaxedTable.appendChild(hintLine);
   }
 
@@ -322,6 +336,26 @@ function renderParentRelaxed(parentArtifacts) {
       ce.textContent = row.counter_example;
       card.appendChild(ce);
     }
+
+    // heimdall's OWN cross-check of each relaxed witness's claim against its
+    // real extracted formulas (verify_equivalence.py's run_witness_verification)
+    // -- independent of, and stronger evidence than, the witness's self-reported
+    // Z3 proof shown in "Transformation witnesses" below.
+    (row.witness_verification || []).forEach((wr) => {
+      const line = document.createElement("div");
+      line.className = "witness-example";
+      line.textContent = `heimdall cross-check — witness ${wr.id} (${wr.map || "?"}): `;
+      const vBadge = document.createElement("span");
+      vBadge.className = `equiv-badge ${verdictClass(wr.verified)}`;
+      vBadge.textContent = verdictLabel(wr.verified);
+      line.appendChild(vBadge);
+      if (wr.detail && wr.verified !== true) {
+        const detailSpan = document.createElement("span");
+        detailSpan.textContent = ` — ${wr.detail}`;
+        line.appendChild(detailSpan);
+      }
+      card.appendChild(line);
+    });
 
     parentRelaxedTable.appendChild(card);
   });
