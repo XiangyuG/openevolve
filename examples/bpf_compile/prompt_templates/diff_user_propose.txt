@@ -16,28 +16,43 @@
 ```
 
 # Task
-Propose improvements to the program that will improve its FITNESS SCORE. Every change
-you propose must be one of these two optimization types -- you may propose either type,
-both types together, and multiple instances of each. Do not propose any other kind of
-change, even if you believe it would help:
+Propose improvements to the program that will improve its FITNESS SCORE. You may
+propose two kinds of change:
 
-(1) Map value width narrowing: shrink the VALUE struct of a BPF hash/array map
-    (fewer bytes) when the real value range actually used by the program never
-    needs the current width -- e.g. an 8-byte counter that provably never exceeds
-    a 4-byte range, or a struct field/padding that can be dropped or packed
-    tighter. You must justify the range/size claim in that change's Witness.
+A) Any traditional, schema-preserving source-level optimization -- e.g. eliminating
+   dead code or redundant computation, batching/hoisting repeated kernel reads into
+   one read or a local variable, simplifying control flow, algebraic simplification
+   or strength reduction -- AS LONG AS it does not change any BPF map's type, key
+   layout, or value layout. Every change, including these, still needs a Witness and
+   a Formula (pre/post-transformation) in the format below; heimdall verifies these
+   changes directly by proving full equivalence, no relaxation needed.
 
-(2) Map merging: if two or more separate maps are looked up with the SAME key in
-    the SAME code path, merge them into a single map whose value struct is the
-    union of the original maps' fields, replacing multiple
-    bpf_map_lookup_elem()/bpf_map_update_elem() calls on that key with one. You
-    must justify in the Witness that every original field stays readable and
-    writable at the same points and that the key sets match.
+B) These two schema-changing optimization types, which heimdall can independently
+   verify via a relaxed check once a developer approves the witness:
 
-Do not restructure algorithms, add or remove probes/SEC sections, change helper
-usage, rename or reformat unrelated code, or change map types beyond what a merge
-requires. If this program has no safe opportunity for (1) or (2), propose the
-smallest possible change that still qualifies (or none at all) and say so in the
+   (1) Map value width narrowing: shrink the VALUE struct of a BPF hash/array map
+       (fewer bytes) when the real value range actually used by the program never
+       needs the current width -- e.g. an 8-byte counter that provably never exceeds
+       a 4-byte range, or a struct field/padding that can be dropped or packed
+       tighter. You must justify the range/size claim in that change's Witness.
+
+   (2) Map merging: if two or more separate maps are looked up with the SAME key in
+       the SAME code path, merge them into a single map whose value struct is the
+       union of the original maps' fields, replacing multiple
+       bpf_map_lookup_elem()/bpf_map_update_elem() calls on that key with one. You
+       must justify in the Witness that every original field stays readable and
+       writable at the same points and that the key sets match.
+
+Do not propose any other kind of schema change -- changing a map's TYPE (e.g. HASH
+-> PERCPU_HASH), reducing a map's KEY size/layout, changing BPF_ANY/BPF_NOEXIST
+update semantics, or any sampling/caching that skips work on some calls. Heimdall
+has no witness format for these yet, so such a proposal cannot be independently
+checked and will not be trusted, even if you believe it would help. Do not
+restructure algorithms, add or remove probes/SEC sections, or rename/reformat
+unrelated code.
+
+If this program has no safe opportunity for (A) or (B), propose the smallest
+possible change that still qualifies (or none at all) and say so in the
 explanation -- do not invent an unrelated optimization.
 
 The system maintains diversity across these dimensions: {feature_dimensions}
@@ -103,7 +118,7 @@ I propose the following changes:
       Variable width change: <var_name>: <old_bits> -> <new_bits>
       Omit this line entirely for every other kind of change.
       If, and only if, this specific change merges two or more BPF maps into
-      one (optimization type (2)), add one more line directly after the
+      one target map, add one more line directly after the
       post-transformation formula (or after the "Map value width change" /
       "Variable width change" line if either also applies), in exactly this
       format -- the merged map's name, then each source map that was folded
