@@ -3,6 +3,7 @@ Process-based parallel controller for true parallelism
 """
 
 import asyncio
+import json
 import logging
 import multiprocessing as mp
 import pickle
@@ -840,6 +841,7 @@ class ProcessParallelController:
             and (w.get("proof") or {}).get("status") == "proven_equivalent"
             and (w.get("map_width_change") or w.get("map_fusion"))
         ]
+        self._dump_witness_file(child_program, witnesses, qualifying)
         if not qualifying:
             return {}
 
@@ -849,6 +851,54 @@ class ProcessParallelController:
         if metrics:
             child_program.metrics.update(metrics)
         return artifacts
+
+    def _dump_witness_file(
+        self,
+        child_program: Program,
+        witnesses: List[Dict[str, Any]],
+        qualifying: List[Dict[str, Any]],
+    ) -> None:
+        """Write this child's exact --witness-file payload -- and, for every
+        witness, why it did or didn't qualify -- to a plain JSON file next to
+        the review-queue task files, so a developer can inspect it directly on
+        disk instead of reconstructing it from the raw task JSON by hand.
+
+        "heimdall_witness_file" is exactly what reverify_program/
+        reverify_with_witnesses will (or would) hand heimdall as
+        --witness-file for this child; it's the empty {"witnesses": []} shape
+        whenever `qualifying` is empty, which itself is useful signal (the
+        approval didn't produce anything for heimdall to check). The
+        per-witness breakdown makes it obvious WHY a witness is or isn't in
+        that payload -- e.g. developer_approved is True but proof_status is
+        "parse_error", so it never reached qualifying.
+        """
+        from openevolve.utils.code_utils import build_heimdall_witness_file
+
+        qualifying_indices = {w.get("index") for w in qualifying}
+        dump = {
+            "child_id": child_program.id,
+            "parent_id": child_program.parent_id,
+            "heimdall_witness_file": build_heimdall_witness_file(qualifying),
+            "witnesses": [
+                {
+                    "index": w.get("index"),
+                    "summary": w.get("summary"),
+                    "developer_approved": w.get("developer_approved"),
+                    "proof_status": (w.get("proof") or {}).get("status"),
+                    "proof_detail": (w.get("proof") or {}).get("detail"),
+                    "map_width_change": w.get("map_width_change"),
+                    "map_fusion": w.get("map_fusion"),
+                    "variable_width_change": w.get("variable_width_change"),
+                    "qualifies_for_reverify": w.get("index") in qualifying_indices,
+                }
+                for w in witnesses
+            ],
+        }
+        path = self.review_gate.queue_dir / f"witness_file_{child_program.id}.json"
+        try:
+            path.write_text(json.dumps(dump, indent=2))
+        except OSError as e:
+            logger.warning(f"Could not write witness file dump to {path}: {e}")
 
     def _serialize_config(self, config: Config) -> dict:
         """Serialize config object to a dictionary that can be pickled"""
