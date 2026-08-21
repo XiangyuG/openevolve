@@ -126,6 +126,16 @@ I propose the following changes:
       inside the merged map's value struct, joined with " + ":
       Map fusion: <target_map> = <source_map_1>@<offset_bytes_1>:<width_bytes_1> + <source_map_2>@<offset_bytes_2>:<width_bytes_2>
       Omit this line entirely for every other kind of change.
+      HARD CONSTRAINT: none of these three tag lines (Map value width change /
+      Variable width change / Map fusion) may be followed by anything else for
+      this change -- no "Explanation of ..." paragraph, no "Notes:" section, no
+      further commentary of any kind. Whichever tag line is the last thing you
+      write for this numbered change must be followed immediately by either the
+      next numbered change ("(N+1) ...") or nothing at all if it's your last
+      change. A parser reads these lines mechanically; anything after the last
+      tag line gets treated as part of that line and silently breaks the parse.
+      If a tag's claim needs justifying, put that justification in the Witness
+      line above it -- never after the tag line itself.
 (2) <what you would change and why, in English>
     Example: `<...>` -> `<...>`
     Witness: <...>
