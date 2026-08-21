@@ -859,9 +859,15 @@ class ProcessParallelController:
         qualifying: List[Dict[str, Any]],
     ) -> None:
         """Write this child's exact --witness-file payload -- and, for every
-        witness, why it did or didn't qualify -- to a plain JSON file next to
-        the review-queue task files, so a developer can inspect it directly on
-        disk instead of reconstructing it from the raw task JSON by hand.
+        witness, why it did or didn't qualify -- to a plain JSON file in a
+        witness_files/ subdirectory next to the review-queue task files, so a
+        developer can inspect it directly on disk instead of reconstructing it
+        from the raw task JSON by hand. Deliberately NOT written directly into
+        queue_dir itself: scripts/review.py's _list_tasks() lists every
+        *.json file there that lacks a matching *.decision.json sibling as a
+        pending review task, and this dump has neither an "iteration" key nor
+        the witnesses/child_code shape a task needs -- co-locating it there
+        made it show up in the review UI as a bogus task ("Iteration ?").
 
         "heimdall_witness_file" is exactly what reverify_program/
         reverify_with_witnesses will (or would) hand heimdall as
@@ -894,8 +900,10 @@ class ProcessParallelController:
                 for w in witnesses
             ],
         }
-        path = self.review_gate.queue_dir / f"witness_file_{child_program.id}.json"
+        witness_files_dir = self.review_gate.queue_dir / "witness_files"
+        path = witness_files_dir / f"{child_program.id}.json"
         try:
+            witness_files_dir.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(dump, indent=2))
         except OSError as e:
             logger.warning(f"Could not write witness file dump to {path}: {e}")
