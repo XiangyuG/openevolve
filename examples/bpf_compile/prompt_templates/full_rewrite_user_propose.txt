@@ -92,7 +92,12 @@ I propose the following changes:
       S_IFMT), approximate it with `mod`/arithmetic on Int instead (e.g.
       `(= (mod mode 8) 0)` for a low-bit check). Do not wrap either formula in a
       triple-backtick code block, and do not add anything (comments, stray
-      characters) after the final closing parenthesis of either one.
+      characters) after the final closing parenthesis of either one. The SAME
+      rule applies right after the "Formula (...):" label itself: the very
+      next characters must be `(declare-const` or `(assert` -- never a label
+      like "(old behavior)"/"(new behavior)" or any other parenthetical aside
+      before the real SMT-LIB 2 starts. If you want to note which side is
+      which, use a `;` comment line, not plain text or parenthesized prose.
       If the change is purely structural (renaming, reordering unrelated
       statements, comments) with nothing to formalize, write exactly:
       Formula (pre-transformation): (assert true)

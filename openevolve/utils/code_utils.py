@@ -150,18 +150,38 @@ def extract_change_explanation(
     return remaining.strip()
 
 
+_ITEM_OR_END = r"\n\s*\(\d+\)\s|\Z"
+
+# post_formula stops at the EARLIEST of: a tag line, the next numbered change,
+# or end of string. Everything from there to the next numbered change/end is
+# captured as "tail" and searched independently for each tag below (see
+# extract_transformation_witnesses) -- rather than requiring the tag lines to
+# be the literal last thing in the item. Models routinely keep talking after a
+# correctly-formatted tag line (an "Explanation of ..." paragraph, a "Notes:"
+# section) despite the prompt telling them not to; a sequential regex that
+# demands "tag line, then only whitespace until the end" backtracks itself
+# into swallowing the tag line back into post_formula the moment any such
+# trailing text shows up, silently losing a hint the model actually got right.
+# Searching "tail" for each tag independently is immune to that regardless of
+# what surrounds the tag line.
 _WITNESS_BLOCK_PATTERN = re.compile(
     r"^\s*\(\d+\)\s*(?P<summary>.*?)\s*\n"
     r"(?P<detail>.*?)"
     r"\s*Witness:\s*(?P<witness>.*?)\s*\n"
     r"\s*Formula \(pre-transformation\):\s*(?P<pre_formula>.*?)\s*\n"
     r"\s*Formula \(post-transformation\):\s*(?P<post_formula>.*?)"
-    r"(?:\s*\n\s*Map value width change:\s*(?P<map_width_change>[^\n]*))?"
-    r"(?:\s*\n\s*Variable width change:\s*(?P<variable_width_change>[^\n]*))?"
-    r"(?:\s*\n\s*Map fusion:\s*(?P<map_fusion>[^\n]*))?"
-    r"\s*(?=\n\s*\(\d+\)\s|\Z)",
+    r"(?=\s*\n\s*Map value width change:"
+    r"|\s*\n\s*Variable width change:"
+    r"|\s*\n\s*Map fusion:"
+    r"|" + _ITEM_OR_END + r")"
+    r"(?P<tail>.*?)"
+    r"\s*(?=" + _ITEM_OR_END + r")",
     re.MULTILINE | re.DOTALL,
 )
+
+_MAP_WIDTH_CHANGE_TAG_PATTERN = re.compile(r"Map value width change:\s*([^\n]*)")
+_VARIABLE_WIDTH_CHANGE_TAG_PATTERN = re.compile(r"Variable width change:\s*([^\n]*)")
+_MAP_FUSION_TAG_PATTERN = re.compile(r"Map fusion:\s*([^\n]*)")
 
 _TRAILING_ELLIPSIS_PATTERN = re.compile(r"\n?\.\.\.\s*$")
 
@@ -307,6 +327,15 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
         pre_formula = _TRAILING_ELLIPSIS_PATTERN.sub("", match.group("pre_formula").strip())
         post_formula = _TRAILING_ELLIPSIS_PATTERN.sub("", match.group("post_formula").strip())
         detail = match.group("detail").strip()
+
+        # Search the tail (everything after post_formula, up to the next
+        # numbered change/end) independently for each tag -- see
+        # _WITNESS_BLOCK_PATTERN's comment on why this isn't done positionally.
+        tail = match.group("tail") or ""
+        map_width_change_match = _MAP_WIDTH_CHANGE_TAG_PATTERN.search(tail)
+        variable_width_change_match = _VARIABLE_WIDTH_CHANGE_TAG_PATTERN.search(tail)
+        map_fusion_match = _MAP_FUSION_TAG_PATTERN.search(tail)
+
         witnesses.append(
             {
                 "summary": match.group("summary").strip(),
@@ -314,11 +343,15 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
                 "witness": match.group("witness").strip(),
                 "pre_formula": pre_formula.strip(),
                 "post_formula": post_formula.strip(),
-                "map_width_change": _parse_map_width_change(match.group("map_width_change")),
-                "variable_width_change": _parse_variable_width_change(
-                    match.group("variable_width_change")
+                "map_width_change": _parse_map_width_change(
+                    map_width_change_match.group(1) if map_width_change_match else None
                 ),
-                "map_fusion": _parse_map_fusion(match.group("map_fusion")),
+                "variable_width_change": _parse_variable_width_change(
+                    variable_width_change_match.group(1) if variable_width_change_match else None
+                ),
+                "map_fusion": _parse_map_fusion(
+                    map_fusion_match.group(1) if map_fusion_match else None
+                ),
                 "example_missing": not _has_example_snippet(detail),
             }
         )
