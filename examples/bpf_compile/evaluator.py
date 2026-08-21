@@ -174,6 +174,7 @@ EQUIV_CHECK = os.environ.get("BPF_EQUIV_CHECK", "1") != "0"
 EQUIV_CONDA_ENV = os.environ.get("BPF_EQUIV_CONDA_ENV", "c2rust")
 EQUIV_TIMEOUT = int(os.environ.get("BPF_EQUIV_TIMEOUT", "90"))
 EQUIV_VERIFIER = HEIMDALL_ROOT / "c2rust_translation" / "verify_mixed_entries.py"
+BTF_PARSER = HEIMDALL_ROOT / "c2rust_translation" / "btf_parser.py"
 
 
 RUNNER_ROW_PATTERN = re.compile(
@@ -246,6 +247,95 @@ def _baseline_object() -> Path | None:
         baseline_object if result.returncode == 0 and baseline_object.exists() else None
     )
     return _baseline_object_cache
+
+
+def _map_value_sizes(obj: Path) -> dict[str, int]:
+    """Real BTF value_size (bytes) per map in `obj`, via btf_parser.py --json
+    in the c2rust conda env. Empty dict on any failure (missing BTF, timeout,
+    bad JSON) -- callers must treat that as "unknown", not "zero-size"."""
+    try:
+        result = subprocess.run(
+            ["conda", "run", "-n", EQUIV_CONDA_ENV, "python", str(BTF_PARSER), str(obj), "--json"],
+            cwd=str(HEIMDALL_ROOT / "c2rust_translation"),
+            capture_output=True,
+            text=True,
+            timeout=EQUIV_TIMEOUT,
+        )
+        parsed = json.loads(result.stdout)
+    except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError):
+        return {}
+    return {name: meta["value_size"] for name, meta in parsed.items() if "value_size" in meta}
+
+
+_baseline_map_value_sizes_cache: object = _UNSET
+
+
+def _baseline_map_value_sizes() -> dict[str, int]:
+    """_map_value_sizes() for the baseline object, cached like _baseline_object()
+    -- the baseline is fixed for this whole run, so its real per-map value
+    sizes never change either."""
+    global _baseline_map_value_sizes_cache
+    if _baseline_map_value_sizes_cache is not _UNSET:
+        return _baseline_map_value_sizes_cache
+    baseline_object = _baseline_object()
+    _baseline_map_value_sizes_cache = (
+        _map_value_sizes(baseline_object) if baseline_object is not None else {}
+    )
+    return _baseline_map_value_sizes_cache
+
+
+def _correct_map_width_change_hints(
+    witnesses: "list[dict]", candidate_object: Path
+) -> "list[dict]":
+    """Replace each witness's self-reported map_width_change (old_bytes,
+    new_bytes) with the REAL BTF value_size of that map in (respectively) the
+    baseline object and this specific candidate object, whenever both are
+    known.
+
+    Why: heimdall (verify_equivalence.py) only honors a --relax-map-value-width
+    hint when it EXACTLY equals the two binaries' real BTF value_size -- by
+    design, since old_bytes also drives how the truncated-equality comparison
+    itself is built, not just a sanity gate. A witness only ever describes the
+    diff against its own immediate PARENT, though, not against the run's fixed
+    original baseline heimdall actually compares against. First-generation
+    narrowings happen to have parent == baseline, so they match by accident;
+    any later generation narrowing an already-narrowed map states an old_bytes
+    that reflects its parent's size, not the baseline's, and heimdall silently
+    (and correctly) rejects it as stale, re-reporting the exact same "BTF
+    MISMATCH" the relaxation was supposed to avoid.
+
+    Substituting ground truth read directly from BTF -- instead of composing
+    or trusting any self-reported number -- fixes this regardless of how many
+    generations deep the narrowing chain is, and is immune to an LLM's own
+    arithmetic being slightly off (e.g. padding/alignment miscounted).
+
+    Witnesses without a map_width_change, or where either side's real size
+    can't be determined, are returned unchanged -- heimdall's own exact-match
+    gate is the backstop either way, so an uncorrected/wrong hint can only
+    ever fall back to the strict check, never produce an unsound accept."""
+    baseline_sizes = _baseline_map_value_sizes()
+    if not baseline_sizes:
+        return witnesses
+    candidate_sizes = _map_value_sizes(candidate_object)
+    if not candidate_sizes:
+        return witnesses
+
+    corrected = []
+    for w in witnesses:
+        mwc = w.get("map_width_change")
+        if not mwc:
+            corrected.append(w)
+            continue
+        map_name = mwc.get("map")
+        real_old = baseline_sizes.get(map_name)
+        real_new = candidate_sizes.get(map_name)
+        if real_old is None or real_new is None:
+            corrected.append(w)
+            continue
+        w = dict(w)
+        w["map_width_change"] = {"map": map_name, "old_bytes": real_old, "new_bytes": real_new}
+        corrected.append(w)
+    return corrected
 
 
 def _witness_file_args(
@@ -463,6 +553,15 @@ def reverify_with_witnesses(program_path: str, witnesses: list) -> EvaluationRes
                     "stderr": result.stderr[-4000:],
                 },
             )
+
+        # Replace each witness's self-reported map_width_change with the REAL
+        # baseline-vs-this-candidate BTF value_size (see
+        # _correct_map_width_change_hints) -- this is what makes a witness
+        # narrowing an already-narrowed map (i.e. anything past the first
+        # generation of a given map's narrowing) actually match heimdall's
+        # exact-equality hint gate instead of silently falling back to the
+        # strict check every time.
+        witnesses = _correct_map_width_change_hints(witnesses, output_path)
 
         metrics, artifacts = _check_equivalence(
             output_path,
