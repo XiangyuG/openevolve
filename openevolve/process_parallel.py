@@ -809,25 +809,39 @@ class ProcessParallelController:
         """
         After a developer approves specific transformation witnesses (see
         openevolve/review_gate.py and scripts/review.py), re-run the
-        evaluator's optional `reverify_with_witnesses` hook using only the
-        approved, self-consistent hints, and merge the resulting metrics into
-        child_program.metrics in place before it's added to the database. A
-        no-op (no evaluator call at all) unless there's at least one
-        qualifying witness, so this costs nothing for the common case.
+        evaluator's optional `reverify_with_witnesses` hook using the approved
+        hints, and let its result REPLACE (not just sit alongside)
+        child_program's unconditional "semantic_equivalent" metric. A no-op
+        (no evaluator call at all) unless there's at least one qualifying
+        witness, so this costs nothing for the common case.
 
         Only witnesses the developer explicitly approved (not just left
-        unreviewed) AND whose own Z3 self-proof succeeded AND that carry a
-        parsed "map_width_change" or "map_fusion" hint are used -- an approved
-        witness whose own formula wasn't proven, or with no parseable hint
-        (including a "variable_width_change"-only witness, which heimdall has
-        no map-level model for -- see build_heimdall_witness_file), contributes
-        nothing here. A witness's Z3 proof only establishes that pre_result ==
-        post_result GIVEN whatever it assumed (e.g. a variable's claimed value
-        range) -- it says nothing about whether that assumption is actually
-        true, so the hint's own numbers (map/variable name, old/new widths)
-        still need independent cross-checking downstream in
-        `reverify_with_witnesses` itself, not just trusting the proof status
-        here.
+        unreviewed) AND that carry a parsed "map_width_change" or
+        "map_fusion" hint are used -- an approved witness with no parseable
+        hint (including a "variable_width_change"-only witness, which
+        heimdall has no map-level model for -- see build_heimdall_witness_file)
+        contributes nothing here.
+
+        Deliberately NOT gated on the witness's own Z3 self-proof
+        ("proof_status") having succeeded: that proof only checks the LLM's
+        own toy pre_result/post_result formula for internal consistency, and
+        says nothing about whether the transformation is actually equivalent
+        -- that's what the real, independent proof below (heimdall's own
+        symbolic execution over the whole program, plus its own BTF-metadata
+        cross-check of the hint) establishes. Gating reverify on the
+        self-proof too just meant a witness with a syntactically broken
+        formula -- e.g. one that got the numbers right but tripped over Z3's
+        SMT-LIB2 parser some other way -- silently never got heimdall's real
+        check at all, leaving the developer staring at the unconditional
+        strict check's raw "BTF mismatch" as if it were the final word, when
+        a more informed check was available and never even attempted.
+
+        The hint's old_bytes/new_bytes are independently corrected against
+        real BTF metadata before use (see evaluator.py's
+        _correct_map_width_change_hints), so trusting the human's approval
+        instead of the LLM's self-proof here doesn't weaken the actual
+        soundness of what gets accepted -- heimdall still verifies everything
+        itself either way.
 
         Returns:
             Extra artifacts to merge into this iteration's stored artifacts
@@ -838,7 +852,6 @@ class ProcessParallelController:
             w
             for w in witnesses
             if w.get("developer_approved") is True
-            and (w.get("proof") or {}).get("status") == "proven_equivalent"
             and (w.get("map_width_change") or w.get("map_fusion"))
         ]
         self._dump_witness_file(child_program, witnesses, qualifying)
@@ -850,6 +863,16 @@ class ProcessParallelController:
         )
         if metrics:
             child_program.metrics.update(metrics)
+            # The relaxed/witness-aware result IS the answer once it exists --
+            # not a second opinion filed next to the unconditional strict one.
+            # Downstream consumers (MAP-Elites feature grid, fitness, the
+            # review UI's fallback-to-relaxed display) should all see ONE
+            # equivalence verdict per child, and it should be the one that
+            # accounts for what the developer actually approved.
+            if "semantic_equivalent_relaxed" in metrics:
+                child_program.metrics["semantic_equivalent"] = metrics[
+                    "semantic_equivalent_relaxed"
+                ]
         return artifacts
 
     def _dump_witness_file(
