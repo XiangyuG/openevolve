@@ -66,6 +66,15 @@ def _tcprtt_args(obj: Path) -> list[str]:
     return [str(obj), "fentry", str(RUNNER_SECONDS), str(RUNNER_MAX_ENTRIES)]
 
 
+def _generic_runner_args(obj: Path) -> list[str]:
+    # generic_runner takes the attach-target program names directly on argv
+    # (see c_bpf_programs/libbpf-tools/generic_runner.c) -- reuse the
+    # currently-selected tool's own equiv_entries so there's exactly one
+    # source of truth per tool for "which programs actually get exercised",
+    # rather than a second hardcoded list living in a bespoke *_runner.c.
+    return [str(obj), str(RUNNER_SECONDS), *TOOL["equiv_entries"]]
+
+
 # Each entry: initial-program filename (also the equivalence-check baseline --
 # "the original program" this evolution run started from), runner binary name
 # in LIBBPF_TOOLS_DIR, an argv builder, the output shape the runner prints
@@ -147,6 +156,239 @@ TOOLS = {
         "equiv_entries": ["sched_switch", "sched_wakeup"],
         "equiv_maps": ["counts:hash", "start:hash"],
     },
+    # The tools below share one generic_runner (see generic_runner.c) instead
+    # of a bespoke *_runner.c each -- it attaches whatever program names its
+    # argv is given (here, always equiv_entries) via plain
+    # bpf_program__attach(), tolerating individual attach failures (expected
+    # for CO-RE tp_btf/raw_tp fallback pairs, where usually only one side is
+    # supported by a given kernel), and reads the kernel's own per-program
+    # bpf_prog_info counters -- no tool-specific map-reading code needed.
+    # "workload" (interpreter, script path relative to LIBBPF_TOOLS_DIR) is
+    # the default workload for that tool absent a BPF_WORKLOAD_CMD override;
+    # tools without one fall back to the fio default, which already suits
+    # plain file-I/O-triggered tools.
+    "drsnoop": {
+        "source": "drsnoop.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["direct_reclaim_begin_btf", "direct_reclaim_end_btf", "direct_reclaim_begin", "direct_reclaim_end"],
+        "equiv_maps": ["start:hash"],
+    },
+    "fsdist": {
+        "source": "fsdist.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["file_read_entry", "file_read_exit", "file_write_entry", "file_write_exit", "file_open_entry", "file_open_exit", "file_sync_entry", "file_sync_exit", "getattr_entry", "getattr_exit", "file_read_fentry", "file_read_fexit", "file_write_fentry", "file_write_fexit", "file_open_fentry", "file_open_fexit", "file_sync_fentry", "file_sync_fexit", "getattr_fentry", "getattr_fexit"],
+        "equiv_maps": ["starts:hash"],
+    },
+    "fsslower": {
+        "source": "fsslower.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["file_read_entry", "file_read_exit", "file_write_entry", "file_write_exit", "file_open_entry", "file_open_exit", "file_sync_entry", "file_sync_exit", "file_read_fentry", "file_read_fexit", "file_write_fentry", "file_write_fexit", "file_open_fentry", "file_open_fexit", "file_sync_fentry", "file_sync_fexit"],
+        "equiv_maps": ["starts:hash"],
+    },
+    "futexctn": {
+        "source": "futexctn.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        # NOTE: heimdall's symbolic execution on "futex_exit" alone (self-vs-
+        # self) still hadn't resolved after 320s in testing -- likely path
+        # explosion in the histogram-bucketing logic, not a wiring issue
+        # (BTF/entry name/map spec all check out; "futex_enter" alone is
+        # fast). semantic_equivalent for this tool will likely show
+        # result_type "timeout" (handled gracefully, not a crash) rather than
+        # a real true/false verdict until this is looked at specifically.
+        "equiv_entries": ["futex_enter", "futex_exit"],
+        "equiv_maps": ["start:hash", "hists:hash"],
+        "workload": ("python3", "workloads/futex_contention.py"),
+    },
+    "mdflush": {
+        "source": "mdflush.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        # No dedicated workload yet -- the default fio workload doesn't
+        # reliably trigger a real block-device flush; confirmed 0 events
+        # end-to-end in testing. Equivalence checking is unaffected.
+        "equiv_entries": ["md_flush_request", "kprobe_md_flush_request"],
+        "equiv_maps": [],
+    },
+    "mountsnoop": {
+        "source": "mountsnoop.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["mount_entry", "mount_exit", "umount_entry", "umount_exit", "fsopen_entry", "fsopen_exit", "fsconfig_entry", "fsconfig_exit", "fsmount_entry", "fsmount_exit", "move_mount_entry", "move_mount_exit"],
+        "equiv_maps": ["heap:array", "args:hash"],
+        "workload": ("sudo_shell", "workloads/mount_loop.sh"),
+    },
+    "numamove": {
+        "source": "numamove.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        # Needs real multi-NUMA-node memory pressure to ever fire -- best
+        # effort. Equivalence checking (below) doesn't depend on the
+        # workload ever triggering it; it's a static/symbolic check of the
+        # compiled object, not runtime events.
+        "equiv_entries": ["fentry_migrate_misplaced_page", "fentry_migrate_misplaced_folio", "kprobe_migrate_misplaced_page", "kprobe_migrate_misplaced_folio", "fexit_migrate_misplaced_page_exit", "fexit_migrate_misplaced_folio_exit", "kretprobe_migrate_misplaced_page_exit", "kretprobe_migrate_misplaced_folio_exit"],
+        "equiv_maps": ["start:hash"],
+    },
+    "offcputime": {
+        "source": "offcputime.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["sched_switch", "sched_switch_raw"],
+        "equiv_maps": ["start:hash", "info:hash", "tgids:hash", "pids:hash"],
+        "workload": ("python3", "workloads/sched_stress.py"),
+    },
+    "oomkill": {
+        "source": "oomkill.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        # Deliberately no dedicated workload -- triggering this means an
+        # actual OOM kill on the box. Zero events is the expected, accepted
+        # outcome (see evaluator.py's "average execution: unavailable"
+        # handling); equivalence checking doesn't need it to ever fire.
+        "equiv_entries": ["oom_kill_process"],
+        "equiv_maps": ["heap:array"],
+    },
+    "runqslower": {
+        "source": "runqslower.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["sched_wakeup", "sched_wakeup_new", "sched_switch", "handle_sched_wakeup", "handle_sched_wakeup_new", "handle_sched_switch"],
+        "equiv_maps": ["start:hash"],
+        "workload": ("python3", "workloads/sched_stress.py"),
+    },
+    "sigsnoop": {
+        "source": "sigsnoop.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        # NOTE: fails to LOAD on this box's kernel/libbpf combo -- "libbpf:
+        # extern weak function bpf_task_from_pid is unsupported" (the source
+        # guards its use with bpf_ksym_exists(), but even referencing it as
+        # weak trips up this libbpf version at bpf_object__open_file() time).
+        # Confirmed 0 runtime events end-to-end. heimdall's equivalence check
+        # is unaffected (angr's static ELF/BTF parsing doesn't go through
+        # libbpf's real kernel-loading path at all).
+        "equiv_entries": ["kill_entry", "kill_exit", "tkill_entry", "tkill_exit", "tgkill_entry", "tgkill_exit", "sig_trace"],
+        "equiv_maps": ["values:hash"],
+        "workload": ("python3", "workloads/signal_loop.py"),
+    },
+    "slabratetop": {
+        "source": "slabratetop.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["kmem_cache_alloc", "kmem_cache_alloc_noprof"],
+        "equiv_maps": ["slab_entries:hash"],
+    },
+    "softirqs": {
+        "source": "softirqs.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["softirq_entry_btf", "softirq_exit_btf", "softirq_entry", "softirq_exit"],
+        "equiv_maps": ["start:array"],
+        "workload": ("python3", "workloads/sched_stress.py"),
+    },
+    "solisten": {
+        "source": "solisten.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["inet_listen_entry", "inet_listen_exit", "inet_listen_fexit"],
+        "equiv_maps": ["values:hash"],
+        "workload": ("python3", "workloads/network_loop.py"),
+    },
+    "statsnoop": {
+        "source": "statsnoop.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["handle_statfs_entry", "handle_statfs_return", "handle_newstat_entry", "handle_newstat_return", "handle_statx_entry", "handle_statx_return", "handle_newfstat_entry", "handle_newfstat_return", "handle_newfstatat_entry", "handle_newfstatat_return", "handle_newlstat_entry", "handle_newlstat_return"],
+        "equiv_maps": ["values:hash"],
+    },
+    "syncsnoop": {
+        "source": "syncsnoop.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["tracepoint__syscalls__sys_enter_sync", "tracepoint__syscalls__sys_enter_fsync", "tracepoint__syscalls__sys_enter_fdatasync", "tracepoint__syscalls__sys_enter_msync", "tracepoint__syscalls__sys_enter_sync_file_range", "tracepoint__syscalls__sys_enter_sync_file_range2", "tracepoint__syscalls__sys_enter_arm_sync_file_range", "tracepoint__syscalls__sys_enter_syncfs"],
+        "equiv_maps": [],
+    },
+    "tcpconnect": {
+        "source": "tcpconnect.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["tcp_v4_connect", "tcp_v4_connect_ret", "tcp_v6_connect", "tcp_v6_connect_ret"],
+        "equiv_maps": ["sockets:hash", "ipv4_count:hash", "ipv6_count:hash"],
+        "workload": ("python3", "workloads/network_loop.py"),
+    },
+    "tcpconnlat": {
+        "source": "tcpconnlat.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["tcp_v4_connect", "tcp_v6_connect", "tcp_rcv_state_process", "tcp_destroy_sock", "fentry_tcp_v4_connect", "fentry_tcp_v6_connect", "fentry_tcp_rcv_state_process"],
+        "equiv_maps": ["start:hash"],
+        "workload": ("python3", "workloads/network_loop.py"),
+    },
+    "tcplife": {
+        "source": "tcplife.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["inet_sock_set_state"],
+        "equiv_maps": ["birth:hash", "idents:hash"],
+        "workload": ("python3", "workloads/network_loop.py"),
+    },
+    "tcpstates": {
+        "source": "tcpstates.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["handle_set_state"],
+        "equiv_maps": ["sports:hash", "dports:hash", "timestamps:hash"],
+        "workload": ("python3", "workloads/network_loop.py"),
+    },
+    "tcpsynbl": {
+        "source": "tcpsynbl.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["tcp_v4_syn_recv_kprobe", "tcp_v6_syn_recv_kprobe", "tcp_v4_syn_recv", "tcp_v6_syn_recv"],
+        "equiv_maps": ["hists:hash"],
+        "workload": ("python3", "workloads/network_loop.py"),
+    },
+    "tcptracer": {
+        "source": "tcptracer.bpf.c",
+        "runner": "generic_runner",
+        "args": _generic_runner_args,
+        "parser": "table",
+        "equiv_entries": ["tcp_v4_connect", "tcp_v4_connect_ret", "tcp_v6_connect", "tcp_v6_connect_ret", "entry_trace_close", "enter_tcp_set_state", "exit_inet_csk_accept"],
+        "equiv_maps": ["tuplepid:hash", "sockets:hash"],
+        "workload": ("python3", "workloads/network_loop.py"),
+    },
+    # Deferred (not in this batch): ksnoop (dynamic runtime-configured
+    # kprobe target, doesn't fit "attach by fixed name"), llcstat/runqlen/
+    # profile (perf_event/PMU attach, different mechanism), bashreadline/
+    # gethostlatency/memleak/javagc (uprobe/USDT on an external process).
+    # filelife/opensnoop/readahead/tcpktlat don't compile in this dataset
+    # (missing path_helpers.bpf.h/compat.bpf.h headers, or a struct folio/
+    # vmlinux.h kernel-version mismatch) -- same class of pre-existing gap
+    # as tcprtt_op/bitesize_op noted in the README.
 }
 
 BPF_TOOL = os.environ.get("BPF_TOOL", "filetop")
@@ -633,6 +875,16 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
         import shlex
 
         workload_cmd = shlex.split(WORKLOAD_CMD_OVERRIDE)
+    elif TOOL.get("workload"):
+        # Per-tool default (see the generic_runner-based TOOLS entries above)
+        # so each tool works out of the box without the caller having to set
+        # BPF_WORKLOAD_CMD to match whichever tool BPF_TOOL happens to be.
+        kind, rel_path = TOOL["workload"]
+        script = str(LIBBPF_TOOLS_DIR / rel_path)
+        if kind == "sudo_shell":
+            workload_cmd = ["sudo", "-n", script]
+        else:
+            workload_cmd = [kind, script]
     else:
         workload_cmd = [
             FIO,
