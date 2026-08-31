@@ -538,6 +538,70 @@ def format_witness_decisions_for_prompt(witnesses: List[Dict[str, Any]]) -> str:
     return "\n\n".join(blocks)
 
 
+def _witness_hint_key(w: Dict[str, Any]) -> Optional[tuple]:
+    """Identity of the transform a witness claims, for deduplicating an
+    accumulated (inherited + new) witness list: ("val", map) / ("key", map) /
+    ("fusion", target). None for a witness with no translatable hint."""
+    if isinstance(w.get("map_width_change"), dict) and w["map_width_change"].get("map"):
+        return ("val", w["map_width_change"]["map"])
+    if isinstance(w.get("map_key_width_change"), dict) and w["map_key_width_change"].get("map"):
+        return ("key", w["map_key_width_change"]["map"])
+    if isinstance(w.get("map_fusion"), dict) and w["map_fusion"].get("target"):
+        return ("fusion", w["map_fusion"]["target"])
+    return None
+
+
+def merge_witnesses(
+    inherited: List[Dict[str, Any]], new: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """Combine an ancestry's accumulated witnesses with this iteration's newly
+    approved ones into one list with each transform represented once.
+
+    On collision for the same transform (e.g. an ancestor narrowed a map value
+    8->4 and this iteration narrows it 4->2) the entry describing the DEEPER
+    narrowing wins -- smaller new_bytes, and for a key narrowing also the
+    smaller `bound`. build_heimdall_witness_file re-anchors every byte count to
+    the real baseline<->candidate BTF sizes anyway; this just keeps the carried
+    set small and picks the right `bound` (which BTF can't supply).
+
+    Witnesses without a translatable hint are dropped (they carry nothing
+    forward). The `new` list wins ties so a re-approved witness refreshes any
+    inherited copy.
+    """
+    by_key: Dict[tuple, Dict[str, Any]] = {}
+    order: List[tuple] = []
+    for w in list(inherited) + list(new):
+        k = _witness_hint_key(w)
+        if k is None:
+            continue
+        if k not in by_key:
+            by_key[k] = w
+            order.append(k)
+            continue
+        cur = by_key[k]
+        kind = k[0]
+        if kind in ("val", "key"):
+            hk = "map_width_change" if kind == "val" else "map_key_width_change"
+            try:
+                cur_new = int(cur[hk]["new_bytes"])
+                w_new = int(w[hk]["new_bytes"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if w_new <= cur_new:
+                merged = dict(w)
+                if kind == "key":
+                    bounds = [
+                        b
+                        for b in (cur[hk].get("bound"), w[hk].get("bound"))
+                        if b is not None
+                    ]
+                    if bounds:
+                        merged[hk] = {**w[hk], "bound": min(bounds)}
+                by_key[k] = merged
+        # fusion: keep the first (no natural "deeper" ordering)
+    return [by_key[k] for k in order]
+
+
 def _norm_width_hint(hint: Any) -> Optional[tuple]:
     """(old_bits, new_bits) for a {map, old_bytes, new_bytes} narrowing hint, or
     None when it is absent, malformed, or not actually a narrowing."""
@@ -582,24 +646,35 @@ def build_heimdall_witness_file(witnesses: List[Dict[str, Any]]) -> Dict[str, An
     """
     # map name -> {"val": (old_bits,new_bits)|None, "key": (...)|None,
     #              "key_field": str|None, "key_bound": int|None}
+    # When several witnesses (e.g. inherited from an ancestry, see
+    # _merge_witnesses) touch the same map, keep the DEEPEST narrowing --
+    # smallest new width -- and the TIGHTEST key bound.
     per_map: Dict[str, Dict[str, Any]] = {}
+
+    def _slot(name: str) -> Dict[str, Any]:
+        return per_map.setdefault(
+            name, {"val": None, "key": None, "key_field": None, "key_bound": None}
+        )
+
+    def _deeper(cur, new):
+        return new if cur is None else min((cur, new), key=lambda w: w[1])
+
     for w in witnesses:
         vwidths = _norm_width_hint(w.get("map_width_change"))
         if vwidths is not None and (w["map_width_change"] or {}).get("map"):
-            per_map.setdefault(
-                w["map_width_change"]["map"],
-                {"val": None, "key": None, "key_field": None, "key_bound": None},
-            )["val"] = vwidths
+            s = _slot(w["map_width_change"]["map"])
+            s["val"] = _deeper(s["val"], vwidths)
 
         kh = w.get("map_key_width_change")
         kwidths = _norm_width_hint(kh)
         if kwidths is not None and (kh or {}).get("map"):
-            slot = per_map.setdefault(
-                kh["map"], {"val": None, "key": None, "key_field": None, "key_bound": None}
-            )
-            slot["key"] = kwidths
-            slot["key_field"] = kh.get("ctx_field")
-            slot["key_bound"] = kh.get("bound")
+            s = _slot(kh["map"])
+            s["key"] = _deeper(s["key"], kwidths)
+            if kh.get("ctx_field") and not s["key_field"]:
+                s["key_field"] = kh["ctx_field"]
+            b = kh.get("bound")
+            if b is not None:
+                s["key_bound"] = b if s["key_bound"] is None else min(s["key_bound"], b)
 
     bindings = []
     assumptions = []

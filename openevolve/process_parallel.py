@@ -847,19 +847,41 @@ class ProcessParallelController:
             Extra artifacts to merge into this iteration's stored artifacts
             (empty dict if no reverify ran).
         """
+        from openevolve.utils.code_utils import merge_witnesses
+
         witnesses = child_program.metadata.get("witnesses") or []
-        qualifying = [
+        newly_approved = [
             w
             for w in witnesses
             if w.get("developer_approved") is True
-            and (w.get("map_width_change") or w.get("map_fusion"))
+            and (
+                w.get("map_width_change")
+                or w.get("map_key_width_change")
+                or w.get("map_fusion")
+            )
         ]
-        self._dump_witness_file(child_program, witnesses, qualifying)
-        if not qualifying:
+        # Every witness approved anywhere in this program's ancestry is carried
+        # forward, so a descendant is re-verified against the run's FIXED
+        # baseline with the full set of claims its lineage relies on -- not just
+        # the delta this iteration proposed. build_heimdall_witness_file +
+        # _correct_map_width_change_hints re-anchor byte counts to the real
+        # baseline<->candidate BTF sizes; what propagation actually preserves is
+        # the semantic claims BTF can't supply (a key narrowing's range bound,
+        # and any future non-size witness kind).
+        inherited: list = []
+        if child_program.parent_id:
+            parent = self.database.get(child_program.parent_id)
+            if parent is not None:
+                inherited = parent.metadata.get("approved_witnesses") or []
+        accumulated = merge_witnesses(inherited, newly_approved)
+        child_program.metadata["approved_witnesses"] = accumulated
+
+        self._dump_witness_file(child_program, witnesses, accumulated)
+        if not accumulated:
             return {}
 
         metrics, artifacts = await self._get_reverify_evaluator().reverify_program(
-            child_program.code, child_program.id, qualifying
+            child_program.code, child_program.id, accumulated
         )
         if metrics:
             child_program.metrics.update(metrics)

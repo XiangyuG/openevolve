@@ -510,10 +510,10 @@ def _baseline_object() -> Path | None:
     return _baseline_object_cache
 
 
-def _map_value_sizes(obj: Path) -> dict[str, int]:
-    """Real BTF value_size (bytes) per map in `obj`, via btf_parser.py --json
-    in the c2rust conda env. Empty dict on any failure (missing BTF, timeout,
-    bad JSON) -- callers must treat that as "unknown", not "zero-size"."""
+def _map_field_sizes(obj: Path, field: str) -> dict[str, int]:
+    """Real BTF <field> (bytes, field is "key_size" or "value_size") per map in
+    `obj`, via btf_parser.py --json in the c2rust conda env. Empty dict on any
+    failure -- callers must treat that as "unknown", not "zero-size"."""
     try:
         result = subprocess.run(
             ["conda", "run", "-n", EQUIV_CONDA_ENV, "python", str(BTF_PARSER), str(obj), "--json"],
@@ -525,10 +525,19 @@ def _map_value_sizes(obj: Path) -> dict[str, int]:
         parsed = json.loads(result.stdout)
     except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError):
         return {}
-    return {name: meta["value_size"] for name, meta in parsed.items() if "value_size" in meta}
+    return {name: meta[field] for name, meta in parsed.items() if field in meta}
+
+
+def _map_value_sizes(obj: Path) -> dict[str, int]:
+    return _map_field_sizes(obj, "value_size")
+
+
+def _map_key_sizes(obj: Path) -> dict[str, int]:
+    return _map_field_sizes(obj, "key_size")
 
 
 _baseline_map_value_sizes_cache: object = _UNSET
+_baseline_map_key_sizes_cache: object = _UNSET
 
 
 def _baseline_map_value_sizes() -> dict[str, int]:
@@ -545,13 +554,27 @@ def _baseline_map_value_sizes() -> dict[str, int]:
     return _baseline_map_value_sizes_cache
 
 
+def _baseline_map_key_sizes() -> dict[str, int]:
+    """_map_key_sizes() for the fixed baseline object, cached."""
+    global _baseline_map_key_sizes_cache
+    if _baseline_map_key_sizes_cache is not _UNSET:
+        return _baseline_map_key_sizes_cache
+    baseline_object = _baseline_object()
+    _baseline_map_key_sizes_cache = (
+        _map_key_sizes(baseline_object) if baseline_object is not None else {}
+    )
+    return _baseline_map_key_sizes_cache
+
+
 def _correct_map_width_change_hints(
     witnesses: "list[dict]", candidate_object: Path
 ) -> "list[dict]":
-    """Replace each witness's self-reported map_width_change (old_bytes,
-    new_bytes) with the REAL BTF value_size of that map in (respectively) the
-    baseline object and this specific candidate object, whenever both are
-    known.
+    """Replace each witness's self-reported map_width_change /
+    map_key_width_change (old_bytes, new_bytes) with the REAL BTF value_size /
+    key_size of that map in (respectively) the fixed baseline object and this
+    candidate object, whenever both are known. (`ctx_field` / `bound` on a key
+    hint are semantic claims BTF can't supply -- left as the LLM stated and
+    the developer approved.)
 
     Why: heimdall (verify_equivalence.py) only honors a --relax-map-value-width
     hint when it EXACTLY equals the two binaries' real BTF value_size -- by
@@ -574,27 +597,27 @@ def _correct_map_width_change_hints(
     can't be determined, are returned unchanged -- heimdall's own exact-match
     gate is the backstop either way, so an uncorrected/wrong hint can only
     ever fall back to the strict check, never produce an unsound accept."""
-    baseline_sizes = _baseline_map_value_sizes()
-    if not baseline_sizes:
-        return witnesses
-    candidate_sizes = _map_value_sizes(candidate_object)
-    if not candidate_sizes:
-        return witnesses
+    base_val = _baseline_map_value_sizes()
+    base_key = _baseline_map_key_sizes()
+    cand_val = _map_value_sizes(candidate_object) if base_val else {}
+    cand_key = _map_key_sizes(candidate_object) if base_key else {}
+
+    def _fix(w, hint_key, base_sizes, cand_sizes):
+        h = w.get(hint_key)
+        if not (isinstance(h, dict) and base_sizes and cand_sizes):
+            return w
+        name = h.get("map")
+        real_old, real_new = base_sizes.get(name), cand_sizes.get(name)
+        if real_old is None or real_new is None:
+            return w
+        w = dict(w)
+        w[hint_key] = {**h, "map": name, "old_bytes": real_old, "new_bytes": real_new}
+        return w
 
     corrected = []
     for w in witnesses:
-        mwc = w.get("map_width_change")
-        if not mwc:
-            corrected.append(w)
-            continue
-        map_name = mwc.get("map")
-        real_old = baseline_sizes.get(map_name)
-        real_new = candidate_sizes.get(map_name)
-        if real_old is None or real_new is None:
-            corrected.append(w)
-            continue
-        w = dict(w)
-        w["map_width_change"] = {"map": map_name, "old_bytes": real_old, "new_bytes": real_new}
+        w = _fix(w, "map_width_change", base_val, cand_val)
+        w = _fix(w, "map_key_width_change", base_key, cand_key)
         corrected.append(w)
     return corrected
 

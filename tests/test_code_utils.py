@@ -10,6 +10,7 @@ from openevolve.utils.code_utils import (
     build_heimdall_witness_file,
     extract_diffs,
     format_diff_summary,
+    merge_witnesses,
 )
 
 
@@ -281,6 +282,44 @@ class TestBuildHeimdallWitnessFile(unittest.TestCase):
             ]
         )
         self.assertEqual(out["witness"]["bindings"], [])
+
+
+class TestMergeWitnesses(unittest.TestCase):
+    """merge_witnesses(): accumulate an ancestry's witnesses with new ones"""
+
+    def test_inherited_key_plus_new_value_both_kept(self):
+        inherited = [{"map_key_width_change": {"map": "qp", "old_bytes": 4, "new_bytes": 2,
+                                                "ctx_field": "rx_queue_index", "bound": 65536}}]
+        new = [{"map_width_change": {"map": "qp", "old_bytes": 8, "new_bytes": 4}}]
+        merged = merge_witnesses(inherited, new)
+        self.assertEqual(len(merged), 2)
+
+        out = build_heimdall_witness_file(merged)
+        mc = out["witness"]["bindings"][0]["relation"]["map_correspondence"]
+        self.assertEqual(mc["optimized_key"], {"truncate": {"value": "k", "width": 16}})
+        self.assertEqual(
+            mc["value_relation"]["equal"]["right"],
+            {"truncate": {"value": "original.value", "width": 32}},
+        )
+        self.assertEqual(len(out["witness"]["assumptions"]), 1)
+
+    def test_same_map_deeper_narrowing_wins_and_tightest_bound(self):
+        inherited = [{"map_key_width_change": {"map": "qp", "old_bytes": 4, "new_bytes": 2,
+                                                "ctx_field": "rx_queue_index", "bound": 65536}}]
+        new = [{"map_key_width_change": {"map": "qp", "old_bytes": 2, "new_bytes": 1,
+                                         "ctx_field": None, "bound": 200}}]
+        merged = merge_witnesses(inherited, new)
+        self.assertEqual(len(merged), 1)
+        kh = merged[0]["map_key_width_change"]
+        self.assertEqual(kh["new_bytes"], 1)
+        self.assertEqual(kh["bound"], 200)  # min(65536, 200)
+
+    def test_untranslatable_dropped(self):
+        merged = merge_witnesses(
+            [{"variable_width_change": {"var": "x", "old_bits": 32, "new_bits": 16}}],
+            [{"summary": "pure refactor"}],
+        )
+        self.assertEqual(merged, [])
 
 
 if __name__ == "__main__":
