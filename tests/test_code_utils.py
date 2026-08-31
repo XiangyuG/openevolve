@@ -212,6 +212,59 @@ class TestBuildHeimdallWitnessFile(unittest.TestCase):
         mc = b["relation"]["map_correspondence"]
         self.assertEqual(mc["original_key"], "k")
         self.assertEqual(mc["optimized_key"], "k")
+        self.assertNotIn("assume", mc)
+        self.assertEqual(
+            mc["value_relation"]["equal"]["right"],
+            {"truncate": {"value": "original.value", "width": 32}},
+        )
+
+    def test_map_key_width_change_adds_truncated_key_assume_and_assumption(self):
+        from openevolve.utils.code_utils import _parse_map_key_width_change
+
+        hint = _parse_map_key_width_change("qp: 4 -> 2 key rx_queue_index < 65536")
+        self.assertEqual(hint["ctx_field"], "rx_queue_index")
+        self.assertEqual(hint["bound"], 65536)
+
+        out = build_heimdall_witness_file([{"index": 1, "map_key_width_change": hint}])
+        w = out["witness"]
+        mc = w["bindings"][0]["relation"]["map_correspondence"]
+        self.assertEqual(mc["optimized_key"], {"truncate": {"value": "k", "width": 16}})
+        self.assertEqual(
+            mc["assume"],
+            {"unsigned_le": {"left": "k", "right": {"value": 65535, "type": "u32"}}},
+        )
+        self.assertEqual(mc["value_relation"], {"equal": True})
+        self.assertEqual(len(w["assumptions"]), 1)
+        self.assertEqual(
+            w["assumptions"][0]["expression"],
+            {"unsigned_lt": {"left": "original.ctx.rx_queue_index",
+                             "right": {"value": 65536, "type": "u32"}}},
+        )
+
+    def test_map_key_width_change_without_bound_clause_has_no_assumption(self):
+        out = build_heimdall_witness_file(
+            [{"map_key_width_change": {"map": "qp", "old_bytes": 4, "new_bytes": 2,
+                                       "ctx_field": None, "bound": None}}]
+        )
+        self.assertEqual(out["witness"]["assumptions"], [])
+        self.assertIn(
+            "assume",
+            out["witness"]["bindings"][0]["relation"]["map_correspondence"],
+        )
+
+    def test_key_and_value_narrowing_merge_into_one_binding(self):
+        out = build_heimdall_witness_file(
+            [
+                {"map_key_width_change": {"map": "qp", "old_bytes": 4, "new_bytes": 2,
+                                           "ctx_field": None, "bound": None}},
+                {"map_width_change": {"map": "qp", "old_bytes": 8, "new_bytes": 4}},
+            ]
+        )
+        bindings = out["witness"]["bindings"]
+        self.assertEqual(len(bindings), 1)
+        mc = bindings[0]["relation"]["map_correspondence"]
+        self.assertEqual(mc["optimized_key"], {"truncate": {"value": "k", "width": 16}})
+        self.assertIn("assume", mc)
         self.assertEqual(
             mc["value_relation"]["equal"]["right"],
             {"truncate": {"value": "original.value", "width": 32}},

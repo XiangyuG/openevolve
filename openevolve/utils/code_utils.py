@@ -171,6 +171,7 @@ _WITNESS_BLOCK_PATTERN = re.compile(
     r"\s*Formula \(pre-transformation\):\s*(?P<pre_formula>.*?)\s*\n"
     r"\s*Formula \(post-transformation\):\s*(?P<post_formula>.*?)"
     r"(?=\s*\n\s*Map value width change:"
+    r"|\s*\n\s*Map key width change:"
     r"|\s*\n\s*Variable width change:"
     r"|\s*\n\s*Map fusion:"
     r"|" + _ITEM_OR_END + r")"
@@ -180,6 +181,7 @@ _WITNESS_BLOCK_PATTERN = re.compile(
 )
 
 _MAP_WIDTH_CHANGE_TAG_PATTERN = re.compile(r"Map value width change:\s*([^\n]*)")
+_MAP_KEY_WIDTH_CHANGE_TAG_PATTERN = re.compile(r"Map key width change:\s*([^\n]*)")
 _VARIABLE_WIDTH_CHANGE_TAG_PATTERN = re.compile(r"Variable width change:\s*([^\n]*)")
 _MAP_FUSION_TAG_PATTERN = re.compile(r"Map fusion:\s*([^\n]*)")
 
@@ -201,6 +203,15 @@ def _has_example_snippet(detail: str) -> bool:
 
 _MAP_WIDTH_CHANGE_PATTERN = re.compile(r"^(?P<map>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)\s*$")
 
+# "Map key width change: <map>: <old> -> <new> key <ctx_field> < <bound>".
+# The "key <field> < <bound>" clause is what makes the narrowing sound (the
+# program never produces a key >= bound); without it heimdall has no reason
+# the smaller key type is lossless and the check will fail.
+_MAP_KEY_WIDTH_CHANGE_PATTERN = re.compile(
+    r"^(?P<map>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)"
+    r"(?:\s+key\s+(?P<field>[A-Za-z_][\w.]*)\s*<\s*(?P<bound>\d+))?\s*$"
+)
+
 _VARIABLE_WIDTH_CHANGE_PATTERN = re.compile(r"^(?P<var>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)\s*$")
 
 
@@ -221,6 +232,33 @@ def _parse_map_width_change(raw: Optional[str]) -> Optional[Dict[str, Any]]:
         "map": match.group("map").strip(),
         "old_bytes": int(match.group("old")),
         "new_bytes": int(match.group("new")),
+    }
+
+
+def _parse_map_key_width_change(raw: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Parse a "Map key width change: <map>: <old_bytes> -> <new_bytes>
+    key <ctx_field> < <bound>" tag into
+    {"map", "old_bytes", "new_bytes", "ctx_field", "bound"} (ctx_field/bound
+    None when the optional clause is absent).
+
+    build_heimdall_witness_file turns this into a map_correspondence whose
+    optimized_key truncates to the new width, plus -- when ctx_field/bound are
+    given -- a top-level assumption `original.ctx.<ctx_field> < <bound>` so
+    heimdall knows the program never produces a key the smaller type can't
+    hold. Same "this is only a hint, cross-check downstream" caveat as
+    _parse_map_width_change."""
+    if not raw:
+        return None
+    match = _MAP_KEY_WIDTH_CHANGE_PATTERN.match(raw.strip())
+    if not match:
+        return None
+    bound = match.group("bound")
+    return {
+        "map": match.group("map").strip(),
+        "old_bytes": int(match.group("old")),
+        "new_bytes": int(match.group("new")),
+        "ctx_field": (match.group("field") or "").strip() or None,
+        "bound": int(bound) if bound is not None else None,
     }
 
 
@@ -305,10 +343,12 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
 
     Returns:
         List of {"summary", "detail", "witness", "pre_formula", "post_formula",
-        "map_width_change", "variable_width_change", "map_fusion",
-        "example_missing"} dicts, in order.
+        "map_width_change", "map_key_width_change", "variable_width_change",
+        "map_fusion", "example_missing"} dicts, in order.
         "map_width_change" is {"map", "old_bytes", "new_bytes"} or None when
         the LLM didn't tag this witness as a map value-width change.
+        "map_key_width_change" is {"map", "old_bytes", "new_bytes"} or None
+        when the LLM didn't tag this witness as a hash-map key-width change.
         "variable_width_change" is {"var", "old_bits", "new_bits"} or None
         when the LLM didn't tag this witness as a range-justified variable
         narrowing.
@@ -333,6 +373,7 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
         # _WITNESS_BLOCK_PATTERN's comment on why this isn't done positionally.
         tail = match.group("tail") or ""
         map_width_change_match = _MAP_WIDTH_CHANGE_TAG_PATTERN.search(tail)
+        map_key_width_change_match = _MAP_KEY_WIDTH_CHANGE_TAG_PATTERN.search(tail)
         variable_width_change_match = _VARIABLE_WIDTH_CHANGE_TAG_PATTERN.search(tail)
         map_fusion_match = _MAP_FUSION_TAG_PATTERN.search(tail)
 
@@ -345,6 +386,9 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
                 "post_formula": post_formula.strip(),
                 "map_width_change": _parse_map_width_change(
                     map_width_change_match.group(1) if map_width_change_match else None
+                ),
+                "map_key_width_change": _parse_map_key_width_change(
+                    map_key_width_change_match.group(1) if map_key_width_change_match else None
                 ),
                 "variable_width_change": _parse_variable_width_change(
                     variable_width_change_match.group(1) if variable_width_change_match else None
@@ -494,6 +538,21 @@ def format_witness_decisions_for_prompt(witnesses: List[Dict[str, Any]]) -> str:
     return "\n\n".join(blocks)
 
 
+def _norm_width_hint(hint: Any) -> Optional[tuple]:
+    """(old_bits, new_bits) for a {map, old_bytes, new_bytes} narrowing hint, or
+    None when it is absent, malformed, or not actually a narrowing."""
+    if not hint:
+        return None
+    try:
+        old_bits = int(hint["old_bytes"]) * 8
+        new_bits = int(hint["new_bytes"]) * 8
+    except (KeyError, TypeError, ValueError):
+        return None
+    if new_bits <= 0 or new_bits >= old_bits:
+        return None
+    return old_bits, new_bits
+
+
 def build_heimdall_witness_file(witnesses: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Combine extracted witnesses (see extract_transformation_witnesses) into a
@@ -501,70 +560,109 @@ def build_heimdall_witness_file(witnesses: List[Dict[str, Any]]) -> Dict[str, An
     {"witness": {"version", "name", "bindings", "assumptions", "observations"}}
     (schema: heimdall/c2rust_translation/witness_spec.py).
 
-    Only "map_width_change" hints are translated -- into a `map_correspondence`
-    binding that relaxes that map's value comparison to the low new_bytes*8
-    bits (optimized.value == truncate(original.value, new_bits)), the same
-    intent as heimdall's older --relax-map-value-width. "map_fusion" and
-    "variable_width_change" hints are NOT translated yet: heimdall has no
-    binding kind for a map merge, and a range-narrowed scalar is only usable
-    when it names a ctx field, which isn't known here. A witness carrying only
-    those contributes nothing.
+    Translated hints:
+      - "map_width_change" (map VALUE struct narrowed) -> a map_correspondence
+        whose value_relation is optimized.value == truncate(original.value,
+        new_bits), i.e. the two maps agree on the low new_bytes*8 bits.
+      - "map_key_width_change" (hash map KEY type narrowed) -> the same
+        binding's optimized_key becomes truncate(k, new_bits) under
+        `assume: k <= 2**new_bits - 1` (the key always fits, which the LLM
+        must have proven in that witness's formulas).
+    Both hints for the same map are merged into one binding.
+
+    NOT translated: "map_fusion" (heimdall has no map-merge binding) and
+    "variable_width_change" (a range-narrowed scalar needs a ctx field name
+    that isn't known here). A witness carrying only those contributes nothing.
 
     "observations" is left empty on purpose -- that tells heimdall to keep
     comparing every output strictly, with only the bound map(s) relaxed.
 
-    Args:
-        witnesses: Witness dicts (see extract_transformation_witnesses),
-            each optionally stamped with an "index"
-
-    Returns:
-        {"witness": {...}} dict, ready to json.dump to a --witness path
-        (bindings == [] if nothing qualifies)
+    Returns {"witness": {...}} ready to json.dump to a --witness path
+    (bindings == [] if nothing qualifies).
     """
-    bindings = []
+    # map name -> {"val": (old_bits,new_bits)|None, "key": (...)|None,
+    #              "key_field": str|None, "key_bound": int|None}
+    per_map: Dict[str, Dict[str, Any]] = {}
     for w in witnesses:
-        mwc = w.get("map_width_change")
-        if not mwc:
-            continue
-        map_name = mwc.get("map")
-        try:
-            old_bits = int(mwc["old_bytes"]) * 8
-            new_bits = int(mwc["new_bytes"]) * 8
-        except (KeyError, TypeError, ValueError):
-            continue
-        if not map_name or new_bits <= 0 or new_bits >= old_bits:
-            # not a narrowing (or unusable) -- nothing to relax
-            continue
-        bindings.append(
-            {
-                "name": map_name,
-                "original": {"object": map_name, "type": f"map<_, u{old_bits}>"},
-                "optimized": {"object": map_name, "type": f"map<_, u{new_bits}>"},
-                "relation": {
-                    "map_correspondence": {
-                        "original_key": "k",
-                        "optimized_key": "k",
-                        "value_relation": {
-                            "equal": {
-                                "left": "optimized.value",
-                                "right": {
-                                    "truncate": {
-                                        "value": "original.value",
-                                        "width": new_bits,
-                                    }
-                                },
+        vwidths = _norm_width_hint(w.get("map_width_change"))
+        if vwidths is not None and (w["map_width_change"] or {}).get("map"):
+            per_map.setdefault(
+                w["map_width_change"]["map"],
+                {"val": None, "key": None, "key_field": None, "key_bound": None},
+            )["val"] = vwidths
+
+        kh = w.get("map_key_width_change")
+        kwidths = _norm_width_hint(kh)
+        if kwidths is not None and (kh or {}).get("map"):
+            slot = per_map.setdefault(
+                kh["map"], {"val": None, "key": None, "key_field": None, "key_bound": None}
+            )
+            slot["key"] = kwidths
+            slot["key_field"] = kh.get("ctx_field")
+            slot["key_bound"] = kh.get("bound")
+
+    bindings = []
+    assumptions = []
+    for name, hints in per_map.items():
+        val, key = hints["val"], hints["key"]
+        mc: Dict[str, Any] = {"original_key": "k"}
+        if key is not None:
+            key_old, key_new = key
+            mc["assume"] = {
+                "unsigned_le": {
+                    "left": "k",
+                    "right": {"value": (1 << key_new) - 1, "type": f"u{key_old}"},
+                }
+            }
+            mc["optimized_key"] = {"truncate": {"value": "k", "width": key_new}}
+            # the key narrowing is only sound if the program's own key input
+            # stays below `bound` -- surface that as a top-level assumption
+            field, bound = hints["key_field"], hints["key_bound"]
+            if field and bound is not None:
+                assumptions.append(
+                    {
+                        "id": f"key_{name}",
+                        "expression": {
+                            "unsigned_lt": {
+                                "left": f"original.ctx.{field}",
+                                "right": {"value": int(bound), "type": f"u{key_old}"},
                             }
                         },
+                        "provenance": {"kind": "llm_claimed"},
+                        "description": f"{field} < {bound} makes the {name} key narrowing lossless",
                     }
-                },
+                )
+        else:
+            mc["optimized_key"] = "k"
+        if val is not None:
+            mc["value_relation"] = {
+                "equal": {
+                    "left": "optimized.value",
+                    "right": {"truncate": {"value": "original.value", "width": val[1]}},
+                }
+            }
+        else:
+            mc["value_relation"] = {"equal": True}
+
+        okey = f"u{key[0]}" if key else "_"
+        nkey = f"u{key[1]}" if key else "_"
+        oval = f"u{val[0]}" if val else "_"
+        nval = f"u{val[1]}" if val else "_"
+        bindings.append(
+            {
+                "name": name,
+                "original": {"object": name, "type": f"map<{okey}, {oval}>"},
+                "optimized": {"object": name, "type": f"map<{nkey}, {nval}>"},
+                "relation": {"map_correspondence": mc},
             }
         )
+
     return {
         "witness": {
             "version": "0.1",
             "name": "openevolve_transform",
             "bindings": bindings,
-            "assumptions": [],
+            "assumptions": assumptions,
             "observations": [],
         }
     }
