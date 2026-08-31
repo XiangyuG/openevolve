@@ -32,7 +32,10 @@ from openevolve.evaluation_result import EvaluationResult
 from openevolve.utils.code_utils import build_heimdall_witness_file
 
 
-HEIMDALL_ROOT = Path(os.environ.get("HEIMDALL_ROOT", "/users/xiang95/heimdall-private"))
+# Default: this OpenEvolve checkout is the `openevolve/` submodule of a Heimdall
+# repo, so the repo root is three levels up from examples/bpf_compile/.
+_DEFAULT_HEIMDALL_ROOT = Path(__file__).resolve().parents[3]
+HEIMDALL_ROOT = Path(os.environ.get("HEIMDALL_ROOT", str(_DEFAULT_HEIMDALL_ROOT)))
 C2RUST_ROOT = HEIMDALL_ROOT / "c2rust_translation"
 LIBBPF_TOOLS_DIR = Path(
     os.environ.get(
@@ -585,26 +588,26 @@ def _witness_file_args(
 ) -> tuple[list[str], "Path | None"]:
     """Write developer-approved witnesses (see
     openevolve/utils/code_utils.py's extract_transformation_witnesses) out as a
-    heimdall-private --witness-file JSON (build_heimdall_witness_file) and
-    return the ["--witness-file", path] flag for verify_mixed_entries.py,
-    plus the path itself (so the caller can leave it in tmp_dir's lifetime).
+    heimdall `--witness` file (build_heimdall_witness_file -> a single
+    {"witness": {bindings, assumptions, observations}} object) and return the
+    ["--witness", path] flag for verify_mixed_entries.py, plus the path itself
+    (so the caller can leave it in tmp_dir's lifetime).
 
-    --witness-file lets heimdall derive BOTH --relax-map-value-width hints
-    (from each witness's "map_width_change") AND map-fusion groups (from
-    "map_fusion") itself, and cross-validate them against the object files'
-    real BTF metadata / its own extracted formulas before relaxing anything or
-    treating two maps as merged -- a wrong or stale hint here can't force a
-    false "equivalent" verdict.
+    Each "map_width_change" hint becomes a `map_correspondence` binding that
+    relaxes that map's value comparison to the narrowed width, leaving every
+    other output compared strictly. "map_fusion" hints are not translated yet
+    (see build_heimdall_witness_file).
 
     Returns ([], None) if there are no qualifying witnesses (nothing to
     write)."""
     witness_file_data = build_heimdall_witness_file(witnesses or [])
-    if not witness_file_data["witnesses"]:
+    spec = witness_file_data.get("witness", {})
+    if not (spec.get("bindings") or spec.get("assumptions")):
         return [], None
 
-    witness_file_path = Path(tmp_dir) / "witnesses.json"
+    witness_file_path = Path(tmp_dir) / "witness.json"
     witness_file_path.write_text(json.dumps(witness_file_data, indent=2))
-    return ["--witness-file", str(witness_file_path)], witness_file_path
+    return ["--witness", str(witness_file_path)], witness_file_path
 
 
 def _check_equivalence(

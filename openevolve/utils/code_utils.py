@@ -496,34 +496,78 @@ def format_witness_decisions_for_prompt(witnesses: List[Dict[str, Any]]) -> str:
 
 def build_heimdall_witness_file(witnesses: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
-    Combine extracted witnesses (see extract_transformation_witnesses) into
-    heimdall-private's --witness-file JSON schema (c2rust_translation/
-    verify_equivalence.py's load_witnesses/relax_hints_from_witnesses/
-    fusion_hints_from_witnesses): {"witnesses": [{"id", "map_width_change"} or
-    {"id", "map_fusion"}, ...]}.
+    Combine extracted witnesses (see extract_transformation_witnesses) into a
+    single heimdall `--witness` file object:
+    {"witness": {"version", "name", "bindings", "assumptions", "observations"}}
+    (schema: heimdall/c2rust_translation/witness_spec.py).
 
-    Only witnesses carrying a "map_width_change" or "map_fusion" hint are
-    included -- heimdall only ever reads those two keys off each entry, so a
-    purely structural witness (or one with only a "variable_width_change" tag,
-    which heimdall has no map-level model for) would contribute nothing and is
-    left out. "id" is the witness's own "index" (see process_parallel.py's
-    _run_iteration_worker_propose), so ids in the resulting file line up with
-    the witness numbering shown in the review UI.
+    Only "map_width_change" hints are translated -- into a `map_correspondence`
+    binding that relaxes that map's value comparison to the low new_bytes*8
+    bits (optimized.value == truncate(original.value, new_bits)), the same
+    intent as heimdall's older --relax-map-value-width. "map_fusion" and
+    "variable_width_change" hints are NOT translated yet: heimdall has no
+    binding kind for a map merge, and a range-narrowed scalar is only usable
+    when it names a ctx field, which isn't known here. A witness carrying only
+    those contributes nothing.
+
+    "observations" is left empty on purpose -- that tells heimdall to keep
+    comparing every output strictly, with only the bound map(s) relaxed.
 
     Args:
-        witnesses: Witness dicts, each stamped with an "index"
+        witnesses: Witness dicts (see extract_transformation_witnesses),
+            each optionally stamped with an "index"
 
     Returns:
-        {"witnesses": [...]} dict, ready to json.dump to a --witness-file path
-        ("witnesses": [] if none qualify)
+        {"witness": {...}} dict, ready to json.dump to a --witness path
+        (bindings == [] if nothing qualifies)
     """
-    entries = []
+    bindings = []
     for w in witnesses:
-        if w.get("map_width_change"):
-            entries.append({"id": w.get("index"), "map_width_change": w["map_width_change"]})
-        elif w.get("map_fusion"):
-            entries.append({"id": w.get("index"), "map_fusion": w["map_fusion"]})
-    return {"witnesses": entries}
+        mwc = w.get("map_width_change")
+        if not mwc:
+            continue
+        map_name = mwc.get("map")
+        try:
+            old_bits = int(mwc["old_bytes"]) * 8
+            new_bits = int(mwc["new_bytes"]) * 8
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not map_name or new_bits <= 0 or new_bits >= old_bits:
+            # not a narrowing (or unusable) -- nothing to relax
+            continue
+        bindings.append(
+            {
+                "name": map_name,
+                "original": {"object": map_name, "type": f"map<_, u{old_bits}>"},
+                "optimized": {"object": map_name, "type": f"map<_, u{new_bits}>"},
+                "relation": {
+                    "map_correspondence": {
+                        "original_key": "k",
+                        "optimized_key": "k",
+                        "value_relation": {
+                            "equal": {
+                                "left": "optimized.value",
+                                "right": {
+                                    "truncate": {
+                                        "value": "original.value",
+                                        "width": new_bits,
+                                    }
+                                },
+                            }
+                        },
+                    }
+                },
+            }
+        )
+    return {
+        "witness": {
+            "version": "0.1",
+            "name": "openevolve_transform",
+            "bindings": bindings,
+            "assumptions": [],
+            "observations": [],
+        }
+    }
 
 
 def _format_block_lines(lines: List[str], max_line_len: int = 100, max_lines: int = 30) -> str:

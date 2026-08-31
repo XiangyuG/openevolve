@@ -7,6 +7,7 @@ import unittest
 from openevolve.utils.code_utils import (
     _format_block_lines,
     apply_diff,
+    build_heimdall_witness_file,
     extract_diffs,
     format_diff_summary,
 )
@@ -180,6 +181,53 @@ class TestFormatDiffSummary(unittest.TestCase):
         """Empty input should return '(empty)'"""
         result = _format_block_lines([])
         self.assertEqual(result, "  (empty)")
+
+
+class TestBuildHeimdallWitnessFile(unittest.TestCase):
+    """build_heimdall_witness_file() -> heimdall `--witness` schema"""
+
+    def test_empty(self):
+        out = build_heimdall_witness_file([])
+        self.assertEqual(
+            out,
+            {
+                "witness": {
+                    "version": "0.1",
+                    "name": "openevolve_transform",
+                    "bindings": [],
+                    "assumptions": [],
+                    "observations": [],
+                }
+            },
+        )
+
+    def test_map_width_change_becomes_map_correspondence(self):
+        out = build_heimdall_witness_file(
+            [{"index": 1, "map_width_change": {"map": "counts", "old_bytes": 8, "new_bytes": 4}}]
+        )
+        bindings = out["witness"]["bindings"]
+        self.assertEqual(len(bindings), 1)
+        b = bindings[0]
+        self.assertEqual(b["name"], "counts")
+        mc = b["relation"]["map_correspondence"]
+        self.assertEqual(mc["original_key"], "k")
+        self.assertEqual(mc["optimized_key"], "k")
+        self.assertEqual(
+            mc["value_relation"]["equal"]["right"],
+            {"truncate": {"value": "original.value", "width": 32}},
+        )
+
+    def test_non_narrowing_and_other_hints_skipped(self):
+        out = build_heimdall_witness_file(
+            [
+                {"map_width_change": {"map": "a", "old_bytes": 4, "new_bytes": 8}},  # widening
+                {"map_width_change": {"map": "b", "old_bytes": 4, "new_bytes": 4}},  # no-op
+                {"variable_width_change": {"var": "x", "old_bits": 32, "new_bits": 16}},
+                {"map_fusion": {"target": "t", "sources": [{"map": "s", "value_offset_bytes": 0, "value_bytes": 4}]}},
+                {"summary": "structural only"},
+            ]
+        )
+        self.assertEqual(out["witness"]["bindings"], [])
 
 
 if __name__ == "__main__":
