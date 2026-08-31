@@ -25,13 +25,16 @@ APPROVED below, even if you believe it would help.
 Developer notes: {developer_notes}
 
 # Task
-Provide the complete new program code implementing only the approved change(s) above.
-Do not restructure algorithms, add or remove probes/SEC sections, change helper usage,
-rename or reformat unrelated code, or change map types beyond what an approved merge
-requires.
+Provide the complete new program code implementing EXACTLY and ONLY the approved
+change(s) above. Do not add or remove probes/SEC sections, do not change which
+kernel events they attach to, keep the required includes and the license
+declaration, keep the control flow verifier-safe (bounded), and do not stub the
+program out. Do not introduce any change that was not tagged APPROVED, even a
+small one you believe would help.
 
-IMPORTANT: Make sure your rewritten program maintains the same inputs and outputs as
-the original program except for the approved change(s).
+IMPORTANT: The rewritten program must preserve the original's observable behavior
+(its return value and its final map state for every input) except exactly where
+an approved change deliberately alters the internal representation.
 
 ```{language}
 # Your rewritten program here
