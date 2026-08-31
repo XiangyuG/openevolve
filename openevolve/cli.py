@@ -16,6 +16,43 @@ from openevolve.config import Config, load_config
 logger = logging.getLogger(__name__)
 
 
+def _print_per_iteration_ns_summary(openevolve: "OpenEvolve") -> None:
+    """After a run, list every program's per-function ns/run (metrics keyed
+    `ns_per_run__<fn>`, set by examples/bpf_compile/evaluator.py). A program
+    that did not pass -- compile failure, or the symbolic equivalence check
+    failed, or the benchmark itself failed -- is shown as N/A with the reason.
+    No-op for runs whose evaluator never emits `ns_per_run__*` metrics.
+    """
+    try:
+        programs = list(openevolve.database.programs.values())
+    except Exception:
+        return
+    fn_keys = sorted(
+        {k for p in programs for k in p.metrics if str(k).startswith("ns_per_run__")}
+    )
+    if not fn_keys:
+        return
+
+    print("\nPer-iteration ns/run:")
+    for p in sorted(programs, key=lambda p: (getattr(p, "iteration_found", 0), p.timestamp)):
+        it = getattr(p, "iteration_found", 0)
+        m = p.metrics
+        reason = None
+        if m.get("compile_success", 0.0) != 1.0:
+            reason = "compile failed"
+        elif m.get("semantic_equivalent", 0.0) != 1.0:
+            reason = "not equivalent"
+        elif m.get("runtime_success", 0.0) != 1.0:
+            reason = "benchmark failed"
+        if reason is not None:
+            print(f"  iter {it:>3}: N/A ({reason})")
+        else:
+            cells = "  ".join(
+                f"{k[len('ns_per_run__'):]}={m[k]:.2f}" for k in fn_keys if k in m
+            )
+            print(f"  iter {it:>3}: {cells or 'N/A (no measurement)'}")
+
+
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments"""
     parser = argparse.ArgumentParser(description="OpenEvolve - Evolutionary coding agent")
@@ -166,6 +203,8 @@ async def main_async() -> int:
                 print(f"  {name}: {value:.4f}")
             else:
                 print(f"  {name}: {value}")
+
+        _print_per_iteration_ns_summary(openevolve)
 
         if latest_checkpoint:
             print(f"\nLatest checkpoint saved at: {latest_checkpoint}")
