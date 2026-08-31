@@ -32,6 +32,16 @@ from openevolve.evaluation_result import EvaluationResult
 from openevolve.utils.code_utils import build_heimdall_witness_file
 
 
+# Live progress lines to the run's stdout (worker processes inherit it). Set
+# BPF_EVAL_VERBOSE=0 to silence.
+_VERBOSE = os.environ.get("BPF_EVAL_VERBOSE", "1") != "0"
+
+
+def _log(msg: str) -> None:
+    if _VERBOSE:
+        print(f"[bpf_eval] {msg}", flush=True)
+
+
 # Default: this OpenEvolve checkout is the `openevolve/` submodule of a Heimdall
 # repo, so the repo root is three levels up from examples/bpf_compile/.
 _DEFAULT_HEIMDALL_ROOT = Path(__file__).resolve().parents[3]
@@ -656,8 +666,13 @@ def _check_equivalence(
 
     with tempfile.TemporaryDirectory(prefix="openevolve_bpf_witness_") as witness_tmp_dir:
         witness_args, _ = _witness_file_args(witnesses, witness_tmp_dir)
+        _log(
+            f"[{metric_key}] {len(entries)} entrypoint(s) vs baseline, "
+            f"maps={maps or '[]'}, witness={'yes' if witness_args else 'no'}"
+        )
 
         for entry in entries:
+            _log(f"  {entry}: checking (timeout {EQUIV_TIMEOUT}s in env '{EQUIV_CONDA_ENV}')...")
             safe_entry = re.sub(r"[^A-Za-z0-9_.-]", "_", entry)
             json_output_path = Path(witness_tmp_dir) / f"result_{safe_entry}.json"
             cmd = [
@@ -735,6 +750,19 @@ def _check_equivalence(
             if equivalent is not True:
                 all_equivalent = False
 
+            _pe = per_entry[entry]
+            if _pe.get("equivalent") is True:
+                _log(f"  {entry}: EQUIVALENT")
+            else:
+                ce = (_pe.get("counter_example") or "").strip().splitlines()
+                ce_head = ce[0] if ce else ""
+                _log(
+                    f"  {entry}: NOT equivalent "
+                    f"[{_pe.get('result_type')}]" + (f"  {ce_head}" if ce_head else "")
+                )
+
+    _log(f"[{metric_key}] {'ALL equivalent' if all_equivalent else 'NOT all equivalent'} "
+         f"-> {metric_key}={1.0 if all_equivalent else 0.0}")
     metrics = {metric_key: 1.0 if all_equivalent else 0.0}
     artifacts = {detail_key: json.dumps(per_entry, indent=2, sort_keys=True)}
     return metrics, artifacts
@@ -911,6 +939,8 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
             "--group_reporting",
         ]
     runner_cmd = ["sudo", "-n", str(RUNNER), *TOOL["args"](object_path)]
+    _log(f"benchmark: workload = {workload_cmd[0]} ... (runtime up to {FIO_RUNTIME}s)")
+    _log(f"benchmark: runner = {' '.join(runner_cmd)}")
 
     workload_process = subprocess.Popen(
         workload_cmd,
@@ -923,6 +953,7 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
 
     try:
         time.sleep(FIO_WARMUP_SECONDS)
+        _log(f"benchmark: workload warmed up, measuring for {RUNNER_SECONDS}s...")
 
         if workload_process.poll() is not None:
             workload_stdout, workload_stderr = workload_process.communicate(timeout=1)
@@ -971,6 +1002,12 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
     total_run_cnt = float(sum(values.get("run_cnt", 0) or 0 for values in runner_stats.values()))
     runtime_success = 1.0 if runner_result.returncode == 0 and ns_values else 0.0
 
+    if runner_stats:
+        for prog, v in runner_stats.items():
+            _log(f"  {prog}: {v.get('ns_per_run')} ns/run (run_cnt {v.get('run_cnt')})")
+    _log(f"benchmark: avg_ns_per_run = {avg_ns_per_run:.1f}, "
+         f"runtime_success = {runtime_success} (runner rc={runner_result.returncode})")
+
     metrics = {
         "runtime_success": runtime_success,
         "avg_ns_per_run": avg_ns_per_run,
@@ -1004,6 +1041,8 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
 def evaluate(program_path: str) -> EvaluationResult:
     source_path = Path(program_path)
     source = source_path.read_text(encoding="utf-8", errors="replace")
+    _log(f"=== evaluate {source_path.name} (tool={BPF_TOOL}) ===")
+    _log("step 1/3: compiling candidate with clang -target bpf ...")
 
     with tempfile.TemporaryDirectory(prefix="openevolve_bpf_") as tmp_dir:
         output_path = Path(tmp_dir) / f"{source_path.stem}.o"
@@ -1074,16 +1113,23 @@ def evaluate(program_path: str) -> EvaluationResult:
         }
 
         if compile_success == 0.0:
+            first_err = (result.stderr or result.stdout).strip().splitlines()
+            _log(f"compile FAILED: {first_err[0] if first_err else '(no diagnostic)'}")
             artifacts["error"] = "clang compilation failed"
             _save_candidate(source, metrics)
             return EvaluationResult(metrics=metrics, artifacts=artifacts)
+        _log(f"compile OK ({object_size} bytes)")
 
         if EQUIV_CHECK:
+            _log("step 2/3: symbolic equivalence check vs baseline ...")
             equiv_metrics, equiv_artifacts = _check_equivalence(output_path)
             metrics.update(equiv_metrics)
             artifacts.update(equiv_artifacts)
+        else:
+            _log("step 2/3: equivalence check SKIPPED (BPF_EQUIV_CHECK=0)")
 
         if RUN_BENCHMARK:
+            _log("step 3/3: workload + runner benchmark ...")
             runtime_metrics, runtime_artifacts = _run_workload_benchmark(output_path)
             metrics.update(runtime_metrics)
             artifacts.update(runtime_artifacts)
@@ -1101,6 +1147,13 @@ def evaluate(program_path: str) -> EvaluationResult:
                 * equiv_factor
             )
             metrics["combined_score"] = metrics["score"]
+            _log(
+                f"score = {metrics['score']:.4f}  "
+                f"(runtime_success={metrics.get('runtime_success', 0.0)}, "
+                f"runtime_score={metrics.get('runtime_score', 0.0):.4f}, "
+                f"semantic_equivalent={metrics.get('semantic_equivalent', 0.0)}, "
+                f"equiv_factor={equiv_factor:.2f})"
+            )
 
         _save_candidate(source, metrics)
         return EvaluationResult(metrics=metrics, artifacts=artifacts)
