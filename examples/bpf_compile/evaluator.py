@@ -407,7 +407,12 @@ TOOLS = {
 BPF_TOOL = os.environ.get("BPF_TOOL", "filetop")
 if BPF_TOOL not in TOOLS:
     raise ValueError(f"BPF_TOOL={BPF_TOOL!r} is not one of {sorted(TOOLS)}")
-TOOL = TOOLS[BPF_TOOL]
+TOOL = dict(TOOLS[BPF_TOOL])  # copy: we override "source" below
+# The evolution seed AND the equivalence baseline are always <BPF_TOOL>.bpf.c --
+# the canonical upstream libbpf-tools program -- not a pre-optimized _op variant.
+# Pass that exact file as the initial_program to openevolve-run.py. Override with
+# BPF_TOOL_SOURCE if you really want a different baseline.
+TOOL["source"] = os.environ.get("BPF_TOOL_SOURCE", f"{BPF_TOOL}.bpf.c")
 RUNNER = Path(os.environ.get("BPF_RUNNER", str(LIBBPF_TOOLS_DIR / TOOL["runner"])))
 
 # Every candidate this evaluator sees gets a permanent copy on disk, regardless
