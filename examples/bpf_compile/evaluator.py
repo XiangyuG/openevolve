@@ -418,6 +418,12 @@ SAVE_DIR = Path(os.environ.get("BPF_SAVE_DIR", str(Path("generated_programs") / 
 EQUIV_CHECK = os.environ.get("BPF_EQUIV_CHECK", "1") != "0"
 EQUIV_CONDA_ENV = os.environ.get("BPF_EQUIV_CONDA_ENV", "c2rust")
 EQUIV_TIMEOUT = int(os.environ.get("BPF_EQUIV_TIMEOUT", "90"))
+# How much of a candidate's speed-based score survives when heimdall could NOT
+# prove it equivalent to the baseline. 0.0 = hard gate (non-equivalent -> 0);
+# raise toward 1.0 to keep unproven-but-maybe-fine candidates competitive
+# (the symbolic checker has known false negatives, e.g. lookup-then-mutate
+# via the returned pointer). Only applied when EQUIV_CHECK is on.
+EQUIV_SCORE_FLOOR = float(os.environ.get("BPF_EQUIV_SCORE_FLOOR", "0.0"))
 EQUIV_VERIFIER = HEIMDALL_ROOT / "c2rust_translation" / "verify_mixed_entries.py"
 BTF_PARSER = HEIMDALL_ROOT / "c2rust_translation" / "btf_parser.py"
 
@@ -1081,10 +1087,18 @@ def evaluate(program_path: str) -> EvaluationResult:
             runtime_metrics, runtime_artifacts = _run_workload_benchmark(output_path)
             metrics.update(runtime_metrics)
             artifacts.update(runtime_artifacts)
+            # semantic_equivalent gates the score: a candidate heimdall cannot
+            # prove equivalent to the baseline keeps only EQUIV_SCORE_FLOOR of
+            # what its speed alone would earn (0.0 by default = hard gate).
+            equiv_factor = 1.0
+            if EQUIV_CHECK:
+                equiv = metrics.get("semantic_equivalent", 0.0)
+                equiv_factor = EQUIV_SCORE_FLOOR + (1.0 - EQUIV_SCORE_FLOOR) * equiv
             metrics["score"] = (
                 compile_success
                 * metrics.get("runtime_success", 0.0)
                 * (0.5 + 0.5 * metrics.get("runtime_score", 0.0))
+                * equiv_factor
             )
             metrics["combined_score"] = metrics["score"]
 
