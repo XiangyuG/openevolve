@@ -33,10 +33,7 @@ def _print_per_iteration_ns_summary(openevolve: "OpenEvolve") -> None:
     if not fn_keys:
         return
 
-    print("\nPer-iteration ns/run:")
-    for p in sorted(programs, key=lambda p: (getattr(p, "iteration_found", 0), p.timestamp)):
-        it = getattr(p, "iteration_found", 0)
-        m = p.metrics
+    def _row(label: str, m: dict) -> str:
         reason = None
         if m.get("compile_success", 0.0) != 1.0:
             reason = "compile failed"
@@ -45,12 +42,27 @@ def _print_per_iteration_ns_summary(openevolve: "OpenEvolve") -> None:
         elif m.get("runtime_success", 0.0) != 1.0:
             reason = "benchmark failed"
         if reason is not None:
-            print(f"  iter {it:>3}: N/A ({reason})")
-        else:
-            cells = "  ".join(
-                f"{k[len('ns_per_run__'):]}={m[k]:.2f}" for k in fn_keys if k in m
-            )
-            print(f"  iter {it:>3}: {cells or 'N/A (no measurement)'}")
+            return f"  {label}: N/A ({reason})"
+        cells = "  ".join(
+            f"{k[len('ns_per_run__'):]}={m[k]:.2f}" for k in fn_keys if k in m
+        )
+        return f"  {label}: {cells or 'N/A (no measurement)'}"
+
+    print("\nPer-iteration ns/run:")
+    # iter 0 = the original program (root of the tree: parent_id is None).
+    roots = [p for p in programs if not getattr(p, "parent_id", None)]
+    seen = set()
+    if roots:
+        root = min(roots, key=lambda p: p.timestamp)
+        seen.add(root.id)
+        print(_row("iter   0 (original)", root.metrics))
+    else:
+        print("  iter   0 (original): unavailable (initial program not retained)")
+    for p in sorted(
+        (p for p in programs if p.id not in seen),
+        key=lambda p: (getattr(p, "iteration_found", 0), p.timestamp),
+    ):
+        print(_row(f"iter {getattr(p, 'iteration_found', 0):>3}", p.metrics))
 
 
 def parse_args() -> argparse.Namespace:
