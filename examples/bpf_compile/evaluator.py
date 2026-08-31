@@ -993,28 +993,37 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
     runner_output = f"{runner_result.stdout}\n{runner_result.stderr}"
     runner_stats = _parse_runner_stats(runner_output)
 
-    ns_values = [
-        values["ns_per_run"]
-        for values in runner_stats.values()
-        if values.get("ns_per_run") is not None and values.get("run_cnt", 0) > 0
-    ]
-    avg_ns_per_run = float(sum(ns_values) / len(ns_values)) if ns_values else 0.0
-    total_run_cnt = float(sum(values.get("run_cnt", 0) or 0 for values in runner_stats.values()))
-    runtime_success = 1.0 if runner_result.returncode == 0 and ns_values else 0.0
+    # per-function ns/run -- reported and scored individually, never summed or
+    # averaged into one figure.
+    per_fn_ns = {
+        prog: float(v["ns_per_run"])
+        for prog, v in runner_stats.items()
+        if v.get("ns_per_run") is not None and v.get("run_cnt", 0) > 0
+    }
+    runtime_success = 1.0 if runner_result.returncode == 0 and per_fn_ns else 0.0
 
     if runner_stats:
         for prog, v in runner_stats.items():
             _log(f"  {prog}: {v.get('ns_per_run')} ns/run (run_cnt {v.get('run_cnt')})")
-    _log(f"benchmark: avg_ns_per_run = {avg_ns_per_run:.1f}, "
-         f"runtime_success = {runtime_success} (runner rc={runner_result.returncode})")
+    _log(f"benchmark: {'OK' if runtime_success else 'FAILED'} "
+         f"({len(per_fn_ns)}/{len(runner_stats)} function(s) measured, "
+         f"runner rc={runner_result.returncode})")
 
-    metrics = {
-        "runtime_success": runtime_success,
-        "avg_ns_per_run": avg_ns_per_run,
-        "total_run_cnt": total_run_cnt,
-    }
-    if avg_ns_per_run > 0:
-        metrics["runtime_score"] = 1.0 / (1.0 + avg_ns_per_run / 1000.0)
+    metrics = {"runtime_success": runtime_success}
+    # per-function ns/run as first-class metrics (plain keys -- OpenEvolve's
+    # feature-grid parser dislikes punctuation).
+    for prog, ns in per_fn_ns.items():
+        metrics[f"ns_per_run__{re.sub(r'[^A-Za-z0-9_]', '_', prog)}"] = ns
+
+    # runtime_score: one scalar OpenEvolve can rank on, reduced from the
+    # per-function ns/run WITHOUT summing/averaging. BPF_RUNTIME_SCORE_REDUCE
+    # picks which function drives it: "max" (default) scores the SLOWEST
+    # function, so a candidate only wins if it doesn't regress any of them;
+    # "min" scores the fastest.
+    if per_fn_ns:
+        reduce = os.environ.get("BPF_RUNTIME_SCORE_REDUCE", "max").lower()
+        driver_ns = min(per_fn_ns.values()) if reduce == "min" else max(per_fn_ns.values())
+        metrics["runtime_score"] = 1.0 / (1.0 + driver_ns / 1000.0)
     else:
         metrics["runtime_score"] = 0.0
 
