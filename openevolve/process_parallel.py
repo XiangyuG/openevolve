@@ -56,6 +56,70 @@ class ProposalResult:
     error: Optional[str] = None
 
 
+_WIT_FENCE_RE = None  # compiled lazily
+
+
+def _save_and_check_wit(llm_response: str, program_id: str) -> Optional[Dict[str, Any]]:
+    """Pull the ```witness DSL block out of an LLM response, write it to
+    <BPF_SAVE_DIR>/witnesses/<program_id>.wit, and run heimdall's
+    `python3 -m witness_dsl` on it (the transformation-witness DSL syntax
+    checker, grammar in c2rust_translation/witness_dsl/GRAMMAR.bnf).
+
+    Returns {"path", "ok", "output"} -- ok is True/False from the checker's
+    exit code, or None when the checker could not be run -- or None if the
+    response has no ```witness block. Best-effort: never raises.
+    """
+    import os
+    import re
+    import subprocess
+    import sys
+
+    global _WIT_FENCE_RE
+    if _WIT_FENCE_RE is None:
+        _WIT_FENCE_RE = re.compile(
+            r"```[ \t]*witness[ \t]*\r?\n(.*?)\r?\n?```", re.DOTALL | re.IGNORECASE
+        )
+    m = _WIT_FENCE_RE.search(llm_response or "")
+    if not m:
+        return None
+    text = m.group(1).strip() + "\n"
+
+    # mirror the bpf_compile evaluator's own _save_candidate location so the
+    # .wit sits next to its <id>.bpf.c
+    save_root = os.environ.get("BPF_SAVE_DIR") or os.path.join(
+        "generated_programs", os.environ.get("BPF_TOOL", "filetop")
+    )
+    save_dir = Path(save_root) / "witnesses"
+    try:
+        save_dir.mkdir(parents=True, exist_ok=True)
+        wit_path = save_dir / f"{program_id}.wit"
+        wit_path.write_text(text, encoding="utf-8")
+    except OSError as e:
+        return {"path": None, "ok": None, "output": f"could not write .wit: {e}"}
+
+    root = os.environ.get("HEIMDALL_ROOT")
+    c2r = (
+        Path(root) / "c2rust_translation"
+        if root
+        else Path(__file__).resolve().parents[2] / "c2rust_translation"
+    )
+    try:
+        r = subprocess.run(
+            [sys.executable, "-m", "witness_dsl", str(wit_path)],
+            cwd=str(c2r),
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        return {
+            "path": str(wit_path),
+            "ok": r.returncode == 0,
+            "output": (r.stdout + r.stderr).strip(),
+        }
+    except Exception as e:  # checker missing, timeout, ...
+        return {"path": str(wit_path), "ok": None, "output": f"witness_dsl not run: {e}"}
+
+
 def _worker_init(config_dict: dict, evaluation_file: str, parent_env: dict = None) -> None:
     """Initialize worker process with necessary components"""
     import os
@@ -336,6 +400,22 @@ def _run_iteration_worker(
         # Get artifacts
         artifacts = _worker_evaluator.get_pending_artifacts(child_id)
 
+        # Save the LLM's transformation-witness DSL block as a .wit file and
+        # syntax-check it against GRAMMAR.bnf (informational -- the actual
+        # --witness file is still built elsewhere).
+        wit_check = _save_and_check_wit(llm_response, child_id)
+        if wit_check is None:
+            logger.info("Iteration %d: no ```witness block in the LLM response", iteration)
+        else:
+            logger.info(
+                "Iteration %d: wrote %s, witness_dsl syntax ok=%s",
+                iteration,
+                wit_check.get("path"),
+                wit_check.get("ok"),
+            )
+            if wit_check.get("ok") is not True and wit_check.get("output"):
+                logger.info("witness_dsl: %s", wit_check["output"])
+
         # Create child program
         child_program = Program(
             id=child_id,
@@ -350,6 +430,7 @@ def _run_iteration_worker(
                 "changes": changes_summary,
                 "explanation": change_explanation,
                 "witnesses": change_witnesses,
+                "wit": wit_check,
                 "parent_metrics": parent.metrics,
                 "island": parent_island,
             },

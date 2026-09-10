@@ -52,9 +52,31 @@ I made the following changes:
     Example: `<short fragment of the old code>` -> `<short fragment of the new code>` (in <function/section name>)
     Witness: <English argument for why this specific change preserves the program's
       observable behavior -- its return value and final map state -- for every input>
+    Witness (.wit): also give the SAME claim as a Transformation-Witness DSL
+      program in a fenced ```witness block, valid per GRAMMAR.bnf (in
+      c2rust_translation/witness_dsl/). Three blocks, in this order --
+      `assumption` and `binding` are optional and may be empty, `observation` is
+      required with >=1 statement; every statement ends with `;`. A path is a
+      name then any run of `.field` / `[k]` (k a variable) / `[:]` (all map
+      entries); `original.return` is the return value. Reserved, never a name:
+      assumption binding observation in ignore flag of original optimized.
+
+      ```witness
+      assumption {{
+          original.ctx.rx_queue_index in [0, 65535];   // value-range precondition (either side; hex / negative ok)
+          ignore flag of bpf_map_update_elem;          // only if the change needs a helper's flags arg unconstrained
+      }}
+      binding {{
+          original.queue_packets[k] = optimized.queue_packets[k];
+      }}
+      observation {{
+          original.return = optimized.return;
+          original.queue_packets[:].value = optimized.queue_packets[:].value;
+      }}
+      ```
     Formula (pre-transformation): <see below>
     Formula (post-transformation): <see below>
-(2) <same four lines for the next change>
+(2) <same five lines for the next change>
 ...
 
 Every change needs the Example line and the Witness line. The two Formula lines
