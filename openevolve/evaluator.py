@@ -338,6 +338,7 @@ class Evaluator:
         program_code: str,
         program_id: str,
         hints: List[Dict[str, Any]],
+        wit_path: Optional[str] = None,
     ) -> Tuple[Dict[str, float], Dict[str, Any]]:
         """
         Optional second-pass re-verification, run only for interactive review
@@ -368,9 +369,24 @@ class Evaluator:
             temp_file_path = temp_file.name
 
         try:
+            import functools
+            import inspect
+
+            call_kwargs = {}
+            if wit_path is not None:
+                try:
+                    if "wit_path" in inspect.signature(self.reverify_function).parameters:
+                        call_kwargs["wit_path"] = wit_path
+                except (TypeError, ValueError):
+                    pass
             loop = asyncio.get_event_loop()
             result = await asyncio.wait_for(
-                loop.run_in_executor(None, self.reverify_function, temp_file_path, hints),
+                loop.run_in_executor(
+                    None,
+                    functools.partial(
+                        self.reverify_function, temp_file_path, hints, **call_kwargs
+                    ),
+                ),
                 timeout=self.config.timeout,
             )
             eval_result = self._process_evaluation_result(result)

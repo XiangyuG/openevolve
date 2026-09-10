@@ -59,54 +59,33 @@ class ProposalResult:
 _WIT_FENCE_RE = None  # compiled lazily
 
 
-def _save_and_check_wit(llm_response: str, program_id: str) -> Optional[Dict[str, Any]]:
-    """Pull the ```witness DSL block out of an LLM response, write it to
-    <BPF_SAVE_DIR>/witnesses/<program_id>.wit, and run heimdall's
-    `python3 -m witness_dsl` on it (the transformation-witness DSL syntax
-    checker, grammar in c2rust_translation/witness_dsl/GRAMMAR.bnf).
-
-    Returns {"path", "ok", "output"} -- ok is True/False from the checker's
-    exit code, or None when the checker could not be run -- or None if the
-    response has no ```witness block. Best-effort: never raises.
-    """
+def _c2rust_dir() -> "Path":
+    """heimdall/c2rust_translation, from $HEIMDALL_ROOT or the sibling checkout."""
     import os
-    import re
+
+    root = os.environ.get("HEIMDALL_ROOT")
+    if root:
+        return Path(root) / "c2rust_translation"
+    return Path(__file__).resolve().parents[2] / "c2rust_translation"
+
+
+def _write_and_check_wit(text: str, wit_path: "Path") -> Dict[str, Any]:
+    """Write `text` to `wit_path` and syntax-check it with
+    `python3 -m witness_dsl` (grammar: c2rust_translation/witness_dsl/GRAMMAR.bnf).
+    Returns {"path", "ok", "output"}; ok is None when the checker could not be
+    run. Never raises."""
     import subprocess
     import sys
 
-    global _WIT_FENCE_RE
-    if _WIT_FENCE_RE is None:
-        _WIT_FENCE_RE = re.compile(
-            r"```[ \t]*witness[ \t]*\r?\n(.*?)\r?\n?```", re.DOTALL | re.IGNORECASE
-        )
-    m = _WIT_FENCE_RE.search(llm_response or "")
-    if not m:
-        return None
-    text = m.group(1).strip() + "\n"
-
-    # mirror the bpf_compile evaluator's own _save_candidate location so the
-    # .wit sits next to its <id>.bpf.c
-    save_root = os.environ.get("BPF_SAVE_DIR") or os.path.join(
-        "generated_programs", os.environ.get("BPF_TOOL", "filetop")
-    )
-    save_dir = Path(save_root) / "witnesses"
     try:
-        save_dir.mkdir(parents=True, exist_ok=True)
-        wit_path = save_dir / f"{program_id}.wit"
-        wit_path.write_text(text, encoding="utf-8")
+        wit_path.parent.mkdir(parents=True, exist_ok=True)
+        wit_path.write_text(text if text.endswith("\n") else text + "\n", encoding="utf-8")
     except OSError as e:
         return {"path": None, "ok": None, "output": f"could not write .wit: {e}"}
-
-    root = os.environ.get("HEIMDALL_ROOT")
-    c2r = (
-        Path(root) / "c2rust_translation"
-        if root
-        else Path(__file__).resolve().parents[2] / "c2rust_translation"
-    )
     try:
         r = subprocess.run(
             [sys.executable, "-m", "witness_dsl", str(wit_path)],
-            cwd=str(c2r),
+            cwd=str(_c2rust_dir()),
             capture_output=True,
             text=True,
             timeout=30,
@@ -118,6 +97,33 @@ def _save_and_check_wit(llm_response: str, program_id: str) -> Optional[Dict[str
         }
     except Exception as e:  # checker missing, timeout, ...
         return {"path": str(wit_path), "ok": None, "output": f"witness_dsl not run: {e}"}
+
+
+def _save_and_check_wit(llm_response: str, program_id: str) -> Optional[Dict[str, Any]]:
+    """Pull the ```witness DSL block out of an LLM response, write it to
+    <BPF_SAVE_DIR>/<tool>/witnesses/<program_id>.wit, and syntax-check it.
+
+    Returns {"path", "ok", "output"} -- or None if the response has no
+    ```witness block. Best-effort: never raises.
+    """
+    import os
+    import re
+
+    global _WIT_FENCE_RE
+    if _WIT_FENCE_RE is None:
+        _WIT_FENCE_RE = re.compile(
+            r"```[ \t]*witness[ \t]*\r?\n(.*?)\r?\n?```", re.DOTALL | re.IGNORECASE
+        )
+    m = _WIT_FENCE_RE.search(llm_response or "")
+    if not m:
+        return None
+
+    save_root = os.environ.get("BPF_SAVE_DIR") or os.path.join(
+        "generated_programs", os.environ.get("BPF_TOOL", "filetop")
+    )
+    return _write_and_check_wit(
+        m.group(1).strip() + "\n", Path(save_root) / "witnesses" / f"{program_id}.wit"
+    )
 
 
 def _worker_init(config_dict: dict, evaluation_file: str, parent_env: dict = None) -> None:
@@ -970,11 +976,34 @@ class ProcessParallelController:
         child_program.metadata["approved_witnesses"] = accumulated
 
         self._dump_witness_file(child_program, witnesses, accumulated)
-        if not accumulated:
+
+        # (1) Build one .wit from every developer-approved witness's DSL block,
+        # (2) syntax-check it, (3) if it parses, hand that .wit to heimdall
+        # (load_witness lowers .wit -> the same relaxed check). Falls back to
+        # the tag-line JSON path (`accumulated`) when there is no valid .wit.
+        wit_path = None
+        from openevolve.utils.code_utils import combine_witness_dsl_blocks
+
+        combined_wit = combine_witness_dsl_blocks(witnesses, only_approved=True)
+        if combined_wit.strip():
+            cand = self.review_gate.queue_dir / "witness_files" / f"{child_program.id}.wit"
+            res = _write_and_check_wit(combined_wit, cand)
+            child_program.metadata["wit"] = res
+            logger.info(
+                "Iteration reverify: combined .wit -> %s, syntax ok=%s",
+                res.get("path"),
+                res.get("ok"),
+            )
+            if res.get("ok") is True:
+                wit_path = res["path"]
+            elif res.get("output"):
+                logger.info("witness_dsl: %s", res["output"])
+
+        if not accumulated and wit_path is None:
             return {}
 
         metrics, artifacts = await self._get_reverify_evaluator().reverify_program(
-            child_program.code, child_program.id, accumulated
+            child_program.code, child_program.id, accumulated, wit_path=wit_path
         )
         if metrics:
             child_program.metrics.update(metrics)

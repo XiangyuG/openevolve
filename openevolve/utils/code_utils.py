@@ -189,6 +189,35 @@ _TRAILING_ELLIPSIS_PATTERN = re.compile(r"\n?\.\.\.\s*$")
 
 _EXAMPLE_SNIPPET_PATTERN = re.compile(r"`[^`\n]+`")
 
+# The transformation-witness DSL block a change carries: a fenced ```witness
+# (or ```wit) block. Grammar: heimdall/c2rust_translation/witness_dsl/GRAMMAR.bnf.
+# It can land in any of _WITNESS_BLOCK_PATTERN's text groups depending on where
+# the model put it, so extract_transformation_witnesses searches the whole item.
+_WIT_FENCE_PATTERN = re.compile(
+    r"```[ \t]*(?:witness|wit)[ \t]*\r?\n(?P<body>.*?)\r?\n?```",
+    re.DOTALL | re.IGNORECASE,
+)
+# One `<keyword> { ... }` section of a .wit program (brace-flat by grammar).
+_WIT_SECTION_PATTERN = re.compile(
+    r"\b(assumption|binding|observation)\b\s*\{(?P<body>.*?)\}", re.DOTALL
+)
+_WIT_COMMENT_PATTERN = re.compile(r"/\*.*?\*/|//[^\n]*", re.DOTALL)
+
+
+def _extract_wit_fence(*texts: str) -> str:
+    """Body of the first ```witness / ```wit fenced block across `texts`,
+    stripped; "" if none."""
+    for t in texts:
+        if t:
+            m = _WIT_FENCE_PATTERN.search(t)
+            if m:
+                return m.group("body").strip()
+    return ""
+
+
+def _strip_wit_fence(text: str) -> str:
+    return _WIT_FENCE_PATTERN.sub("", text or "").strip()
+
 
 def _has_example_snippet(detail: str) -> bool:
     """Whether `detail` (the free-form text between the numbered summary and
@@ -359,6 +388,10 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
         backtick-quoted code fragment -- i.e. the LLM skipped quoting the
         actual before/after code the prompt asks for (see
         _has_example_snippet).
+        "wit" is the change's transformation-witness DSL block (fenced
+        ```witness; grammar in
+        heimdall/c2rust_translation/witness_dsl/GRAMMAR.bnf), or "" if absent.
+        Merge several with combine_witness_dsl_blocks().
     """
     witnesses = []
     for match in _WITNESS_BLOCK_PATTERN.finditer(explanation_text):
@@ -367,6 +400,14 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
         pre_formula = _TRAILING_ELLIPSIS_PATTERN.sub("", match.group("pre_formula").strip())
         post_formula = _TRAILING_ELLIPSIS_PATTERN.sub("", match.group("post_formula").strip())
         detail = match.group("detail").strip()
+
+        # The change's transformation-witness DSL block (fenced ```witness). The
+        # prompt asks for it right after "Witness:", but be liberal about where
+        # it actually landed; then keep it out of the prose fields.
+        wit = _extract_wit_fence(
+            detail, match.group("witness"), post_formula, match.group("tail") or ""
+        )
+        detail = _strip_wit_fence(detail)
 
         # Search the tail (everything after post_formula, up to the next
         # numbered change/end) independently for each tag -- see
@@ -381,7 +422,8 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
             {
                 "summary": match.group("summary").strip(),
                 "detail": detail,
-                "witness": match.group("witness").strip(),
+                "witness": _strip_wit_fence(match.group("witness")),
+                "wit": wit,
                 "pre_formula": pre_formula.strip(),
                 "post_formula": post_formula.strip(),
                 "map_width_change": _parse_map_width_change(
@@ -400,6 +442,52 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
             }
         )
     return witnesses
+
+
+def combine_witness_dsl_blocks(
+    witnesses: List[Dict[str, Any]], only_approved: bool = False
+) -> str:
+    """Merge the per-change `wit` blocks (transformation-witness DSL text, see
+    extract_transformation_witnesses) into ONE .wit program: the union of each
+    section's statements, order-preserving and deduped, in canonical
+    assumption / binding / observation order.
+
+    Purely textual -- it does NOT validate the result. Returns "" when no
+    witness carries a `wit` block. `assumption` / `binding` are emitted only
+    when non-empty; `observation` is emitted whenever anything was collected,
+    so a set that states assumptions/bindings but no observation yields a
+    trailing `observation {}` -- the syntax error the checker should surface.
+
+    only_approved: skip witnesses whose `developer_approved` is not exactly True.
+    """
+    sections: Dict[str, List[str]] = {"assumption": [], "binding": [], "observation": []}
+    seen = set()
+    for w in witnesses or []:
+        if only_approved and w.get("developer_approved") is not True:
+            continue
+        body = _WIT_COMMENT_PATTERN.sub("", (w.get("wit") or "").strip())
+        if not body:
+            continue
+        for m in _WIT_SECTION_PATTERN.finditer(body):
+            kind = m.group(1)
+            for raw in m.group("body").split(";"):
+                stmt = " ".join(raw.split())
+                if not stmt or (kind, stmt) in seen:
+                    continue
+                seen.add((kind, stmt))
+                sections[kind].append(stmt + ";")
+
+    if not any(sections.values()):
+        return ""
+    out: List[str] = []
+    for kind in ("assumption", "binding", "observation"):
+        stmts = sections[kind]
+        if kind != "observation" and not stmts:
+            continue
+        out.append(kind + " {")
+        out.extend("    " + s for s in stmts)
+        out.append("}")
+    return "\n".join(out) + "\n"
 
 
 def _find_const_by_name(assertions, name: str):

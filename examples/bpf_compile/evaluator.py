@@ -628,22 +628,23 @@ def _correct_map_width_change_hints(
 
 
 def _witness_file_args(
-    witnesses: "list[dict] | None", tmp_dir: str
+    witnesses: "list[dict] | None", tmp_dir: str, wit_path: "str | None" = None
 ) -> tuple[list[str], "Path | None"]:
-    """Write developer-approved witnesses (see
-    openevolve/utils/code_utils.py's extract_transformation_witnesses) out as a
-    heimdall `--witness` file (build_heimdall_witness_file -> a single
-    {"witness": {bindings, assumptions, observations}} object) and return the
-    ["--witness", path] flag for verify_mixed_entries.py, plus the path itself
-    (so the caller can leave it in tmp_dir's lifetime).
+    """Return the ["--witness", path] flag for verify_mixed_entries.py.
 
-    Each "map_width_change" hint becomes a `map_correspondence` binding that
-    relaxes that map's value comparison to the narrowed width, leaving every
-    other output compared strictly. "map_fusion" hints are not translated yet
-    (see build_heimdall_witness_file).
+    Prefers `wit_path` when given: a transformation-witness DSL (.wit) file
+    already syntax-checked by OpenEvolve (see process_parallel.py's
+    _reverify_approved_witnesses). heimdall's load_witness lowers it to the
+    same relaxed check.
 
-    Returns ([], None) if there are no qualifying witnesses (nothing to
-    write)."""
+    Otherwise falls back to writing the developer-approved tag-line hints as a
+    legacy witness JSON (build_heimdall_witness_file -> a single
+    {"witness": {bindings, assumptions, observations}} object).
+
+    Returns ([], None) when there is nothing to pass."""
+    if wit_path and Path(wit_path).is_file():
+        return ["--witness", str(wit_path)], Path(wit_path)
+
     witness_file_data = build_heimdall_witness_file(witnesses or [])
     spec = witness_file_data.get("witness", {})
     if not (spec.get("bindings") or spec.get("assumptions")):
@@ -659,6 +660,7 @@ def _check_equivalence(
     witnesses: "list[dict] | None" = None,
     metric_key: str = "semantic_equivalent",
     detail_key: str = "equivalence_detail",
+    wit_path: "str | None" = None,
 ) -> tuple[dict, dict]:
     """Symbolically check candidate_object against the baseline for every entry
     point in TOOL["equiv_entries"]. Returns (metrics, artifacts); metrics always
@@ -693,10 +695,11 @@ def _check_equivalence(
     all_equivalent = True
 
     with tempfile.TemporaryDirectory(prefix="openevolve_bpf_witness_") as witness_tmp_dir:
-        witness_args, _ = _witness_file_args(witnesses, witness_tmp_dir)
+        witness_args, _ = _witness_file_args(witnesses, witness_tmp_dir, wit_path=wit_path)
+        _kind = ".wit" if (wit_path and witness_args) else ("json" if witness_args else "no")
         _log(
             f"[{metric_key}] {len(entries)} entrypoint(s) vs baseline, "
-            f"maps={maps or '[]'}, witness={'yes' if witness_args else 'no'}"
+            f"maps={maps or '[]'}, witness={_kind}"
         )
 
         for entry in entries:
@@ -796,7 +799,9 @@ def _check_equivalence(
     return metrics, artifacts
 
 
-def reverify_with_witnesses(program_path: str, witnesses: list) -> EvaluationResult:
+def reverify_with_witnesses(
+    program_path: str, witnesses: list, wit_path: "str | None" = None
+) -> EvaluationResult:
     """Optional second-pass equivalence re-check, called only by OpenEvolve's
     interactive review flow (openevolve/process_parallel.py's
     _reverify_approved_witnesses) after a developer has approved specific
@@ -817,7 +822,7 @@ def reverify_with_witnesses(program_path: str, witnesses: list) -> EvaluationRes
     semantic_equivalent from evaluate()."""
     source_path = Path(program_path)
 
-    if not witnesses:
+    if not witnesses and not (wit_path and Path(wit_path).is_file()):
         return EvaluationResult(
             metrics={"semantic_equivalent_relaxed": 0.0},
             artifacts={"error": "reverify_with_witnesses called with no witnesses"},
@@ -875,10 +880,18 @@ def reverify_with_witnesses(program_path: str, witnesses: list) -> EvaluationRes
             witnesses=witnesses,
             metric_key="semantic_equivalent_relaxed",
             detail_key="equivalence_relaxed_detail",
+            wit_path=wit_path,
         )
-        artifacts["relaxed_hints"] = json.dumps(
-            build_heimdall_witness_file(witnesses), sort_keys=True
-        )
+        if wit_path and Path(wit_path).is_file():
+            artifacts["witness_source"] = "wit"
+            try:
+                artifacts["wit"] = Path(wit_path).read_text()
+            except OSError:
+                pass
+        else:
+            artifacts["relaxed_hints"] = json.dumps(
+                build_heimdall_witness_file(witnesses), sort_keys=True
+            )
         return EvaluationResult(metrics=metrics, artifacts=artifacts)
 
 
