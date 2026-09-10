@@ -64,112 +64,67 @@ approve or reject each one individually; only after that will you be asked, in a
 follow-up request, to actually produce the diff implementing the approved ones.
 Describe what you would change, you are not changing it yet.
 
-Describe each proposed change in exactly this format:
+Describe each proposed change in exactly this format. The ```witness block is
+the REQUIRED core of every change: if you cannot write a valid transformation
+witness for a change, do not propose that change.
+
+## Transformation-witness DSL (the ```witness block)
+
+Three blocks, in this fixed order. `assumption` and `binding` are optional and
+may be omitted; `observation` is required with at least one statement. Every
+statement ends with `;`. Grammar: c2rust_translation/witness_dsl/GRAMMAR.bnf.
+
+    assumption {{
+        original.ctx.<field> in [<lo>, <hi>];   // value-range precondition; either side; hex / negative allowed
+    }}
+    binding {{
+        original.<map>[k] = optimized.<map>[k]; // entry-wise correspondence between the two maps; k is a free key variable
+    }}
+    observation {{
+        original.return = optimized.return;                     // outputs that MUST still match, for every input
+        original.<map>[:].<field> = optimized.<map>[:].<field>;
+    }}
+
+A <path> is a name then any run of `.field`, `[k]` (k a variable), or `[:]`
+(every entry of a map). `original.return` is the program's return value. These
+words are reserved and may NOT be used as names: assumption binding observation
+in ignore flag of original optimized.
+
+Choosing the blocks:
+  - Narrowing a map VALUE or KEY (fewer bytes): put the range that makes it
+    lossless in `assumption` (on the ctx field it derives from), relate the two
+    maps entry-wise in `binding`, and name the map in `observation`.
+  - A plain equivalence-preserving change (hoisting a lookup, dropping a dead
+    store, tightening a loop bound, a pure refactor): leave `assumption` and
+    `binding` empty; `observation` lists only the outputs the change can affect
+    -- usually just `original.return = optimized.return;`.
+
+## Format
 
 I propose the following changes:
-(1) <what you would change and why, in English>
-    Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
-    Witness: <English argument for why this specific change would preserve the program's
-      observable behavior -- its return value and final map state -- for every input>
-    Witness (.wit): also give the SAME claim as a Transformation-Witness DSL
-      program in a fenced ```witness block, valid per GRAMMAR.bnf (in
-      c2rust_translation/witness_dsl/). Three blocks, in this order --
-      `assumption` and `binding` are optional and may be empty, `observation` is
-      required with >=1 statement; every statement ends with `;`. A path is a
-      name then any run of `.field` / `[k]` (k a variable) / `[:]` (all map
-      entries); `original.return` is the return value. Reserved, never a name:
-      assumption binding observation in ignore flag of original optimized.
-
-      ```witness
-      assumption {{
-          original.ctx.rx_queue_index in [0, 65535];   // value-range precondition (either side; hex / negative ok)
-          ignore flag of bpf_map_update_elem;          // only if the change needs a helper's flags arg unconstrained
-      }}
-      binding {{
-          original.queue_packets[k] = optimized.queue_packets[k];
-      }}
-      observation {{
-          original.return = optimized.return;
-          original.queue_packets[:].value = optimized.queue_packets[:].value;
-      }}
-      ```
-    Formula (pre-transformation): <a self-contained SMT-LIB 2 snippet: one or more
-      `(declare-const ...)` lines for every input this change depends on, plus a
-      constant named exactly `pre_result`, and an `(assert ...)` defining what
-      `pre_result` equals under the OLD code's logic for this specific change>
-    Formula (post-transformation): <a self-contained SMT-LIB 2 snippet re-declaring
-      the SAME input names and sorts as the pre-transformation formula, plus a
-      constant named exactly `post_result`, and an `(assert ...)` defining what
-      `post_result` equals under the NEW code's logic for this same change>
-
-      These two formulas will be checked together by proving
-      `(assert (not (= pre_result post_result)))` is UNSAT against both of them
-      combined -- i.e. pre_result and post_result must be equal for every possible
-      input, not just some input where they happen to match. Model only the values
-      touched by this specific change -- do not try to encode the whole program.
-      Use only Int and Bool sorts. Do NOT declare BitVec constants or use
-      bitvector operators (bvand, bvor, bvxor, ...) -- mixing Int-sorted
-      variables with bitvector operators makes the whole formula unparseable.
-      If you need to model a bitwise-AND-style mask/flag check (e.g. mode &
-      S_IFMT), approximate it with `mod`/arithmetic on Int instead (e.g.
-      `(= (mod mode 8) 0)` for a low-bit check). Do not wrap either formula in a
-      triple-backtick code block, and do not add anything (comments, stray
-      characters) after the final closing parenthesis of either one. The SAME
-      rule applies right after the "Formula (...):" label itself: the very
-      next characters must be `(declare-const` or `(assert` -- never a label
-      like "(old behavior)"/"(new behavior)" or any other parenthetical aside
-      before the real SMT-LIB 2 starts. If you want to note which side is
-      which, use a `;` comment line, not plain text or parenthesized prose.
-      If the change is purely structural (renaming, reordering unrelated
-      statements, comments) with nothing to formalize, write exactly:
-      Formula (pre-transformation): (assert true)
-      Formula (post-transformation): (assert true)
-      If, and only if, this specific change narrows the VALUE type of a BPF
-      hash map (e.g. a map's value struct shrinks from 8 bytes to 4 bytes),
-      add one more line directly after the post-transformation formula, in
-      exactly this format (map name, then old and new value size in bytes):
-      Map value width change: <map_name>: <old_bytes> -> <new_bytes>
-      Omit this line entirely for every other kind of change.
-      If, and only if, this specific change narrows a VARIABLE's type based on
-      a value-range invariant you are proving in this same witness (e.g. an
-      8-bit variable narrowed to 4 bits because it is always in [0, 15]), the
-      range invariant MUST appear as an assumption on the shared input
-      constant in the pre-transformation formula (e.g. `(assert (>= v 0))` /
-      `(assert (<= v 15))`), and the post-transformation formula must model
-      the narrowing as truncation under that assumption (e.g.
-      `(assert (= post_result (mod v 16)))` for an unsigned narrowing to 4
-      bits, or the two's-complement equivalent for a signed one). Then add one
-      more line directly after the post-transformation formula (or after the
-      "Map value width change" line if both apply), in exactly this format
-      (variable name, then old and new bit width):
-      Variable width change: <var_name>: <old_bits> -> <new_bits>
-      Omit this line entirely for every other kind of change.
-      If, and only if, this specific change merges two or more BPF maps into
-      one target map, add one more line directly after the
-      post-transformation formula (or after the "Map value width change" /
-      "Variable width change" line if either also applies), in exactly this
-      format -- the merged map's name, then each source map that was folded
-      into it, with the byte offset and byte width of that source's data
-      inside the merged map's value struct, joined with " + ":
-      Map fusion: <target_map> = <source_map_1>@<offset_bytes_1>:<width_bytes_1> + <source_map_2>@<offset_bytes_2>:<width_bytes_2>
-      Omit this line entirely for every other kind of change.
-      HARD CONSTRAINT: none of these three tag lines (Map value width change /
-      Variable width change / Map fusion) may be followed by anything else for
-      this change -- no "Explanation of ..." paragraph, no "Notes:" section, no
-      further commentary of any kind. Whichever tag line is the last thing you
-      write for this numbered change must be followed immediately by either the
-      next numbered change ("(N+1) ...") or nothing at all if it's your last
-      change. A parser reads these lines mechanically; anything after the last
-      tag line gets treated as part of that line and silently breaks the parse.
-      If a tag's claim needs justifying, put that justification in the Witness
-      line above it -- never after the tag line itself.
-(2) <what you would change and why, in English>
+(1) <one-line summary of the change>
+    ```witness
+    <the transformation-witness DSL program for this change>
+    ```
+    Example: `<short fragment of the OLD code>` -> `<short fragment of the NEW code>` (in <function/section name>)
+    Witness: <2-4 plain-English sentences: why the ```witness above holds for every input>
+    Formula (pre-transformation): (assert true)
+    Formula (post-transformation): (assert true)
+(2) <one-line summary of the change>
+    ```witness
+    <...>
+    ```
     Example: `<...>` -> `<...>`
     Witness: <...>
-    Witness (.wit): <a ```witness block, as above>
-    Formula (pre-transformation): <...>
-    Formula (post-transformation): <...>
-...
+    Formula (pre-transformation): (assert true)
+    Formula (post-transformation): (assert true)
+
+Leave the two "Formula (...): (assert true)" lines exactly as shown UNLESS this
+change narrows a width; then instead make each a self-contained SMT-LIB 2 snippet
+over shared Int inputs -- pre declares a constant `pre_result` for the OLD value,
+post re-declares the same inputs plus a `post_result` for the NEW value -- proven
+equal for every input. Only Int/Bool sorts, no bitvector ops (approximate a mask
+with `mod`), nothing after the final `)`.
 
 Each "Example" line must quote a real, short fragment (a line or part of a line) of
 the actual before/after code you are proposing, wrapped in single backticks -- not a
