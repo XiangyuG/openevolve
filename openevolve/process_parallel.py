@@ -415,6 +415,18 @@ def _run_iteration_worker(
             )
             if wit_check.get("ok") is not True and wit_check.get("output"):
                 logger.info("witness_dsl: %s", wit_check["output"])
+                # Feed the diagnostic back: it becomes an artifact on this child,
+                # so the next prompt sampled from this lineage shows the error
+                # and the model can correct the witness. Non-blocking -- the
+                # child is still scored on its code.
+                if artifacts is None:
+                    artifacts = {}
+                artifacts["witness_dsl_syntax_error"] = (
+                    "The ```witness block in your last response did NOT conform to "
+                    "the transformation-witness DSL grammar (GRAMMAR.bnf). Produce "
+                    "a corrected ```witness block this time; the code change itself "
+                    "was fine. Checker output:\n" + str(wit_check.get("output") or "")
+                )
 
         # Create child program
         child_program = Program(
