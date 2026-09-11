@@ -429,6 +429,28 @@ function renderWitnesses(witnesses) {
     summary.textContent = w.summary || "(change)";
     card.appendChild(summary);
 
+    // The transformation-witness DSL block (see witness_dsl/GRAMMAR.bnf) is
+    // what actually drives heimdall's semantic check once this witness is
+    // approved (combine_witness_dsl_blocks -> .wit -> --witness) -- show it
+    // so "Approve witness" approves what will really be used, not just the
+    // English rationale/SMT formulas below.
+    if (w.wit) {
+      const witLabel = document.createElement("div");
+      witLabel.className = "witness-formula-label";
+      witLabel.textContent = "Transformation witness (.wit):";
+      card.appendChild(witLabel);
+
+      const witBlock = document.createElement("pre");
+      witBlock.className = "code-viewer readonly witness-formula";
+      witBlock.textContent = w.wit;
+      card.appendChild(witBlock);
+    } else {
+      const badge = document.createElement("span");
+      badge.className = "equiv-badge delta-warn";
+      badge.textContent = "⚠ no .wit block -- LLM did not emit a transformation-witness DSL block for this change";
+      card.appendChild(badge);
+    }
+
     if (w.detail) {
       const detail = document.createElement("div");
       detail.className = "witness-example";
