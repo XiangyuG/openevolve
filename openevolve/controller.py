@@ -313,6 +313,7 @@ class OpenEvolve:
             )
 
             self.database.add(initial_program)
+            self.database.initial_program_id = initial_program_id
 
             # Check for and store artifacts from initial program
             initial_artifacts = self.evaluator.get_pending_artifacts(initial_program_id)

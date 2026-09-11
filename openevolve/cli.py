@@ -49,11 +49,18 @@ def _print_per_iteration_ns_summary(openevolve: "OpenEvolve") -> None:
         return f"  {label}: {cells or 'N/A (no measurement)'}"
 
     print("\nPer-iteration ns/run:")
-    # iter 0 = the original program (root of the tree: parent_id is None).
-    roots = [p for p in programs if not getattr(p, "parent_id", None)]
+    # iter 0 = the original program. The database tracks its id directly
+    # (openevolve.database.initial_program_id) so it's found even if it has
+    # since been displaced from every MAP-Elites cell/island; fall back to the
+    # old parent-id-is-None heuristic for checkpoints saved before that field
+    # existed.
     seen = set()
-    if roots:
-        root = min(roots, key=lambda p: p.timestamp)
+    initial_id = getattr(openevolve.database, "initial_program_id", None)
+    root = openevolve.database.programs.get(initial_id) if initial_id else None
+    if root is None:
+        roots = [p for p in programs if not getattr(p, "parent_id", None)]
+        root = min(roots, key=lambda p: p.timestamp) if roots else None
+    if root:
         seen.add(root.id)
         print(_row("iter   0 (original)", root.metrics))
     else:

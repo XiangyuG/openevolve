@@ -156,6 +156,11 @@ class ProgramDatabase:
         # Track the absolute best program separately
         self.best_program_id: Optional[str] = None
 
+        # Track the original/initial program (parent_id is None) separately so
+        # it survives MAP-Elites cell displacement and population pruning -
+        # it's the fixed baseline every other program is compared against.
+        self.initial_program_id: Optional[str] = None
+
         # Track best program per island for proper island-based evolution
         self.island_best_programs: List[Optional[str]] = [None] * config.num_islands
 
@@ -635,6 +640,7 @@ class ProgramDatabase:
             "islands": [list(island) for island in self.islands],
             "archive": list(self.archive),
             "best_program_id": self.best_program_id,
+            "initial_program_id": self.initial_program_id,
             "island_best_programs": self.island_best_programs,
             "last_iteration": iteration or self.last_iteration,
             "current_island": self.current_island,
@@ -672,6 +678,7 @@ class ProgramDatabase:
             saved_islands = metadata.get("islands", [])
             self.archive = set(metadata.get("archive", []))
             self.best_program_id = metadata.get("best_program_id")
+            self.initial_program_id = metadata.get("initial_program_id")
             self.island_best_programs = metadata.get(
                 "island_best_programs", [None] * len(saved_islands)
             )
@@ -770,6 +777,10 @@ class ProgramDatabase:
         if self.best_program_id and self.best_program_id not in self.programs:
             logger.warning(f"Best program {self.best_program_id} not found, will recalculate")
             self.best_program_id = None
+
+        # Check initial program (absent in checkpoints saved before this field existed)
+        if self.initial_program_id and self.initial_program_id not in self.programs:
+            self.initial_program_id = None
 
         # Log reconstruction results
         if missing_programs:
@@ -1712,6 +1723,12 @@ class ProgramDatabase:
         if program_id not in self.programs:
             return
 
+        # The original/initial program is always kept, even once it stops
+        # owning any cell - it's the fixed baseline every other program is
+        # compared against (e.g. CLI summaries report it as "iteration 0").
+        if program_id == self.initial_program_id:
+            return
+
         # Still owns a cell in some island? Then it is not orphaned.
         for island_map in self.island_feature_maps:
             if program_id in island_map.values():
@@ -1753,8 +1770,13 @@ class ProgramDatabase:
         for island_map in self.island_feature_maps:
             elite_ids.update(island_map.values())
 
-        # Never remove the best program or the excluded (just-added) program
-        protected_ids = {self.best_program_id, exclude_program_id} - {None}
+        # Never remove the best program, the excluded (just-added) program, or
+        # the original/initial program - it's the fixed baseline every other
+        # program is compared against (e.g. CLI summaries report it as
+        # "iteration 0"), so it must survive population pruning too.
+        protected_ids = {self.best_program_id, exclude_program_id, self.initial_program_id} - {
+            None
+        }
 
         all_programs = list(self.programs.values())
 
