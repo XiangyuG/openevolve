@@ -53,7 +53,7 @@ database:
     - "ns_per_run__"
 
 evaluator:
-  timeout: 120
+  timeout: 240
   parallel_evaluations: 1
   cascade_evaluation: false
 
