@@ -379,8 +379,13 @@ def _run_iteration_worker(
             validate_transformation_proof,
         )
 
+        # Extract witnesses from the RAW response, before any code-fence stripping --
+        # extract_change_explanation() indiscriminately deletes every ``` ... ``` block
+        # (meant for a full program's code fence), which would silently eat the
+        # required ```witness DSL fence too, leaving every witness's "wit" empty even
+        # when the model wrote it correctly.
+        change_witnesses = extract_transformation_witnesses(llm_response)
         change_explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
-        change_witnesses = extract_transformation_witnesses(change_explanation)
         for index, witness in enumerate(change_witnesses):
             # Stable per-child index so the developer can approve/reject witnesses
             # individually in the review UI (openevolve/review_gate.py) and have
@@ -589,15 +594,23 @@ def _run_iteration_worker_propose(
             validate_transformation_proof,
         )
 
-        # The propose prompt asks for no code, but strip any diff/code fences the model
-        # might still emit anyway, same defensive extraction as the non-interactive path.
-        explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
-        witnesses = extract_transformation_witnesses(explanation)
+        # Extract witnesses from the RAW response, before any code-fence stripping --
+        # extract_change_explanation() indiscriminately deletes every ``` ... ``` block
+        # (meant for a full program's code fence in the non-interactive path), which
+        # would silently eat the required ```witness DSL fence too, leaving every
+        # witness's "wit" empty even when the model wrote it correctly.
+        witnesses = extract_transformation_witnesses(llm_response)
         for index, witness in enumerate(witnesses):
             witness["index"] = index
             witness["proof"] = validate_transformation_proof(
                 witness["pre_formula"], witness["post_formula"]
             )
+
+        # The propose prompt asks for no code, but strip any diff/code fences the model
+        # might still emit anyway, same defensive extraction as the non-interactive path --
+        # safe to run AFTER witness extraction since each witness's "wit" text is already
+        # captured above, and the review UI renders it separately (see review.js).
+        explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
 
         return ProposalResult(
             parent_id=parent.id,
@@ -1059,6 +1072,7 @@ class ProcessParallelController:
                     "developer_approved": w.get("developer_approved"),
                     "proof_status": (w.get("proof") or {}).get("status"),
                     "proof_detail": (w.get("proof") or {}).get("detail"),
+                    "wit": w.get("wit") or "",
                     "map_width_change": w.get("map_width_change"),
                     "map_fusion": w.get("map_fusion"),
                     "variable_width_change": w.get("variable_width_change"),

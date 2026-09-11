@@ -368,7 +368,12 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
     simply not matched -- this is best-effort, not enforced.
 
     Args:
-        explanation_text: Explanation text, e.g. from extract_change_explanation()
+        explanation_text: The RAW LLM response (or any text that still contains the
+            ```witness/```wit fences) -- NOT the output of extract_change_explanation(),
+            which strips every ``` ... ``` fenced block indiscriminately and would take
+            the required ```witness DSL block down with it, silently zeroing out every
+            witness's "wit" field. Call this first, on the raw response, then pass the
+            same raw response to extract_change_explanation() separately for display.
 
     Returns:
         List of {"summary", "detail", "witness", "pre_formula", "post_formula",
