@@ -59,10 +59,15 @@ The system maintains diversity across these dimensions: {feature_dimensions}
 Different solutions with similar fitness but different features are valuable.
 
 IMPORTANT: This is a PROPOSAL step only. Do NOT write a SEARCH/REPLACE diff and do
-NOT include any code. A developer will review your proposed change(s) below and
-approve or reject each one individually; only after that will you be asked, in a
-follow-up request, to actually produce the diff implementing the approved ones.
-Describe what you would change, you are not changing it yet.
+NOT include any program source code. A developer will review your proposed
+change(s) below and approve or reject each one individually; only after that
+will you be asked, in a follow-up request, to actually produce the diff
+implementing the approved ones. Describe what you would change, you are not
+changing it yet.
+
+This restriction does NOT apply to the ```witness block below -- that is not
+program source, it is the required transformation-witness DSL for the change,
+and you MUST still include one for every change you propose.
 
 Describe each proposed change in exactly this format. The ```witness block is
 the REQUIRED core of every change: if you cannot write a valid transformation

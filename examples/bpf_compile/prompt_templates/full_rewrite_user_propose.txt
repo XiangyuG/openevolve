@@ -46,11 +46,16 @@ at all) and say so in the explanation.
 The system maintains diversity across these dimensions: {feature_dimensions}
 Different solutions with similar fitness but different features are valuable.
 
-IMPORTANT: This is a PROPOSAL step only. Do NOT write any code and do NOT include a
-code block. A developer will review your proposed change(s) below and approve or
-reject each one individually; only after that will you be asked, in a follow-up
-request, to actually implement the approved ones. Describe what you would change,
-you are not changing it yet.
+IMPORTANT: This is a PROPOSAL step only. Do NOT write the actual program source
+(no full rewrite, no diff) and do NOT include a code block containing it. A developer
+will review your proposed change(s) below and approve or reject each one
+individually; only after that will you be asked, in a follow-up request, to
+actually implement the approved ones. Describe what you would change, you are
+not changing it yet.
+
+This restriction does NOT apply to the ```witness block below -- that is not
+program source, it is the required transformation-witness DSL for the change,
+and you MUST still include one for every change you propose.
 
 Describe each proposed change in exactly this format. The ```witness block is
 the REQUIRED core of every change: if you cannot write a valid transformation
