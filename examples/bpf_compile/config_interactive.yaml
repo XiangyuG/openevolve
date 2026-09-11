@@ -50,6 +50,8 @@ database:
     - "compile_success"
     - "semantic_equivalent"
   feature_bins: 4
+  pareto_metric_prefixes:
+    - "ns_per_run__"
 
 evaluator:
   timeout: 120

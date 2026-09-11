@@ -347,6 +347,14 @@ class DatabaseConfig:
     feature_bins: Union[int, Dict[str, int]] = 10  # Can be int (all dims) or dict (per-dim)
     diversity_reference_size: int = 20  # Size of reference set for diversity calculation
 
+    # Metric-name prefixes to treat as independent, lower-is-better objectives (Pareto
+    # dominance) instead of collapsing everything into combined_score. A program only
+    # replaces another as MAP-Elites cell owner / archive member / best program if it's
+    # <= on every matching metric and strictly < on at least one; a mixed result (better
+    # on some, worse on others) replaces neither - both survive as regular population
+    # members. Empty (default) = today's combined_score-only behavior.
+    pareto_metric_prefixes: List[str] = field(default_factory=list)
+
     # Migration parameters for island-based evolution
     migration_interval: int = 50  # Migrate every N generations
     migration_rate: float = 0.1  # Fraction of population to migrate

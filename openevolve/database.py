@@ -1119,6 +1119,46 @@ class ProgramDatabase:
 
         return self._llm_judge_novelty(program, self.programs[max_smlty_pid])
 
+    def _pareto_dominates(self, program1: Program, program2: Program, metrics: List[str]) -> bool:
+        """
+        True if program1 Pareto-dominates program2 over `metrics` (all treated as
+        lower-is-better): program1 is <= program2 on every metric and strictly < on
+        at least one. A mixed result (better on some, worse on others) is NOT
+        domination - returns False, same as program2 being outright better.
+        """
+        at_least_one_better = False
+        for m in metrics:
+            v1, v2 = program1.metrics.get(m), program2.metrics.get(m)
+            if v1 is None or v2 is None:
+                return False
+            if v1 > v2:
+                return False
+            if v1 < v2:
+                at_least_one_better = True
+        return at_least_one_better
+
+    def _pareto_front_ids(self) -> Set[str]:
+        """
+        Ids of programs not Pareto-dominated by any other program in the population,
+        over self.config.pareto_metric_prefixes. Only considers programs that have
+        every matching metric key (others - e.g. compile failures - are excluded).
+        """
+        prefixes = self.config.pareto_metric_prefixes
+        if not prefixes:
+            return set()
+
+        candidates = list(self.programs.values())
+        keys = {k for p in candidates for k in p.metrics if any(k.startswith(pre) for pre in prefixes)}
+        if not keys:
+            return set()
+        eligible = [p for p in candidates if all(k in p.metrics for k in keys)]
+
+        front = set()
+        for p in eligible:
+            if not any(self._pareto_dominates(other, p, keys) for other in eligible if other.id != p.id):
+                front.add(p.id)
+        return front
+
     def _is_better(self, program1: Program, program2: Program) -> bool:
         """
         Determine if program1 has better FITNESS than program2
@@ -1142,6 +1182,23 @@ class ProgramDatabase:
             return True
         if not program1.metrics and program2.metrics:
             return False
+
+        # Pareto mode: independently-judged, lower-is-better metrics (e.g. bpf_compile's
+        # ns_per_run__* per function) decide via strict dominance instead of one scalar.
+        # Falls through to the scalar comparison below if either program is missing a
+        # matching metric (e.g. compile failed and never ran the benchmark).
+        prefixes = self.config.pareto_metric_prefixes
+        if prefixes:
+            keys = sorted(
+                {k for k in program1.metrics if any(k.startswith(p) for p in prefixes)}
+                | {k for k in program2.metrics if any(k.startswith(p) for p in prefixes)}
+            )
+            if (
+                keys
+                and all(k in program1.metrics for k in keys)
+                and all(k in program2.metrics for k in keys)
+            ):
+                return self._pareto_dominates(program1, program2, keys)
 
         # Compare fitness (excluding feature dimensions)
         fitness1 = get_fitness_score(program1.metrics, self.config.feature_dimensions)
@@ -1777,6 +1834,11 @@ class ProgramDatabase:
         protected_ids = {self.best_program_id, exclude_program_id, self.initial_program_id} - {
             None
         }
+        # In Pareto mode, also protect every current trade-off champion (e.g. the
+        # "fastest write" program even if its combined_score is mediocre) so pruning
+        # by scalar fitness can't silently drop a legitimate non-dominated program.
+        if self.config.pareto_metric_prefixes:
+            protected_ids.update(self._pareto_front_ids())
 
         all_programs = list(self.programs.values())
 
