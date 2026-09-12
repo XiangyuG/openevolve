@@ -36,6 +36,10 @@ class SerializableResult:
     iteration: int = 0
     error: Optional[str] = None
     target_island: Optional[int] = None  # Island where child should be placed
+    # Usage for THIS iteration's one LLM call, if the sampled model reported one
+    # (see OpenAILLM.last_usage) - None for manual mode or a non-reporting
+    # provider. Summed across iterations by the caller for a run total.
+    token_usage: Optional[Dict[str, int]] = None
 
 
 @dataclass
@@ -55,6 +59,7 @@ class ProposalResult:
     witnesses: List[Dict[str, Any]] = field(default_factory=list)
     target_island: Optional[int] = None
     error: Optional[str] = None
+    token_usage: Optional[Dict[str, int]] = None
 
 
 _WIT_FENCE_RE = None  # compiled lazily
@@ -302,10 +307,13 @@ def _run_iteration_worker(
         except Exception as e:
             logger.error(f"LLM generation failed: {e}")
             return SerializableResult(error=f"LLM generation failed: {str(e)}", iteration=iteration)
+        llm_token_usage = _worker_llm_ensemble.last_usage
 
         # Check for None response
         if llm_response is None:
-            return SerializableResult(error="LLM returned None response", iteration=iteration)
+            return SerializableResult(
+                error="LLM returned None response", iteration=iteration, token_usage=llm_token_usage
+            )
 
         # Parse response based on evolution mode
         if _worker_config.diff_based_evolution:
@@ -320,7 +328,9 @@ def _run_iteration_worker(
             diff_blocks = extract_diffs(llm_response, _worker_config.diff_pattern)
             if not diff_blocks:
                 return SerializableResult(
-                    error="No valid diffs found in response", iteration=iteration
+                    error="No valid diffs found in response",
+                    iteration=iteration,
+                    token_usage=llm_token_usage,
                 )
 
             if _worker_config.prompt.programs_as_changes_description:
@@ -331,7 +341,9 @@ def _run_iteration_worker(
                         changes_description_text=parent_changes_desc,
                     )
                 except Exception as e:
-                    return SerializableResult(error=str(e), iteration=iteration)
+                    return SerializableResult(
+                        error=str(e), iteration=iteration, token_usage=llm_token_usage
+                    )
 
                 child_code, _ = apply_diff_blocks(parent.code, code_blocks)
                 child_changes_desc, desc_applied = apply_diff_blocks(
@@ -347,6 +359,7 @@ def _run_iteration_worker(
                     return SerializableResult(
                         error="changes_description was not updated or empty, program is discarded",
                         iteration=iteration,
+                        token_usage=llm_token_usage,
                     )
 
                 changes_summary = format_diff_summary(
@@ -368,7 +381,9 @@ def _run_iteration_worker(
             new_code = parse_full_rewrite(llm_response, _worker_config.language)
             if not new_code:
                 return SerializableResult(
-                    error=f"No valid code found in response", iteration=iteration
+                    error=f"No valid code found in response",
+                    iteration=iteration,
+                    token_usage=llm_token_usage,
                 )
 
             child_code = new_code
@@ -401,6 +416,7 @@ def _run_iteration_worker(
             return SerializableResult(
                 error=f"Generated code exceeds maximum length ({len(child_code)} > {_worker_config.max_code_length})",
                 iteration=iteration,
+                token_usage=llm_token_usage,
             )
 
         # Evaluate the child program
@@ -474,6 +490,7 @@ def _run_iteration_worker(
             artifacts=artifacts,
             iteration=iteration,
             target_island=target_island,
+            token_usage=llm_token_usage,
         )
 
     except Exception as e:
@@ -606,10 +623,14 @@ def _run_iteration_worker_propose(
             return ProposalResult(
                 error=f"LLM generation failed: {str(e)}", iteration=iteration, parent_id=parent_id
             )
+        llm_token_usage = _worker_llm_ensemble.last_usage
 
         if llm_response is None:
             return ProposalResult(
-                error="LLM returned None response", iteration=iteration, parent_id=parent_id
+                error="LLM returned None response",
+                iteration=iteration,
+                parent_id=parent_id,
+                token_usage=llm_token_usage,
             )
 
         from openevolve.utils.code_utils import (
@@ -645,6 +666,7 @@ def _run_iteration_worker_propose(
             explanation=explanation,
             witnesses=witnesses,
             target_island=db_snapshot.get("sampling_island"),
+            token_usage=llm_token_usage,
         )
 
     except Exception as e:
@@ -703,9 +725,12 @@ def _run_iteration_worker_implement(
         except Exception as e:
             logger.error(f"LLM generation failed (implement): {e}")
             return SerializableResult(error=f"LLM generation failed: {str(e)}", iteration=iteration)
+        llm_token_usage = _worker_llm_ensemble.last_usage
 
         if llm_response is None:
-            return SerializableResult(error="LLM returned None response", iteration=iteration)
+            return SerializableResult(
+                error="LLM returned None response", iteration=iteration, token_usage=llm_token_usage
+            )
 
         if _worker_config.diff_based_evolution:
             from openevolve.utils.code_utils import (
@@ -719,7 +744,9 @@ def _run_iteration_worker_implement(
             diff_blocks = extract_diffs(llm_response, _worker_config.diff_pattern)
             if not diff_blocks:
                 return SerializableResult(
-                    error="No valid diffs found in response", iteration=iteration
+                    error="No valid diffs found in response",
+                    iteration=iteration,
+                    token_usage=llm_token_usage,
                 )
 
             if _worker_config.prompt.programs_as_changes_description:
@@ -730,7 +757,9 @@ def _run_iteration_worker_implement(
                         changes_description_text=parent_changes_desc,
                     )
                 except Exception as e:
-                    return SerializableResult(error=str(e), iteration=iteration)
+                    return SerializableResult(
+                        error=str(e), iteration=iteration, token_usage=llm_token_usage
+                    )
 
                 child_code, _ = apply_diff_blocks(parent.code, code_blocks)
                 child_changes_desc, desc_applied = apply_diff_blocks(
@@ -745,6 +774,7 @@ def _run_iteration_worker_implement(
                     return SerializableResult(
                         error="changes_description was not updated or empty, program is discarded",
                         iteration=iteration,
+                        token_usage=llm_token_usage,
                     )
 
                 changes_summary = format_diff_summary(
@@ -766,7 +796,9 @@ def _run_iteration_worker_implement(
             new_code = parse_full_rewrite(llm_response, _worker_config.language)
             if not new_code:
                 return SerializableResult(
-                    error="No valid code found in response", iteration=iteration
+                    error="No valid code found in response",
+                    iteration=iteration,
+                    token_usage=llm_token_usage,
                 )
 
             child_code = new_code
@@ -777,6 +809,7 @@ def _run_iteration_worker_implement(
             return SerializableResult(
                 error=f"Generated code exceeds maximum length ({len(child_code)} > {_worker_config.max_code_length})",
                 iteration=iteration,
+                token_usage=llm_token_usage,
             )
 
         import uuid
@@ -861,6 +894,7 @@ def _run_iteration_worker_implement(
             artifacts=artifacts,
             iteration=iteration,
             target_island=db_snapshot.get("sampling_island"),
+            token_usage=llm_token_usage,
         )
 
     except Exception as e:
@@ -974,6 +1008,20 @@ class ProcessParallelController:
         # unboundedly over a long run.
         self._known_compile_failures: List[str] = []
         self._known_compile_failures_cap = 10
+
+        # Run-wide LLM token usage, summed across every completed iteration's
+        # single LLM call (propose-phase + implement-phase in interactive mode,
+        # or the one call per iteration in non-interactive mode). Each worker
+        # reports its own call's usage as a delta on its result dataclass (see
+        # SerializableResult.token_usage / ProposalResult.token_usage) rather
+        # than a cumulative snapshot, so summing deltas here is correct
+        # regardless of how many worker processes ran them. Read by cli.py at
+        # the end of the run via OpenEvolve.parallel_controller.
+        self.total_token_usage: Dict[str, int] = {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+        }
 
         # The most recently completed iteration's implement+evaluate result (see
         # _run_evolution_interactive below), shown alongside the NEXT witness
@@ -1170,6 +1218,15 @@ class ProcessParallelController:
 
         return snapshot
 
+    def _accumulate_token_usage(self, usage: Optional[Dict[str, int]]) -> None:
+        """Add one iteration's LLM call usage (may be None -- manual mode, a
+        non-reporting provider, or an iteration that never reached the LLM
+        call) into the run-wide total."""
+        if not usage:
+            return
+        for key in self.total_token_usage:
+            self.total_token_usage[key] += usage.get(key, 0) or 0
+
     async def run_evolution(
         self,
         start_iteration: int,
@@ -1258,6 +1315,7 @@ class ProcessParallelController:
                 # Use evaluator timeout + buffer to gracefully handle stuck processes
                 timeout_seconds = self.config.evaluator.timeout + 30
                 result = future.result(timeout=timeout_seconds)
+                self._accumulate_token_usage(result.token_usage)
 
                 if result.error:
                     logger.warning(f"Iteration {completed_iteration} error: {result.error}")
@@ -1569,6 +1627,7 @@ class ProcessParallelController:
                 proposal = await loop.run_in_executor(
                     None, proposal_future.result, timeout_seconds
                 )
+                self._accumulate_token_usage(proposal.token_usage)
             except FutureTimeoutError:
                 logger.error(
                     f"⏰ Iteration {current_iteration} proposal timed out after "
@@ -1726,6 +1785,7 @@ class ProcessParallelController:
 
             try:
                 result = await loop.run_in_executor(None, implement_future.result, timeout_seconds)
+                self._accumulate_token_usage(result.token_usage)
             except FutureTimeoutError:
                 logger.error(
                     f"⏰ Iteration {current_iteration} implementation timed out after "

@@ -64,6 +64,14 @@ class OpenAILLM(LLMInterface):
         self.random_seed = getattr(model_cfg, "random_seed", None)
         self.reasoning_effort = getattr(model_cfg, "reasoning_effort", None)
 
+        # Usage from the most recent _call_api response (prompt_tokens/
+        # completion_tokens/total_tokens), or None if the API didn't report one
+        # (e.g. manual mode) or the last call hasn't happened yet. Read by
+        # LLMEnsemble.generate_with_context right after it awaits this model, so
+        # only the SAME model instance's own most recent call is ever reflected
+        # here - callers needing a running total accumulate it themselves.
+        self.last_usage: Optional[Dict[str, int]] = None
+
         # Manual mode: enabled via llm.manual_mode in config.yaml
         self.manual_mode = (getattr(model_cfg, "manual_mode", False) is True)
         self.manual_queue_dir: Optional[Path] = None
@@ -109,6 +117,10 @@ class OpenAILLM(LLMInterface):
         self, system_message: str, messages: List[Dict[str, str]], **kwargs
     ) -> str:
         """Generate text using a system message and conversational context"""
+        # Reset so a manual-mode call (no usage) or a failed attempt never leaves
+        # a STALE usage value from a previous successful call looking current.
+        self.last_usage = None
+
         # Prepare messages with system message
         formatted_messages = [{"role": "system", "content": system_message}]
         formatted_messages.extend(messages)
@@ -225,6 +237,18 @@ class OpenAILLM(LLMInterface):
         logger = logging.getLogger(__name__)
         logger.debug(f"API parameters: {params}")
         logger.debug(f"API response: {response.choices[0].message.content}")
+
+        usage = getattr(response, "usage", None)
+        self.last_usage = (
+            {
+                "prompt_tokens": getattr(usage, "prompt_tokens", 0) or 0,
+                "completion_tokens": getattr(usage, "completion_tokens", 0) or 0,
+                "total_tokens": getattr(usage, "total_tokens", 0) or 0,
+            }
+            if usage is not None
+            else None
+        )
+
         return response.choices[0].message.content
 
     async def _manual_wait_for_answer(

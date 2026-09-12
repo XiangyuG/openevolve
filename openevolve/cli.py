@@ -162,6 +162,21 @@ def _print_optimization_lineage(openevolve: "OpenEvolve", best_program) -> None:
                 print(f"    - {step}")
 
 
+def _print_token_usage(openevolve: "OpenEvolve") -> None:
+    """Print the run-wide LLM token usage total, accumulated across every
+    iteration's LLM call (see ProcessParallelController.total_token_usage).
+    No-op if nothing was ever recorded (e.g. every model used is manual mode
+    or a provider that doesn't report usage, like ClaudeCodeLLM).
+    """
+    usage = getattr(openevolve, "total_token_usage", None) or {}
+    if not usage.get("total_tokens"):
+        return
+    print("\nLLM token usage (this run):")
+    print(f"  prompt:     {usage.get('prompt_tokens', 0):,}")
+    print(f"  completion: {usage.get('completion_tokens', 0):,}")
+    print(f"  total:      {usage.get('total_tokens', 0):,}")
+
+
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments"""
     parser = argparse.ArgumentParser(description="OpenEvolve - Evolutionary coding agent")
@@ -315,6 +330,7 @@ async def main_async() -> int:
 
         _print_per_iteration_ns_summary(openevolve)
         _print_optimization_lineage(openevolve, best_program)
+        _print_token_usage(openevolve)
 
         if latest_checkpoint:
             print(f"\nLatest checkpoint saved at: {latest_checkpoint}")
