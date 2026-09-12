@@ -442,6 +442,15 @@ EQUIV_SCORE_FLOOR = float(os.environ.get("BPF_EQUIV_SCORE_FLOOR", "0.0"))
 EQUIV_VERIFIER = HEIMDALL_ROOT / "c2rust_translation" / "verify_mixed_entries.py"
 BTF_PARSER = HEIMDALL_ROOT / "c2rust_translation" / "btf_parser.py"
 
+# "relaxed" (default): evaluate() uses whatever developer-approved witnesses are
+# passed in for a given candidate (degrades to an ordinary strict check when a
+# candidate has none). "strict": ignore witnesses entirely for the whole run, the
+# same unconditional check every candidate always got before this flag existed.
+# One flag for the whole run, not a per-candidate choice.
+EQUIV_MODE = os.environ.get("BPF_EQUIV_MODE", "relaxed").strip().lower()
+if EQUIV_MODE not in ("relaxed", "strict"):
+    EQUIV_MODE = "relaxed"
+
 
 RUNNER_ROW_PATTERN = re.compile(
     r"^(?P<program>\S+)\s+"
@@ -800,102 +809,6 @@ def _check_equivalence(
     return metrics, artifacts
 
 
-def reverify_with_witnesses(
-    program_path: str, witnesses: list, wit_path: "str | None" = None
-) -> EvaluationResult:
-    """Optional second-pass equivalence re-check, called only by OpenEvolve's
-    interactive review flow (openevolve/process_parallel.py's
-    _reverify_approved_witnesses) after a developer has approved specific
-    transformation witnesses claiming a BPF map's value type was narrowed
-    and/or two or more maps were merged.
-
-    `witnesses` is a list of developer-approved, self-proven witness dicts,
-    each carrying a "map_width_change" and/or "map_fusion" hint (see
-    extract_transformation_witnesses). This recompiles the candidate and
-    re-runs the same heimdall checker as the unconditional evaluate() path,
-    but with a --witness-file (see _witness_file_args) that lets it skip the
-    exact BTF value_size equality gate for narrowed map(s) and treat declared
-    source maps as merged into their target -- everything else about the
-    check (the rest of the symbolic proof) is unchanged, and the checker
-    itself is expected to verify each hint against the object files' real BTF
-    metadata before honoring it. Result is stored under a distinct metric
-    (semantic_equivalent_relaxed), never overwriting the unconditional
-    semantic_equivalent from evaluate()."""
-    source_path = Path(program_path)
-
-    if not witnesses and not (wit_path and Path(wit_path).is_file()):
-        return EvaluationResult(
-            metrics={"semantic_equivalent_relaxed": 0.0},
-            artifacts={"error": "reverify_with_witnesses called with no witnesses"},
-        )
-
-    with tempfile.TemporaryDirectory(prefix="openevolve_bpf_reverify_") as tmp_dir:
-        output_path = Path(tmp_dir) / f"{source_path.stem}.o"
-        cmd = [
-            CLANG,
-            "-g",
-            "-O2",
-            "-target",
-            "bpf",
-            "-D__TARGET_ARCH_x86",
-            "-I",
-            str(LIBBPF_TOOLS_DIR),
-            "-I",
-            "/usr/include/x86_64-linux-gnu",
-            "-c",
-            str(source_path),
-            "-o",
-            str(output_path),
-        ]
-
-        try:
-            result = subprocess.run(
-                cmd, cwd=str(HEIMDALL_ROOT), capture_output=True, text=True, timeout=TIMEOUT_SECONDS
-            )
-        except subprocess.TimeoutExpired:
-            return EvaluationResult(
-                metrics={"semantic_equivalent_relaxed": 0.0},
-                artifacts={"error": f"clang timed out after {TIMEOUT_SECONDS}s (reverify)"},
-            )
-
-        if result.returncode != 0 or not output_path.exists():
-            return EvaluationResult(
-                metrics={"semantic_equivalent_relaxed": 0.0},
-                artifacts={
-                    "error": "clang compilation failed (reverify)",
-                    "stderr": result.stderr[-4000:],
-                },
-            )
-
-        # Replace each witness's self-reported map_width_change with the REAL
-        # baseline-vs-this-candidate BTF value_size (see
-        # _correct_map_width_change_hints) -- this is what makes a witness
-        # narrowing an already-narrowed map (i.e. anything past the first
-        # generation of a given map's narrowing) actually match heimdall's
-        # exact-equality hint gate instead of silently falling back to the
-        # strict check every time.
-        witnesses = _correct_map_width_change_hints(witnesses, output_path)
-
-        metrics, artifacts = _check_equivalence(
-            output_path,
-            witnesses=witnesses,
-            metric_key="semantic_equivalent_relaxed",
-            detail_key="equivalence_relaxed_detail",
-            wit_path=wit_path,
-        )
-        if wit_path and Path(wit_path).is_file():
-            artifacts["witness_source"] = "wit"
-            try:
-                artifacts["wit"] = Path(wit_path).read_text()
-            except OSError:
-                pass
-        else:
-            artifacts["relaxed_hints"] = json.dumps(
-                build_heimdall_witness_file(witnesses), sort_keys=True
-            )
-        return EvaluationResult(metrics=metrics, artifacts=artifacts)
-
-
 def _parse_runner_stats(output: str) -> dict[str, dict[str, float | int | None]]:
     if TOOL["parser"] == "table":
         return _parse_table_stats(output)
@@ -1089,7 +1002,11 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
     return metrics, artifacts
 
 
-def evaluate(program_path: str) -> EvaluationResult:
+def evaluate(
+    program_path: str,
+    witnesses: "list[dict] | None" = None,
+    wit_path: "str | None" = None,
+) -> EvaluationResult:
     source_path = Path(program_path)
     source = source_path.read_text(encoding="utf-8", errors="replace")
     _log(f"=== evaluate {source_path.name} (tool={BPF_TOOL}) ===")
@@ -1173,17 +1090,48 @@ def evaluate(program_path: str) -> EvaluationResult:
 
         if EQUIV_CHECK:
             _log("step 2/3: symbolic equivalence check vs baseline ...")
-            equiv_metrics, equiv_artifacts = _check_equivalence(output_path)
+            # Single pass: EQUIV_MODE picks whether an approved witness (if any
+            # was passed in) is used at all. "strict" ignores witnesses/wit_path
+            # entirely for the whole run; "relaxed" (default) uses whatever was
+            # approved for THIS candidate, which is a no-op when there's none --
+            # _check_equivalence already falls back to a plain strict check when
+            # there's nothing to relax. There is no separate later re-check
+            # anymore, so this is the one and only equivalence verdict.
+            effective_witnesses = None
+            effective_wit_path = None
+            if EQUIV_MODE == "relaxed" and (witnesses or wit_path):
+                effective_witnesses = _correct_map_width_change_hints(
+                    witnesses or [], output_path
+                )
+                effective_wit_path = wit_path
+            equiv_metrics, equiv_artifacts = _check_equivalence(
+                output_path, witnesses=effective_witnesses, wit_path=effective_wit_path
+            )
             metrics.update(equiv_metrics)
             artifacts.update(equiv_artifacts)
+            artifacts["equivalence_mode"] = EQUIV_MODE
+            artifacts["witness_source"] = (
+                "wit" if effective_wit_path else ("hints" if effective_witnesses else "none")
+            )
         else:
             _log("step 2/3: equivalence check SKIPPED (BPF_EQUIV_CHECK=0)")
 
         if RUN_BENCHMARK:
-            _log("step 3/3: workload + runner benchmark ...")
-            runtime_metrics, runtime_artifacts = _run_workload_benchmark(output_path)
-            metrics.update(runtime_metrics)
-            artifacts.update(runtime_artifacts)
+            # Skip the benchmark (60s+, sudo BPF attach, real workload) for a
+            # candidate that isn't proven equivalent -- its score is zeroed by
+            # equiv_factor below regardless of how fast it is, so measuring it
+            # only wastes time and risks the overall evaluation timeout. Doesn't
+            # apply when EQUIV_CHECK itself is off (BPF_EQUIV_CHECK=0): there is
+            # no verdict to gate on, so benchmark unconditionally as before.
+            should_measure = not EQUIV_CHECK or metrics.get("semantic_equivalent", 0.0) == 1.0
+            if should_measure:
+                _log("step 3/3: workload + runner benchmark ...")
+                runtime_metrics, runtime_artifacts = _run_workload_benchmark(output_path)
+                metrics.update(runtime_metrics)
+                artifacts.update(runtime_artifacts)
+            else:
+                _log("step 3/3: SKIPPED (not proven equivalent)")
+
             # semantic_equivalent gates the score: a candidate heimdall cannot
             # prove equivalent to the baseline keeps only EQUIV_SCORE_FLOOR of
             # what its speed alone would earn (0.0 by default = hard gate).

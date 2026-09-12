@@ -92,11 +92,6 @@ class Evaluator:
             self.evaluate_function = module.evaluate
             logger.info(f"Successfully loaded evaluation function from {self.evaluation_file}")
 
-            # Optional second-pass re-verification hook (see reverify_program()
-            # below): most evaluators don't define this, in which case it's a
-            # no-op, same pattern as the optional evaluate_stage1/2/3 hooks.
-            self.reverify_function = getattr(module, "reverify_with_witnesses", None)
-
             # Validate cascade configuration
             self._validate_cascade_configuration(module)
         except Exception as e:
@@ -138,6 +133,8 @@ class Evaluator:
         self,
         program_code: str,
         program_id: str = "",
+        witnesses: Optional[List[Dict[str, Any]]] = None,
+        wit_path: Optional[str] = None,
     ) -> Dict[str, float]:
         """
         Evaluate a program and return scores
@@ -145,6 +142,12 @@ class Evaluator:
         Args:
             program_code: Code to evaluate
             program_id: Optional ID for logging
+            witnesses: Optional developer-approved witness dicts, forwarded to the
+                evaluation module's `evaluate()` only if its signature declares a
+                `witnesses` parameter (see `_direct_evaluate`) - unused evaluators
+                (the common case) are completely unaffected.
+            wit_path: Optional path to a syntax-checked, combined `.wit` file,
+                forwarded the same way if `evaluate()` declares `wit_path`.
 
         Returns:
             Dictionary of metric name to score
@@ -170,7 +173,9 @@ class Evaluator:
                     result = await self._cascade_evaluate(temp_file_path)
                 else:
                     # Run direct evaluation
-                    result = await self._direct_evaluate(temp_file_path)
+                    result = await self._direct_evaluate(
+                        temp_file_path, witnesses=witnesses, wit_path=wit_path
+                    )
 
                 # Process the result based on type
                 eval_result = self._process_evaluation_result(result)
@@ -333,82 +338,21 @@ class Evaluator:
         """
         return self._pending_artifacts.pop(program_id, None)
 
-    async def reverify_program(
-        self,
-        program_code: str,
-        program_id: str,
-        hints: List[Dict[str, Any]],
-        wit_path: Optional[str] = None,
-    ) -> Tuple[Dict[str, float], Dict[str, Any]]:
-        """
-        Optional second-pass re-verification, run only for interactive review
-        (openevolve/review_gate.py) after a developer approves specific
-        transformation witnesses that claim a targeted semantic relaxation
-        (e.g. a narrowed BPF map value type, or a variable narrowed under a
-        proven value-range invariant). Calls the evaluation module's
-        `reverify_with_witnesses(program_path, hints) -> EvaluationResult | dict`
-        if it defines one; evaluators that don't define this are unaffected
-        (returns empty metrics/artifacts, same as an unset cascade stage).
-
-        Args:
-            program_code: Code to re-verify
-            program_id: Program ID, for logging
-            hints: Developer-approved, self-proven witness dicts (see
-                openevolve/process_parallel.py's _reverify_approved_witnesses),
-                each carrying a "map_width_change" or "map_fusion" hint
-
-        Returns:
-            (metrics, artifacts) -- both empty if no reverify hook is defined
-        """
-        if self.reverify_function is None:
-            return {}, {}
-
-        program_id_str = f" {program_id}" if program_id else ""
-        with tempfile.NamedTemporaryFile(suffix=self.program_suffix, delete=False) as temp_file:
-            temp_file.write(program_code.encode("utf-8"))
-            temp_file_path = temp_file.name
-
-        try:
-            import functools
-            import inspect
-
-            call_kwargs = {}
-            if wit_path is not None:
-                try:
-                    if "wit_path" in inspect.signature(self.reverify_function).parameters:
-                        call_kwargs["wit_path"] = wit_path
-                except (TypeError, ValueError):
-                    pass
-            loop = asyncio.get_event_loop()
-            result = await asyncio.wait_for(
-                loop.run_in_executor(
-                    None,
-                    functools.partial(
-                        self.reverify_function, temp_file_path, hints, **call_kwargs
-                    ),
-                ),
-                timeout=self.config.timeout,
-            )
-            eval_result = self._process_evaluation_result(result)
-            logger.info(
-                f"Re-verified program{program_id_str} with {len(hints)} approved hint(s): "
-                f"{format_metrics_safe(eval_result.metrics)}"
-            )
-            return eval_result.metrics, eval_result.artifacts
-        except Exception as e:
-            logger.warning(f"reverify_with_witnesses failed for program{program_id_str}: {e}")
-            return {}, {"reverify_error": str(e)}
-        finally:
-            os.unlink(temp_file_path)
-
     async def _direct_evaluate(
-        self, program_path: str
+        self,
+        program_path: str,
+        witnesses: Optional[List[Dict[str, Any]]] = None,
+        wit_path: Optional[str] = None,
     ) -> Union[Dict[str, float], EvaluationResult]:
         """
         Directly evaluate a program using the evaluation function with timeout
 
         Args:
             program_path: Path to the program file
+            witnesses: Forwarded to `self.evaluate_function` as a `witnesses` kwarg
+                only if its signature declares one - evaluators that only take
+                `program_path` are completely unaffected.
+            wit_path: Forwarded the same way if `evaluate_function` declares `wit_path`.
 
         Returns:
             Dictionary of metrics or EvaluationResult with metrics and artifacts
@@ -417,11 +361,25 @@ class Evaluator:
             asyncio.TimeoutError: If evaluation exceeds timeout
             Exception: If evaluation function raises an exception
         """
+        import functools
+        import inspect
+
+        call_kwargs = {}
+        try:
+            accepted = inspect.signature(self.evaluate_function).parameters
+            if witnesses is not None and "witnesses" in accepted:
+                call_kwargs["witnesses"] = witnesses
+            if wit_path is not None and "wit_path" in accepted:
+                call_kwargs["wit_path"] = wit_path
+        except (TypeError, ValueError):
+            pass
 
         # Create a coroutine that runs the evaluation function in an executor
         async def run_evaluation():
             loop = asyncio.get_event_loop()
-            return await loop.run_in_executor(None, self.evaluate_function, program_path)
+            return await loop.run_in_executor(
+                None, functools.partial(self.evaluate_function, program_path, **call_kwargs)
+            )
 
         # Run the evaluation with timeout - let exceptions bubble up for retry handling
         result = await asyncio.wait_for(run_evaluation(), timeout=self.config.timeout)

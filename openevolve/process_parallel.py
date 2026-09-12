@@ -480,6 +480,26 @@ def _run_iteration_worker(
         return SerializableResult(error=str(e), iteration=iteration)
 
 
+def _combine_feedback(
+    known_compile_failures: List[str], parent_feedback: Optional[str]
+) -> Optional[str]:
+    """Merge the run-wide known-compile-failures list with this parent's own
+    specific feedback (a rejection reason, or its own last compile error) into
+    the single string the propose prompt's {developer_feedback} section shows.
+    The global list comes first so it reads as standing context ("these don't
+    work, anywhere, this run") ahead of anything specific to this one parent."""
+    parts = []
+    if known_compile_failures:
+        parts.append(
+            "Known compile-time errors already hit this run (from other lineages "
+            "too) - avoid triggering these again:\n"
+            + "\n".join(f"- {e}" for e in known_compile_failures)
+        )
+    if parent_feedback:
+        parts.append(parent_feedback)
+    return "\n\n".join(parts) if parts else None
+
+
 def _build_worker_prompt(
     iteration: int,
     db_snapshot: Dict[str, Any],
@@ -504,7 +524,10 @@ def _build_worker_prompt(
     inspirations = [programs[pid] for pid in inspiration_ids if pid in programs]
 
     parent_artifacts = db_snapshot["artifacts"].get(parent_id)
-    developer_feedback = db_snapshot.get("developer_feedback", {}).get(parent_id)
+    developer_feedback = _combine_feedback(
+        db_snapshot.get("known_compile_failures") or [],
+        db_snapshot.get("developer_feedback", {}).get(parent_id),
+    )
 
     parent_island = parent.metadata.get("island", db_snapshot["current_island"])
     island_programs = [
@@ -758,7 +781,50 @@ def _run_iteration_worker_implement(
         import uuid
 
         child_id = str(uuid.uuid4())
-        child_metrics = asyncio.run(_worker_evaluator.evaluate_program(child_code, child_id))
+
+        # Combine this iteration's developer-approved witnesses (plus everything
+        # approved anywhere in this program's ancestry) into the structured hints
+        # and the .wit DSL file evaluate() needs to do a relaxed check in the SAME
+        # pass as the unconditional one - see openevolve/evaluator.py's EQUIV_MODE.
+        # Ancestry is propagated so a descendant is checked against the run's
+        # fixed baseline with the full set of claims its lineage relies on, not
+        # just this iteration's delta.
+        import tempfile
+
+        from openevolve.utils.code_utils import combine_witness_dsl_blocks, merge_witnesses
+
+        newly_approved = [
+            w
+            for w in witnesses
+            if w.get("developer_approved") is True
+            and (w.get("map_width_change") or w.get("map_key_width_change") or w.get("map_fusion"))
+        ]
+        inherited = parent.metadata.get("approved_witnesses") or []
+        accumulated = merge_witnesses(inherited, newly_approved)
+
+        # The .wit DSL text itself is NOT ancestry-propagated (same as before this
+        # refactor) - only this iteration's own witnesses contribute to it.
+        wit_path = None
+        wit_text = None
+        wit_check = None
+        combined_wit = combine_witness_dsl_blocks(witnesses, only_approved=True)
+        if combined_wit.strip():
+            wit_text = combined_wit
+            wit_dest = Path(tempfile.mkdtemp(prefix="openevolve_bpf_wit_")) / f"{child_id}.wit"
+            wit_check = _write_and_check_wit(combined_wit, wit_dest)
+            logger.info(
+                "Iteration %d: combined .wit built, syntax ok=%s", iteration, wit_check.get("ok")
+            )
+            if wit_check.get("ok") is True:
+                wit_path = wit_check["path"]
+            elif wit_check.get("output"):
+                logger.info("witness_dsl: %s", wit_check["output"])
+
+        child_metrics = asyncio.run(
+            _worker_evaluator.evaluate_program(
+                child_code, child_id, witnesses=accumulated, wit_path=wit_path
+            )
+        )
 
         artifacts = _worker_evaluator.get_pending_artifacts(child_id)
 
@@ -775,6 +841,9 @@ def _run_iteration_worker_implement(
                 "changes": changes_summary,
                 "explanation": explanation,
                 "witnesses": witnesses,
+                "approved_witnesses": accumulated,
+                "wit": wit_check,
+                "wit_text": wit_text,
                 "parent_metrics": parent.metrics,
                 "island": parent_island,
             },
@@ -886,151 +955,37 @@ class ProcessParallelController:
         self.interactive_enabled = bool(config.interactive.enabled) and review_gate is not None
         self._pending_feedback: Dict[str, str] = {}
         self._rejection_counts: Dict[str, int] = {}
+        # Separate from _rejection_counts (which resets the moment a proposal is
+        # approved, before implementation even runs): how many times IN A ROW an
+        # approved proposal for this parent has failed to compile. Also feeds
+        # _pending_feedback (same channel the next propose call reads either way),
+        # kept in its own dict purely so the two failure kinds don't reset each
+        # other's streak.
+        self._compile_failure_counts: Dict[str, int] = {}
+        # Unlike _pending_feedback (per-parent, cleared once that lineage moves on),
+        # this is run-wide: every distinct compile error seen from ANY parent this
+        # run, shown to EVERY propose call regardless of which parent it targets.
+        # Without this, giving up on a stuck lineage (see max_rejections_per_parent)
+        # throws away everything learned about why it kept failing - a fresh parent
+        # can, and in practice does, re-discover the exact same environment
+        # restriction (e.g. clang's BPF backend rejecting memset()) from scratch.
+        # Capped to the most recent N distinct errors so the prompt doesn't grow
+        # unboundedly over a long run.
+        self._known_compile_failures: List[str] = []
+        self._known_compile_failures_cap = 10
 
-        # The most recently completed iteration's implement+evaluate(+reverify) result
-        # (see _run_evolution_interactive below), shown alongside the NEXT witness
+        # The most recently completed iteration's implement+evaluate result (see
+        # _run_evolution_interactive below), shown alongside the NEXT witness
         # proposal's review task so the developer can see what their last approval
-        # actually produced -- there is no separate review round for it (see
-        # _reverify_approved_witnesses' docstring), so without this the compile/
-        # equivalence/performance results computed for every iteration would never
-        # reach the browser at all. None until the first witness is approved and
-        # implemented; persists across intervening rejections (still the most recent
-        # real result), tagged with its own iteration number so that's never ambiguous.
+        # actually produced -- there is no separate review round for it, so without
+        # this the compile/equivalence/performance results computed for every
+        # iteration would never reach the browser at all. None until the first
+        # witness is approved and implemented; persists across intervening
+        # rejections (still the most recent real result), tagged with its own
+        # iteration number so that's never ambiguous.
         self._last_iteration_result: Optional[Dict[str, Any]] = None
 
-        # Lazily created main-process Evaluator used only for the optional
-        # post-approval re-verification pass (see _reverify_approved_witnesses
-        # below) -- most runs never approve a witness with a relaxation hint,
-        # so this is never instantiated for them.
-        self._reverify_evaluator = None
-
         logger.info(f"Initialized process parallel controller with {self.num_workers} workers")
-
-    def _get_reverify_evaluator(self):
-        from openevolve.evaluator import Evaluator
-
-        if self._reverify_evaluator is None:
-            self._reverify_evaluator = Evaluator(
-                config=self.config.evaluator,
-                evaluation_file=self.evaluation_file,
-                suffix=self.file_suffix,
-            )
-        return self._reverify_evaluator
-
-    async def _reverify_approved_witnesses(self, child_program: Program) -> Dict[str, Any]:
-        """
-        After a developer approves specific transformation witnesses (see
-        openevolve/review_gate.py and scripts/review.py), re-run the
-        evaluator's optional `reverify_with_witnesses` hook using the approved
-        hints, and let its result REPLACE (not just sit alongside)
-        child_program's unconditional "semantic_equivalent" metric. A no-op
-        (no evaluator call at all) unless there's at least one qualifying
-        witness, so this costs nothing for the common case.
-
-        Only witnesses the developer explicitly approved (not just left
-        unreviewed) AND that carry a parsed "map_width_change" or
-        "map_fusion" hint are used -- an approved witness with no parseable
-        hint (including a "variable_width_change"-only witness, which
-        heimdall has no map-level model for -- see build_heimdall_witness_file)
-        contributes nothing here.
-
-        Deliberately NOT gated on the witness's own Z3 self-proof
-        ("proof_status") having succeeded: that proof only checks the LLM's
-        own toy pre_result/post_result formula for internal consistency, and
-        says nothing about whether the transformation is actually equivalent
-        -- that's what the real, independent proof below (heimdall's own
-        symbolic execution over the whole program, plus its own BTF-metadata
-        cross-check of the hint) establishes. Gating reverify on the
-        self-proof too just meant a witness with a syntactically broken
-        formula -- e.g. one that got the numbers right but tripped over Z3's
-        SMT-LIB2 parser some other way -- silently never got heimdall's real
-        check at all, leaving the developer staring at the unconditional
-        strict check's raw "BTF mismatch" as if it were the final word, when
-        a more informed check was available and never even attempted.
-
-        The hint's old_bytes/new_bytes are independently corrected against
-        real BTF metadata before use (see evaluator.py's
-        _correct_map_width_change_hints), so trusting the human's approval
-        instead of the LLM's self-proof here doesn't weaken the actual
-        soundness of what gets accepted -- heimdall still verifies everything
-        itself either way.
-
-        Returns:
-            Extra artifacts to merge into this iteration's stored artifacts
-            (empty dict if no reverify ran).
-        """
-        from openevolve.utils.code_utils import merge_witnesses
-
-        witnesses = child_program.metadata.get("witnesses") or []
-        newly_approved = [
-            w
-            for w in witnesses
-            if w.get("developer_approved") is True
-            and (
-                w.get("map_width_change")
-                or w.get("map_key_width_change")
-                or w.get("map_fusion")
-            )
-        ]
-        # Every witness approved anywhere in this program's ancestry is carried
-        # forward, so a descendant is re-verified against the run's FIXED
-        # baseline with the full set of claims its lineage relies on -- not just
-        # the delta this iteration proposed. build_heimdall_witness_file +
-        # _correct_map_width_change_hints re-anchor byte counts to the real
-        # baseline<->candidate BTF sizes; what propagation actually preserves is
-        # the semantic claims BTF can't supply (a key narrowing's range bound,
-        # and any future non-size witness kind).
-        inherited: list = []
-        if child_program.parent_id:
-            parent = self.database.get(child_program.parent_id)
-            if parent is not None:
-                inherited = parent.metadata.get("approved_witnesses") or []
-        accumulated = merge_witnesses(inherited, newly_approved)
-        child_program.metadata["approved_witnesses"] = accumulated
-
-        self._dump_witness_file(child_program, witnesses, accumulated)
-
-        # (1) Build one .wit from every developer-approved witness's DSL block,
-        # (2) syntax-check it, (3) if it parses, hand that .wit to heimdall
-        # (load_witness lowers .wit -> the same relaxed check). Falls back to
-        # the tag-line JSON path (`accumulated`) when there is no valid .wit.
-        wit_path = None
-        from openevolve.utils.code_utils import combine_witness_dsl_blocks
-
-        combined_wit = combine_witness_dsl_blocks(witnesses, only_approved=True)
-        if combined_wit.strip():
-            cand = self.review_gate.queue_dir / "witness_files" / f"{child_program.id}.wit"
-            res = _write_and_check_wit(combined_wit, cand)
-            child_program.metadata["wit"] = res
-            logger.info(
-                "Iteration reverify: combined .wit -> %s, syntax ok=%s",
-                res.get("path"),
-                res.get("ok"),
-            )
-            if res.get("ok") is True:
-                wit_path = res["path"]
-            elif res.get("output"):
-                logger.info("witness_dsl: %s", res["output"])
-
-        if not accumulated and wit_path is None:
-            return {}
-
-        metrics, artifacts = await self._get_reverify_evaluator().reverify_program(
-            child_program.code, child_program.id, accumulated, wit_path=wit_path
-        )
-        if metrics:
-            child_program.metrics.update(metrics)
-            # The relaxed/witness-aware result IS the answer once it exists --
-            # not a second opinion filed next to the unconditional strict one.
-            # Downstream consumers (MAP-Elites feature grid, fitness, the
-            # review UI's fallback-to-relaxed display) should all see ONE
-            # equivalence verdict per child, and it should be the one that
-            # accounts for what the developer actually approved.
-            if "semantic_equivalent_relaxed" in metrics:
-                child_program.metrics["semantic_equivalent"] = metrics[
-                    "semantic_equivalent_relaxed"
-                ]
-        return artifacts
 
     def _dump_witness_file(
         self,
@@ -1049,10 +1004,10 @@ class ProcessParallelController:
         the witnesses/child_code shape a task needs -- co-locating it there
         made it show up in the review UI as a bogus task ("Iteration ?").
 
-        "heimdall_witness_file" is exactly what reverify_program/
-        reverify_with_witnesses will (or would) hand heimdall as
-        --witness-file for this child; it's the empty {"witnesses": []} shape
-        whenever `qualifying` is empty, which itself is useful signal (the
+        "heimdall_witness_file" is exactly what evaluate()'s relaxed check will
+        (or would) hand heimdall as --witness-file for this child; it's the
+        empty {"witnesses": []} shape whenever `qualifying` is empty, which
+        itself is useful signal (the
         approval didn't produce anything for heimdall to check). The
         per-witness breakdown makes it obvious WHY a witness is or isn't in
         that payload -- e.g. developer_approved is True but proof_status is
@@ -1088,6 +1043,18 @@ class ProcessParallelController:
             path.write_text(json.dumps(dump, indent=2))
         except OSError as e:
             logger.warning(f"Could not write witness file dump to {path}: {e}")
+
+        # Persist the combined .wit the worker already syntax-checked (see
+        # _run_iteration_worker_implement) as a durable, developer-facing copy -
+        # the worker's own copy lives in a throwaway temp dir that may not
+        # outlive the call.
+        wit_text = child_program.metadata.get("wit_text")
+        if wit_text:
+            wit_path = witness_files_dir / f"{child_program.id}.wit"
+            try:
+                wit_path.write_text(wit_text if wit_text.endswith("\n") else wit_text + "\n")
+            except OSError as e:
+                logger.warning(f"Could not write .wit copy to {wit_path}: {e}")
 
     def _serialize_config(self, config: Config) -> dict:
         """Serialize config object to a dictionary that can be pickled"""
@@ -1180,6 +1147,7 @@ class ProcessParallelController:
             "feature_dimensions": self.database.config.feature_dimensions,
             "artifacts": {},  # Will be populated selectively
             "developer_feedback": dict(self._pending_feedback),
+            "known_compile_failures": list(self._known_compile_failures),
         }
 
         # Include artifacts for programs that might be selected
@@ -1782,18 +1750,67 @@ class ProcessParallelController:
 
             # From here on, same bookkeeping as the standard (non-interactive) path --
             # no further review round, the human gate already happened before phase 2.
-            reverify_artifacts = await self._reverify_approved_witnesses(child_program)
+            # The witness combining + evaluate() call already happened together, in
+            # the worker (_run_iteration_worker_implement) - this is purely a
+            # developer-facing diagnostic dump of what was already decided there.
+            self._dump_witness_file(
+                child_program,
+                child_program.metadata.get("witnesses") or [],
+                child_program.metadata.get("approved_witnesses") or [],
+            )
 
             self.database.add(
                 child_program, iteration=current_iteration, target_island=result.target_island
             )
 
-            combined_artifacts = {**(result.artifacts or {}), **reverify_artifacts}
+            combined_artifacts = dict(result.artifacts or {})
             if combined_artifacts:
                 self.database.store_artifacts(child_program.id, combined_artifacts)
 
-            # Surface this iteration's compile/equivalence/performance result (and,
-            # if any witness qualified, heimdall's own re-verification of it) on the
+            # An approved witness can still fail to compile - the developer never
+            # saw the actual code, only the proposed change description. Without
+            # this, a later proposal from the SAME parent has no way to know a
+            # sibling attempt already hit this error and can repeat it indefinitely
+            # (e.g. proposing memset(), which clang's BPF backend rejects, over and
+            # over from a parent that itself compiles fine). Mirrors the existing
+            # developer-rejection retry-with-feedback pattern above, including the
+            # same give-up-after-N-in-a-row safety valve, but tracked separately
+            # (_compile_failure_counts) so an approval doesn't reset a streak that
+            # hasn't actually been resolved yet.
+            if child_program.metrics.get("compile_success", 1.0) != 1.0:
+                stderr_text = (combined_artifacts.get("stderr") or combined_artifacts.get("error") or "").strip()
+                first_err = stderr_text.splitlines()[0] if stderr_text else "(no diagnostic)"
+                self._pending_feedback[parent.id] = (
+                    f"Your last approved implementation for this program failed to compile: "
+                    f"{first_err}\nPropose a different change that avoids this error."
+                )
+                # Run-wide, not per-parent (see _known_compile_failures' docstring in
+                # __init__): every propose call sees this, regardless of which parent
+                # it targets, so giving up on this lineage doesn't lose the lesson.
+                if first_err not in self._known_compile_failures:
+                    self._known_compile_failures.append(first_err)
+                    del self._known_compile_failures[: -self._known_compile_failures_cap]
+                self._compile_failure_counts[parent.id] = (
+                    self._compile_failure_counts.get(parent.id, 0) + 1
+                )
+                if (
+                    self._compile_failure_counts[parent.id]
+                    >= self.config.interactive.max_rejections_per_parent
+                ):
+                    logger.info(
+                        f"Parent {parent.id} failed to compile "
+                        f"{self._compile_failure_counts[parent.id]} times in a row; giving up "
+                        f"on this lineage and sampling a new parent next"
+                    )
+                    del self._compile_failure_counts[parent.id]
+                    self._pending_feedback.pop(parent.id, None)
+                    forced_parent_id = None
+                else:
+                    forced_parent_id = parent.id
+            else:
+                self._compile_failure_counts.pop(parent.id, None)
+
+            # Surface this iteration's compile/equivalence/performance result on the
             # NEXT witness-review task -- see _last_iteration_result's docstring.
             self._last_iteration_result = {
                 "iteration": current_iteration,
