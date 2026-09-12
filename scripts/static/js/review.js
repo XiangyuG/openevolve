@@ -444,6 +444,23 @@ function renderWitnesses(witnesses) {
       witBlock.className = "code-viewer readonly witness-formula";
       witBlock.textContent = w.wit;
       card.appendChild(witBlock);
+
+      // assumption/binding are NOT independently checked by heimdall (unlike a
+      // map value/key width change or map fusion, which gets cross-checked
+      // against real BTF metadata) -- the solver just takes them as given and
+      // proves `observation` from them. A false assumption/binding here can
+      // make heimdall report a genuinely broken change as equivalent, so this
+      // is the one part of the review that deserves real scrutiny rather than
+      // a skim.
+      if (/\b(assumption|binding)\b/.test(w.wit)) {
+        const trustNote = document.createElement("span");
+        trustNote.className = "equiv-badge delta-warn";
+        trustNote.textContent =
+          "⚠ contains assumption/binding: heimdall takes these as given, unverified " +
+          "facts (not cross-checked like a width/fusion claim) -- if either is actually " +
+          "false for some input, approving this can make a broken change verify as equivalent.";
+        card.appendChild(trustNote);
+      }
     } else {
       const badge = document.createElement("span");
       badge.className = "equiv-badge delta-warn";

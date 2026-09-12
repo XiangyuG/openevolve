@@ -95,6 +95,33 @@ A <path> is a name then any run of `.field`, `[k]` (k a variable), or `[:]`
 words are reserved and may NOT be used as names: assumption binding observation
 in ignore flag of original optimized.
 
+## What these blocks mean to the checker (read before writing any assumption/binding)
+
+`assumption` and `binding` are NOT independently verified -- heimdall's solver
+takes them as given facts and proves `observation` using them as premises. If
+an assumption or binding is actually false for some real input, the checker
+can still report the change equivalent, because the false premise silently
+ruled out the counter-example that would have caught it. Only write one if
+it's something the real code already guarantees (an existing range check, a
+type's natural width, a verifier-enforced bound) -- never write one just
+because it would make the proof go through. If you cannot point to why an
+assumption is actually true, leave `assumption`/`binding` empty and only
+propose the change if it verifies as a plain equivalence-preserving change
+without them (see "Choosing the blocks" below).
+
+`observation` is the opposite: it's the claim being proven, not a premise, so
+listing more outputs only makes the check stricter -- when in doubt, include
+an output rather than omit it.
+
+The one exception: when the DSL narrows a map's value/key width or fuses two
+maps, heimdall independently cross-checks the claimed byte widths against the
+object files' real BTF metadata before honoring it. Everything else here,
+including any `assumption`/`binding` you write directly in the DSL, is
+trusted on your word alone -- so it is the one place in this whole proposal
+where being wrong has a real cost: a badly justified assumption can turn a
+genuinely broken change into one the developer approves believing it was
+proven safe.
+
 Choosing the blocks:
   - Narrowing a map VALUE or KEY (fewer bytes): put the range that makes it
     lossless in `assumption` (on the ctx field it derives from), relate the two
