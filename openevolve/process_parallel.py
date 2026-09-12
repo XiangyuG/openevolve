@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from openevolve.config import Config
 from openevolve.database import Program, ProgramDatabase
+from openevolve.review_gate import ReviewDecision
 from openevolve.utils.metrics_utils import safe_numeric_average
 
 logger = logging.getLogger(__name__)
@@ -1630,15 +1631,27 @@ class ProcessParallelController:
                 island_id += 1
                 continue
 
-            # Ask the developer to review the proposed witnesses -- BEFORE any code exists
-            decision = await self.review_gate.request_witness_review(
-                iteration=current_iteration,
-                parent=parent,
-                explanation=proposal.explanation,
-                witnesses=proposal.witnesses,
-                parent_artifacts=self.database.get_artifacts(parent.id),
-                previous_result=self._last_iteration_result,
-            )
+            # Ask the developer to review the proposed witnesses -- BEFORE any code
+            # exists - unless auto_approve is on, in which case every witness is
+            # approved without a human ever seeing it (see InteractiveConfig.auto_approve
+            # for the trust-gate trade-off this makes).
+            if self.config.interactive.auto_approve:
+                decision = ReviewDecision(
+                    approved=True,
+                    feedback="",
+                    witness_decisions={
+                        str(w.get("index")): True for w in proposal.witnesses
+                    },
+                )
+            else:
+                decision = await self.review_gate.request_witness_review(
+                    iteration=current_iteration,
+                    parent=parent,
+                    explanation=proposal.explanation,
+                    witnesses=proposal.witnesses,
+                    parent_artifacts=self.database.get_artifacts(parent.id),
+                    previous_result=self._last_iteration_result,
+                )
 
             # Stamp each witness with the developer's per-witness call (True/False).
             # Undecided witnesses (developer didn't touch that control) get None, not

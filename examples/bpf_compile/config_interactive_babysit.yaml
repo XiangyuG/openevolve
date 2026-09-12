@@ -1,9 +1,9 @@
-# OpenEvolve config for libbpf-tools BPF C compile optimization. Runs the full
-# propose/witness/relaxed-check pipeline unattended -- every witness is
-# auto-approved (interactive.auto_approve, default true), no developer needs to
-# be at the /review web UI (see README.md). For a real human-reviewed run where
-# every iteration blocks on an actual decision, use config_interactive_babysit.yaml
-# instead (identical except auto_approve: false).
+# OpenEvolve config for libbpf-tools BPF C compile optimization, with every
+# iteration gated on a REAL developer decision via the /review web UI (see
+# README.md) -- identical to config_interactive.yaml except
+# interactive.auto_approve: false. Use this when you actually want to read and
+# approve/reject each proposed witness yourself; use config_interactive.yaml
+# for unattended runs.
 max_iterations: 50
 checkpoint_interval: 10
 log_level: "INFO"
@@ -65,11 +65,9 @@ evaluator:
 diff_based_evolution: false
 max_code_length: 60000
 
-# Unattended by default: auto_approve means no developer has to be at /review.
-# Set auto_approve: false (or use config_interactive_babysit.yaml) to require a
-# real decision on every iteration instead.
+# Human-in-the-loop review: every iteration blocks until YOU approve/reject at /review
 interactive:
   enabled: true
-  auto_approve: true
-  timeout: null # wait indefinitely for a developer decision (only matters if auto_approve: false)
+  auto_approve: false
+  timeout: null # wait indefinitely for a developer decision
   max_rejections_per_parent: 3

@@ -438,6 +438,17 @@ class InteractiveConfig:
     # lineage and fall back to normal island sampling instead of retrying forever.
     max_rejections_per_parent: int = 3
 
+    # When True (default), every proposed witness is approved automatically and
+    # evolution runs unattended - no developer has to be at the browser. The full
+    # two-phase propose/witness/relaxed-check pipeline still runs exactly as with a
+    # human reviewer; only the wait for a human decision is skipped, so the
+    # developer-approval trust gate (see the propose prompt's "What these blocks
+    # mean to the checker" section) is a no-op in this mode - the LLM's own
+    # assumption/binding claims are trusted without a human ever reading them. Set
+    # to False to require a real developer decision for every iteration, same as
+    # before this setting existed.
+    auto_approve: bool = True
+
     # Runtime-only: injected by the controller, points at <output_dir>/review_queue
     _review_queue_dir: Optional[str] = None
 
