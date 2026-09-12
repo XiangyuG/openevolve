@@ -72,6 +72,96 @@ def _print_per_iteration_ns_summary(openevolve: "OpenEvolve") -> None:
         print(_row(f"iter {getattr(p, 'iteration_found', 0):>3}", p.metrics))
 
 
+def _summarize_step(program) -> List[str]:
+    """One or more human-readable "what changed" lines for a single program,
+    best-effort across however this run was configured:
+      1. Approved witnesses (interactive mode) - each one's own summary, since
+         that's the most precise record of what was actually implemented (a
+         proposal can include changes that were NOT approved).
+      2. A diff-based changes_summary, when it's not the no-op "Full rewrite"
+         placeholder full-rewrite mode always uses.
+      3. The first line of the LLM's free-text proposal explanation, truncated.
+    Returns an empty list if nothing usable is recorded for this program.
+    """
+    metadata = getattr(program, "metadata", None) or {}
+
+    witnesses = metadata.get("witnesses") or []
+    approved = [w for w in witnesses if w.get("developer_approved") is True]
+    if approved:
+        return [w.get("summary") or "(approved change, no summary recorded)" for w in approved]
+
+    changes = metadata.get("changes")
+    if changes and changes != "Full rewrite":
+        return [changes]
+
+    explanation = (metadata.get("explanation") or "").strip()
+    if explanation:
+        first_line = explanation.splitlines()[0].strip()
+        if first_line:
+            return [first_line[:200]]
+
+    return []
+
+
+def _print_optimization_lineage(openevolve: "OpenEvolve", best_program) -> None:
+    """After a run, print the chain of changes from the earliest still-known
+    ancestor down to the best program found, so the summary answers "what did
+    the best result actually DO" and not just its metrics.
+
+    Best-effort: an ancestor that was pruned from the population before the run
+    ended (database.py protects the initial/best/Pareto-front programs, but not
+    every intermediate ancestor) breaks the chain there - this says so rather
+    than silently presenting a partial history as if it were complete.
+    """
+    try:
+        programs = openevolve.database.programs
+    except Exception:
+        return
+
+    chain = []
+    seen_ids = set()
+    node = best_program
+    truncated = False
+    while node is not None:
+        if node.id in seen_ids:
+            break  # defensive: never loop forever on a corrupt parent chain
+        chain.append(node)
+        seen_ids.add(node.id)
+        parent_id = getattr(node, "parent_id", None)
+        if not parent_id:
+            node = None
+        elif parent_id in programs:
+            node = programs[parent_id]
+        else:
+            truncated = True
+            node = None
+    chain.reverse()  # earliest known ancestor -> best program
+
+    if len(chain) <= 1:
+        return  # best program IS the earliest known ancestor - nothing to narrate
+
+    print(
+        f"\nBest program's optimization path "
+        f"({len(chain) - 1} step(s) from its earliest known ancestor):"
+    )
+    if truncated:
+        print(
+            "  (an earlier ancestor was pruned during the run; history starts "
+            "here, not necessarily from iter 0)"
+        )
+    for program in chain[1:]:
+        label = f"iter {getattr(program, 'iteration_found', '?')}"
+        steps = _summarize_step(program)
+        if not steps:
+            print(f"  {label}: (no recorded description)")
+        elif len(steps) == 1:
+            print(f"  {label}: {steps[0]}")
+        else:
+            print(f"  {label}:")
+            for step in steps:
+                print(f"    - {step}")
+
+
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments"""
     parser = argparse.ArgumentParser(description="OpenEvolve - Evolutionary coding agent")
@@ -224,6 +314,7 @@ async def main_async() -> int:
                 print(f"  {name}: {value}")
 
         _print_per_iteration_ns_summary(openevolve)
+        _print_optimization_lineage(openevolve, best_program)
 
         if latest_checkpoint:
             print(f"\nLatest checkpoint saved at: {latest_checkpoint}")
