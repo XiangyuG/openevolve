@@ -731,6 +731,7 @@ def _check_equivalence(
                     timeout=EQUIV_TIMEOUT,
                 )
             except subprocess.TimeoutExpired:
+                _log(f"  {entry}: TIMEOUT (no result within {EQUIV_TIMEOUT}s)")
                 per_entry[entry] = {
                     "equivalent": None,
                     "result_type": "timeout",
