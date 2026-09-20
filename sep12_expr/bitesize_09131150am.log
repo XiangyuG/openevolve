@@ -1,0 +1,668 @@
+2026-09-13 18:47:36,455 - INFO - Logging to openevolve_output/bpf_bitesize_verify_autoapprove/logs/openevolve_20260913_184736.log
+2026-09-13 18:47:36,455 - INFO - Interactive review mode enabled. Queue dir: /users/xiang95/learn_heimdall/heimdall/openevolve/openevolve_output/bpf_bitesize_verify_autoapprove/review_queue
+2026-09-13 18:47:36,463 - INFO - Set random seed to 42 for reproducibility
+2026-09-13 18:47:36,498 - INFO - Initialized OpenAI LLM with model: gpt-5-mini
+2026-09-13 18:47:36,508 - INFO - Initialized OpenAI LLM with model: gpt-5-nano
+2026-09-13 18:47:36,508 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 18:47:36,528 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 18:47:36,530 - INFO - Initialized prompt sampler
+2026-09-13 18:47:36,531 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 18:47:36,532 - INFO - Initialized program database with 0 programs
+2026-09-13 18:47:36,534 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 18:47:36,534 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 18:47:36,534 - INFO - Initialized OpenEvolve with /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize.bpf.c
+2026-09-13 18:47:36,534 - INFO - Adding initial program to database
+[bpf_eval] === evaluate tmp3czdkfo3.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689680 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=no
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_c_75287p/tmp3czdkfo3.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 989.02 ns/run (run_cnt 14305)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7514  (runtime_success=1.0, runtime_score=0.5028, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 18:48:50,885 - INFO - Evaluated program 5e0fb322-f38a-43c5-8100-512d0baa3266 in 74.35s: score=0.7514, combined_score=0.7514, compile_success=1.0000, object_bytes=689680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=989.0200, runtime_score=0.5028
+2026-09-13 18:48:50,886 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 2}
+2026-09-13 18:48:50,886 - INFO - Stored artifacts for initial program
+2026-09-13 18:48:50,887 - INFO - Initialized process parallel controller with 1 workers
+2026-09-13 18:48:50,887 - INFO - Set max None tasks per child
+2026-09-13 18:48:50,888 - INFO - Started process pool with 1 processes
+2026-09-13 18:48:50,888 - INFO - Using island-based evolution with 2 islands
+2026-09-13 18:48:50,888 - INFO - Island Status:
+2026-09-13 18:48:50,888 - INFO -  * Island 0: 1 programs, best=0.7514, avg=0.7514, diversity=0.00, gen=0 (best: 5e0fb322-f38a-43c5-8100-512d0baa3266)
+2026-09-13 18:48:50,888 - INFO -    Island 1: 0 programs, best=0.0000, avg=0.0000, diversity=0.00, gen=0
+2026-09-13 18:48:50,888 - INFO - Starting interactive (human-reviewed) evolution from iteration 1 for 30 iterations (total: 31)
+2026-09-13 18:48:50,915 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 18:48:50,957 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 18:48:50,961 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 18:48:50,964 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 18:48:50,964 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 18:48:50,973 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:49:36,775 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:49:36,826 - INFO - Iteration 1: 1 witness(es) approved by developer; implementing
+2026-09-13 18:49:36,829 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:49:44,955 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp1rhpclyr.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689696 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=no
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_8ow_2j7l/tmp1rhpclyr.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1098.76 ns/run (run_cnt 14024)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7382  (runtime_success=1.0, runtime_score=0.4765, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 18:50:58,784 - INFO - Evaluated program 23c38c82-bb40-4679-b310-639d273c5e6b in 73.82s: score=0.7382, combined_score=0.7382, compile_success=1.0000, object_bytes=689696.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1098.7600, runtime_score=0.4765
+2026-09-13 18:50:58,789 - INFO - Iteration 1: Program 23c38c82-bb40-4679-b310-639d273c5e6b (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 81.96s
+2026-09-13 18:50:58,789 - INFO - Metrics: score=0.7382, combined_score=0.7382, compile_success=1.0000, object_bytes=689696.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1098.7600, runtime_score=0.4765
+2026-09-13 18:50:58,793 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:51:18,833 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:51:18,838 - INFO - Iteration 2: 2 witness(es) approved by developer; implementing
+2026-09-13 18:51:18,841 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:51:28,411 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:51:28,500 - INFO - Iteration 2: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp5e_19zs9.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689736 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_lrr5tdxu/tmp5e_19zs9.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1131.65 ns/run (run_cnt 14000)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7346  (runtime_success=1.0, runtime_score=0.4691, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 18:52:49,477 - INFO - Evaluated program d39e7f2a-48b7-4367-860f-10464a73740d in 80.98s: score=0.7346, combined_score=0.7346, compile_success=1.0000, object_bytes=689736.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1131.6500, runtime_score=0.4691
+2026-09-13 18:52:49,482 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 2, 'semantic_equivalent': 2}
+2026-09-13 18:52:49,482 - INFO - Iteration 2: Program d39e7f2a-48b7-4367-860f-10464a73740d (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 90.64s
+2026-09-13 18:52:49,483 - INFO - Metrics: score=0.7346, combined_score=0.7346, compile_success=1.0000, object_bytes=689736.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1131.6500, runtime_score=0.4691
+2026-09-13 18:52:49,487 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:53:03,730 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+; ... line: 3 position: 149
+2026-09-13 18:53:03,758 - INFO - Iteration 3: 1 witness(es) approved by developer; implementing
+2026-09-13 18:53:03,763 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:53:14,977 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:53:15,063 - INFO - Iteration 3: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpv8e6ilf5.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 18:53:16,095 - INFO - Evaluated program e1af08ea-28b2-4635-b746-3b0c55860eb7 in 1.03s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 18:53:16,097 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 0, 'semantic_equivalent': 0}
+2026-09-13 18:53:16,098 - INFO - Iteration 3: Program e1af08ea-28b2-4635-b746-3b0c55860eb7 (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 12.33s
+2026-09-13 18:53:16,098 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 18:53:16,100 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:53:31,422 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:53:31,429 - INFO - Iteration 4: 1 witness(es) approved by developer; implementing
+2026-09-13 18:53:31,434 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:53:42,352 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:53:42,467 - INFO - Iteration 4: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpo257dsja.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689232 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf__putmu2s/tmpo257dsja.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1070.41 ns/run (run_cnt 14396)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7415  (runtime_success=1.0, runtime_score=0.4830, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 18:54:56,304 - INFO - Evaluated program 8cf8c340-c378-4fc3-a87e-c9a08ac0b10a in 73.84s: score=0.7415, combined_score=0.7415, compile_success=1.0000, object_bytes=689232.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1070.4100, runtime_score=0.4830
+2026-09-13 18:54:56,308 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 4, 'semantic_equivalent': 4}
+2026-09-13 18:54:56,309 - INFO - Iteration 4: Program 8cf8c340-c378-4fc3-a87e-c9a08ac0b10a (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 84.87s
+2026-09-13 18:54:56,309 - INFO - Metrics: score=0.7415, combined_score=0.7415, compile_success=1.0000, object_bytes=689232.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1070.4100, runtime_score=0.4830
+2026-09-13 18:54:56,315 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:55:16,684 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:55:16,690 - INFO - Iteration 5: 1 witness(es) approved by developer; implementing
+2026-09-13 18:55:16,695 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:55:25,316 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:55:25,401 - INFO - Iteration 5: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpqqhsrjbv.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689696 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_4ykzk5z6/tmpqqhsrjbv.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1109.1 ns/run (run_cnt 14168)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7371  (runtime_success=1.0, runtime_score=0.4741, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 18:56:38,349 - INFO - Evaluated program b0adffec-c1b9-49f2-aa44-ece5a2689031 in 72.95s: score=0.7371, combined_score=0.7371, compile_success=1.0000, object_bytes=689696.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1109.1000, runtime_score=0.4741
+2026-09-13 18:56:38,353 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 4, 'semantic_equivalent': 4}
+2026-09-13 18:56:38,354 - INFO - Iteration 5: Program b0adffec-c1b9-49f2-aa44-ece5a2689031 (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 81.66s
+2026-09-13 18:56:38,354 - INFO - Metrics: score=0.7371, combined_score=0.7371, compile_success=1.0000, object_bytes=689696.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1109.1000, runtime_score=0.4741
+2026-09-13 18:56:38,359 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:56:49,911 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:56:49,917 - INFO - Iteration 6: 1 witness(es) approved by developer; implementing
+2026-09-13 18:56:49,923 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:57:01,963 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:57:02,053 - INFO - Iteration 6: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmptj1rgau5.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689272 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_b7v46258/tmptj1rgau5.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1135.79 ns/run (run_cnt 14409)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7341  (runtime_success=1.0, runtime_score=0.4682, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 18:58:14,942 - INFO - Evaluated program a4a2d6df-2125-40c2-a54c-f4e134ac1271 in 72.89s: score=0.7341, combined_score=0.7341, compile_success=1.0000, object_bytes=689272.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1135.7900, runtime_score=0.4682
+2026-09-13 18:58:14,947 - INFO - Iteration 6: Program a4a2d6df-2125-40c2-a54c-f4e134ac1271 (parent: d39e7f2a-48b7-4367-860f-10464a73740d) completed in 85.02s
+2026-09-13 18:58:14,947 - INFO - Metrics: score=0.7341, combined_score=0.7341, compile_success=1.0000, object_bytes=689272.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1135.7900, runtime_score=0.4682
+2026-09-13 18:58:14,953 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:58:35,941 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:58:35,954 - INFO - Iteration 7: no transformation witnesses found in proposal; retrying with feedback
+2026-09-13 18:58:35,960 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:59:04,504 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:59:04,510 - INFO - Iteration 8: 1 witness(es) approved by developer; implementing
+2026-09-13 18:59:04,516 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:59:14,304 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:59:14,389 - INFO - Iteration 8: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp00m2hvqi.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689736 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_3zih8v22/tmp00m2hvqi.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1104.74 ns/run (run_cnt 14254)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7376  (runtime_success=1.0, runtime_score=0.4751, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 19:00:26,791 - INFO - Evaluated program 289f5a8e-5f02-4107-8ab1-92a33cdb0e00 in 72.40s: score=0.7376, combined_score=0.7376, compile_success=1.0000, object_bytes=689736.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1104.7400, runtime_score=0.4751
+2026-09-13 19:00:26,796 - INFO - Iteration 8: Program 289f5a8e-5f02-4107-8ab1-92a33cdb0e00 (parent: b0adffec-c1b9-49f2-aa44-ece5a2689031) completed in 82.28s
+2026-09-13 19:00:26,796 - INFO - Metrics: score=0.7376, combined_score=0.7376, compile_success=1.0000, object_bytes=689736.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1104.7400, runtime_score=0.4751
+2026-09-13 19:00:26,803 - INFO - Sampled model: gpt-5-nano
+2026-09-13 19:01:05,935 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:01:05,943 - INFO - Iteration 9: 1 witness(es) approved by developer; implementing
+2026-09-13 19:01:05,949 - INFO - Sampled model: gpt-5-nano
+2026-09-13 19:01:16,446 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:01:16,533 - INFO - Iteration 9: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmplb1x_v2r.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:01:17,480 - INFO - Evaluated program 58b1d22b-f998-4d3d-9518-bc4c3d6354f2 in 0.95s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:01:17,483 - INFO - Iteration 9: Program 58b1d22b-f998-4d3d-9518-bc4c3d6354f2 (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 11.53s
+2026-09-13 19:01:17,483 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:01:17,486 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:01:40,395 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:01:40,404 - INFO - Iteration 10: 2 witness(es) approved by developer; implementing
+2026-09-13 19:01:40,411 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:01:56,253 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:01:56,338 - INFO - Iteration 10: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp_78u91vu.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689456 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_5j097fu_/tmp_78u91vu.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1157.08 ns/run (run_cnt 14251)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7318  (runtime_success=1.0, runtime_score=0.4636, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 19:03:09,651 - INFO - Evaluated program 25b2b808-314c-4de4-9b65-94f9b2359368 in 73.31s: score=0.7318, combined_score=0.7318, compile_success=1.0000, object_bytes=689456.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1157.0800, runtime_score=0.4636
+2026-09-13 19:03:09,656 - INFO - Iteration 10: Program 25b2b808-314c-4de4-9b65-94f9b2359368 (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 89.24s
+2026-09-13 19:03:09,656 - INFO - Metrics: score=0.7318, combined_score=0.7318, compile_success=1.0000, object_bytes=689456.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1157.0800, runtime_score=0.4636
+2026-09-13 19:03:09,657 - INFO - Checkpoint interval reached at iteration 10
+2026-09-13 19:03:09,659 - INFO - Island Status:
+2026-09-13 19:03:09,659 - INFO -  * Island 0: 5 programs, best=0.7514, avg=0.4453, diversity=23.33, gen=4 (best: 5e0fb322-f38a-43c5-8100-512d0baa3266)
+2026-09-13 19:03:09,659 - INFO -    Island 1: 5 programs, best=0.7415, avg=0.7359, diversity=130.88, gen=5 (best: 8cf8c340-c378-4fc3-a87e-c9a08ac0b10a)
+2026-09-13 19:03:09,677 - INFO - Saved database with 10 programs to openevolve_output/bpf_bitesize_verify_autoapprove/checkpoints/checkpoint_20260913_190309_10
+2026-09-13 19:03:09,677 - INFO - Saved best program at checkpoint 10 with metrics: score=0.7514, combined_score=0.7514, compile_success=1.0000, object_bytes=689680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=989.0200, runtime_score=0.5028
+2026-09-13 19:03:09,678 - INFO - Saved checkpoint at iteration 10 to openevolve_output/bpf_bitesize_verify_autoapprove/checkpoints/checkpoint_20260913_190309_10
+2026-09-13 19:03:09,685 - INFO - Sampled model: gpt-5-nano
+2026-09-13 19:03:53,201 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:03:53,210 - INFO - Iteration 11: 2 witness(es) approved by developer; implementing
+2026-09-13 19:03:53,218 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:04:05,126 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp25gdfifq.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:04:06,333 - INFO - Evaluated program 7b1d7213-7a88-4932-a669-5ba70da62980 in 1.20s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:04:06,336 - INFO - Iteration 11: Program 7b1d7213-7a88-4932-a669-5ba70da62980 (parent: 58b1d22b-f998-4d3d-9518-bc4c3d6354f2) completed in 13.12s
+2026-09-13 19:04:06,336 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:04:06,341 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:04:27,469 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:04:27,475 - INFO - Iteration 12: 2 witness(es) approved by developer; implementing
+2026-09-13 19:04:27,483 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:04:42,756 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:04:42,844 - INFO - Iteration 12: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpglp85o7j.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689456 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_kkryji4l/tmpglp85o7j.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1171.91 ns/run (run_cnt 13749)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7302  (runtime_success=1.0, runtime_score=0.4604, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 19:05:56,033 - INFO - Evaluated program 16a4925e-12ff-45d1-80ce-3671bd291c16 in 73.19s: score=0.7302, combined_score=0.7302, compile_success=1.0000, object_bytes=689456.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1171.9100, runtime_score=0.4604
+2026-09-13 19:05:56,038 - INFO - Iteration 12: Program 16a4925e-12ff-45d1-80ce-3671bd291c16 (parent: 58b1d22b-f998-4d3d-9518-bc4c3d6354f2) completed in 88.55s
+2026-09-13 19:05:56,038 - INFO - Metrics: score=0.7302, combined_score=0.7302, compile_success=1.0000, object_bytes=689456.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1171.9100, runtime_score=0.4604
+2026-09-13 19:05:56,046 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:06:17,713 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:06:17,721 - INFO - Iteration 13: 2 witness(es) approved by developer; implementing
+2026-09-13 19:06:17,729 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:06:28,729 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:06:28,817 - INFO - Iteration 13: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp11t88hkb.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:06:30,022 - INFO - Evaluated program 20adeaac-765f-4ae7-8210-f213fb734417 in 1.20s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:06:30,025 - INFO - Iteration 13: Program 20adeaac-765f-4ae7-8210-f213fb734417 (parent: 23c38c82-bb40-4679-b310-639d273c5e6b) completed in 12.29s
+2026-09-13 19:06:30,025 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:06:30,029 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:06:54,309 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:06:54,315 - INFO - Iteration 14: 1 witness(es) approved by developer; implementing
+2026-09-13 19:06:54,323 - INFO - Sampled model: gpt-5-nano
+2026-09-13 19:07:00,701 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:07:00,787 - INFO - Iteration 14: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmppr4x0lsw.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:07:01,987 - INFO - Evaluated program cd6c8f17-88c1-422f-9121-ff78e24570de in 1.20s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:07:01,989 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 0, 'semantic_equivalent': 0}
+2026-09-13 19:07:01,990 - INFO - Iteration 14: Program cd6c8f17-88c1-422f-9121-ff78e24570de (parent: 23c38c82-bb40-4679-b310-639d273c5e6b) completed in 7.67s
+2026-09-13 19:07:01,990 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:07:01,993 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:07:34,658 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:07:34,666 - INFO - Iteration 15: 1 witness(es) approved by developer; implementing
+2026-09-13 19:07:34,674 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:07:46,349 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:07:46,439 - INFO - Iteration 15: combined .wit built, syntax ok=False
+2026-09-13 19:07:46,439 - INFO - witness_dsl: /tmp/openevolve_bpf_wit_tx81a6qz/d74f8ac2-2e67-4b5b-9bcc-3ea1c64a8578.wit:2:18: error: unexpected character '_'
+  |
+2 |     original.ctx.__data_len in [1024, 18446744073709551615];
+  |                  ^
+/tmp/openevolve_bpf_wit_tx81a6qz/d74f8ac2-2e67-4b5b-9bcc-3ea1c64a8578.wit: FAILED (syntax error)
+[bpf_eval] === evaluate tmp2jxpbb6o.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:07:47,355 - INFO - Evaluated program d74f8ac2-2e67-4b5b-9bcc-3ea1c64a8578 in 0.92s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:07:47,358 - INFO - Parent 23c38c82-bb40-4679-b310-639d273c5e6b failed to compile 3 times in a row; giving up on this lineage and sampling a new parent next
+2026-09-13 19:07:47,358 - INFO - Iteration 15: Program d74f8ac2-2e67-4b5b-9bcc-3ea1c64a8578 (parent: 23c38c82-bb40-4679-b310-639d273c5e6b) completed in 12.68s
+2026-09-13 19:07:47,358 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:07:47,362 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:08:08,566 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:08:08,573 - INFO - Iteration 16: 1 witness(es) approved by developer; implementing
+2026-09-13 19:08:08,582 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:08:20,914 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:08:21,001 - INFO - Iteration 16: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpo81f0n8a.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689272 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_cg1bwt2b/tmpo81f0n8a.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1113.13 ns/run (run_cnt 14303)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7366  (runtime_success=1.0, runtime_score=0.4732, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 19:09:35,031 - INFO - Evaluated program a6694a82-7413-4c6b-acbb-c66a082e8c18 in 74.03s: score=0.7366, combined_score=0.7366, compile_success=1.0000, object_bytes=689272.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1113.1300, runtime_score=0.4732
+2026-09-13 19:09:35,036 - INFO - Iteration 16: Program a6694a82-7413-4c6b-acbb-c66a082e8c18 (parent: 289f5a8e-5f02-4107-8ab1-92a33cdb0e00) completed in 86.45s
+2026-09-13 19:09:35,036 - INFO - Metrics: score=0.7366, combined_score=0.7366, compile_success=1.0000, object_bytes=689272.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1113.1300, runtime_score=0.4732
+2026-09-13 19:09:35,045 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:10:09,061 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:10:09,068 - INFO - Iteration 17: 2 witness(es) approved by developer; implementing
+2026-09-13 19:10:09,076 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:10:21,063 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:10:21,149 - INFO - Iteration 17: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp59rmxp_h.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:10:22,349 - INFO - Evaluated program 54cdd1fa-be1f-4916-9cd9-580dc31a38e1 in 1.20s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:10:22,351 - INFO - Iteration 17: Program 54cdd1fa-be1f-4916-9cd9-580dc31a38e1 (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 13.27s
+2026-09-13 19:10:22,351 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:10:22,356 - INFO - Sampled model: gpt-5-nano
+2026-09-13 19:10:52,225 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:10:52,231 - INFO - Iteration 18: 2 witness(es) approved by developer; implementing
+2026-09-13 19:10:52,241 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:11:14,428 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:11:14,516 - INFO - Iteration 18: combined .wit built, syntax ok=False
+2026-09-13 19:11:14,516 - INFO - witness_dsl: /tmp/openevolve_bpf_wit_ew5bs_zn/9db866eb-f14d-41ab-b5dc-dba404d9899c.wit:2:18: error: expected keyword 'in', found '='
+  |
+2 |     original.ctx == original.ctx;
+  |                  ^
+/tmp/openevolve_bpf_wit_ew5bs_zn/9db866eb-f14d-41ab-b5dc-dba404d9899c.wit: FAILED (syntax error)
+[bpf_eval] === evaluate tmpjzmjucbr.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689424 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=no
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: NOT equivalent [mismatch]  Structural mismatch — C and Rust use different state storage:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 19:11:24,710 - INFO - Evaluated program 9db866eb-f14d-41ab-b5dc-dba404d9899c in 10.19s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=689424.0000, semantic_equivalent=0.0000
+2026-09-13 19:11:24,713 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 4, 'semantic_equivalent': 0}
+2026-09-13 19:11:24,713 - INFO - Iteration 18: Program 9db866eb-f14d-41ab-b5dc-dba404d9899c (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 32.47s
+2026-09-13 19:11:24,713 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=689424.0000, semantic_equivalent=0.0000
+2026-09-13 19:11:24,717 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:11:43,067 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:11:43,074 - INFO - Iteration 19: 1 witness(es) approved by developer; implementing
+2026-09-13 19:11:43,083 - INFO - Sampled model: gpt-5-nano
+2026-09-13 19:11:51,755 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:11:51,842 - INFO - Iteration 19: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpytqkfie6.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:11:52,809 - INFO - Evaluated program e08acab2-83f1-4e7a-9066-56325e7bb7ae in 0.97s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:11:52,812 - INFO - Iteration 19: Program e08acab2-83f1-4e7a-9066-56325e7bb7ae (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 9.73s
+2026-09-13 19:11:52,812 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:11:52,816 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:12:13,825 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:12:13,832 - INFO - Iteration 20: 2 witness(es) approved by developer; implementing
+2026-09-13 19:12:13,841 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:12:25,929 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:12:26,017 - INFO - Iteration 20: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp8ud7436a.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689736 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_07wihmhx/tmp8ud7436a.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1126.33 ns/run (run_cnt 14191)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7351  (runtime_success=1.0, runtime_score=0.4703, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 19:13:38,796 - INFO - Evaluated program 4f952f28-5579-44f8-90de-10ab064b1049 in 72.78s: score=0.7351, combined_score=0.7351, compile_success=1.0000, object_bytes=689736.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1126.3300, runtime_score=0.4703
+2026-09-13 19:13:38,800 - INFO - Iteration 20: Program 4f952f28-5579-44f8-90de-10ab064b1049 (parent: 5e0fb322-f38a-43c5-8100-512d0baa3266) completed in 84.96s
+2026-09-13 19:13:38,801 - INFO - Metrics: score=0.7351, combined_score=0.7351, compile_success=1.0000, object_bytes=689736.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1126.3300, runtime_score=0.4703
+2026-09-13 19:13:38,801 - INFO - Checkpoint interval reached at iteration 20
+2026-09-13 19:13:38,803 - INFO - Island Status:
+2026-09-13 19:13:38,803 - INFO -  * Island 0: 10 programs, best=0.7514, avg=0.2227, diversity=23.88, gen=9 (best: 5e0fb322-f38a-43c5-8100-512d0baa3266)
+2026-09-13 19:13:38,803 - INFO -    Island 1: 10 programs, best=0.7415, avg=0.5881, diversity=126.55, gen=10 (best: 8cf8c340-c378-4fc3-a87e-c9a08ac0b10a)
+2026-09-13 19:13:38,832 - INFO - Saved database with 20 programs to openevolve_output/bpf_bitesize_verify_autoapprove/checkpoints/checkpoint_20260913_191338_20
+2026-09-13 19:13:38,833 - INFO - Saved best program at checkpoint 20 with metrics: score=0.7514, combined_score=0.7514, compile_success=1.0000, object_bytes=689680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=989.0200, runtime_score=0.5028
+2026-09-13 19:13:38,833 - INFO - Saved checkpoint at iteration 20 to openevolve_output/bpf_bitesize_verify_autoapprove/checkpoints/checkpoint_20260913_191338_20
+2026-09-13 19:13:38,844 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:13:57,592 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:13:57,598 - INFO - Iteration 21: 1 witness(es) approved by developer; implementing
+2026-09-13 19:13:57,606 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:14:07,193 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:14:07,281 - INFO - Iteration 21: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp4xdvx7ox.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:14:08,482 - INFO - Evaluated program 6fac10b4-063d-465f-88dc-9bcdeb884bd5 in 1.20s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:14:08,484 - INFO - Iteration 21: Program 6fac10b4-063d-465f-88dc-9bcdeb884bd5 (parent: 54cdd1fa-be1f-4916-9cd9-580dc31a38e1) completed in 10.88s
+2026-09-13 19:14:08,484 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:14:08,489 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:14:24,658 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:14:24,664 - INFO - Iteration 22: 1 witness(es) approved by developer; implementing
+2026-09-13 19:14:24,676 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:14:34,942 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:14:35,032 - INFO - Iteration 22: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp17kkxmys.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:14:35,980 - INFO - Evaluated program 8444d3f0-b97d-4bd9-8551-1ad27447aacf in 0.95s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:14:35,982 - INFO - Iteration 22: Program 8444d3f0-b97d-4bd9-8551-1ad27447aacf (parent: 54cdd1fa-be1f-4916-9cd9-580dc31a38e1) completed in 11.31s
+2026-09-13 19:14:35,982 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:14:35,987 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:14:54,620 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:14:54,627 - INFO - Iteration 23: 1 witness(es) approved by developer; implementing
+2026-09-13 19:14:54,637 - INFO - Sampled model: gpt-5-nano
+2026-09-13 19:15:06,224 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:15:06,310 - INFO - Iteration 23: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpeuvn8e4_.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689256 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_2vevplht/tmpeuvn8e4_.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1135.78 ns/run (run_cnt 14222)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7341  (runtime_success=1.0, runtime_score=0.4682, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 19:16:19,191 - INFO - Evaluated program 5a4d2df3-895b-469e-ad89-9d49ec8f2c99 in 72.88s: score=0.7341, combined_score=0.7341, compile_success=1.0000, object_bytes=689256.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1135.7800, runtime_score=0.4682
+2026-09-13 19:16:19,195 - INFO - Iteration 23: Program 5a4d2df3-895b-469e-ad89-9d49ec8f2c99 (parent: 54cdd1fa-be1f-4916-9cd9-580dc31a38e1) completed in 84.56s
+2026-09-13 19:16:19,196 - INFO - Metrics: score=0.7341, combined_score=0.7341, compile_success=1.0000, object_bytes=689256.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1135.7800, runtime_score=0.4682
+2026-09-13 19:16:19,206 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:16:31,862 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:16:31,869 - INFO - Iteration 24: 1 witness(es) approved by developer; implementing
+2026-09-13 19:16:31,879 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:16:47,091 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:16:47,177 - INFO - Iteration 24: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpl8uecz7e.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689272 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_yp5hi5xz/tmpl8uecz7e.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1130.75 ns/run (run_cnt 13854)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7347  (runtime_success=1.0, runtime_score=0.4693, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 19:18:00,683 - INFO - Evaluated program f07b96de-142c-4e92-b398-997b84a1665f in 73.51s: score=0.7347, combined_score=0.7347, compile_success=1.0000, object_bytes=689272.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1130.7500, runtime_score=0.4693
+2026-09-13 19:18:00,687 - INFO - Iteration 24: Program f07b96de-142c-4e92-b398-997b84a1665f (parent: 289f5a8e-5f02-4107-8ab1-92a33cdb0e00) completed in 88.81s
+2026-09-13 19:18:00,687 - INFO - Metrics: score=0.7347, combined_score=0.7347, compile_success=1.0000, object_bytes=689272.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1130.7500, runtime_score=0.4693
+2026-09-13 19:18:00,697 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:18:15,599 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:18:15,606 - INFO - Iteration 25: 2 witness(es) approved by developer; implementing
+2026-09-13 19:18:15,616 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:18:25,496 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:18:25,578 - INFO - Iteration 25: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpbdh_gklf.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:18:26,775 - INFO - Evaluated program f14f0dfa-35a0-47ff-bd7b-d4a0800bb161 in 1.20s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:18:26,777 - INFO - Iteration 25: Program f14f0dfa-35a0-47ff-bd7b-d4a0800bb161 (parent: 23c38c82-bb40-4679-b310-639d273c5e6b) completed in 11.16s
+2026-09-13 19:18:26,777 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:18:26,782 - INFO - Sampled model: gpt-5-nano
+2026-09-13 19:18:56,909 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:18:56,916 - INFO - Iteration 26: 2 witness(es) approved by developer; implementing
+2026-09-13 19:18:56,927 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:19:08,491 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpgmuypep9.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:19:09,409 - INFO - Evaluated program 53586f34-b7c6-49cc-983d-8da192a54810 in 0.91s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:19:09,412 - INFO - Iteration 26: Program 53586f34-b7c6-49cc-983d-8da192a54810 (parent: 23c38c82-bb40-4679-b310-639d273c5e6b) completed in 12.48s
+2026-09-13 19:19:09,412 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:19:09,417 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:19:28,693 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:19:28,698 - INFO - Iteration 27: 1 witness(es) approved by developer; implementing
+2026-09-13 19:19:28,709 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:19:37,220 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:19:37,307 - INFO - Iteration 27: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpgj3linw5.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689704 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_8ami2s9t/tmpgj3linw5.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1098.6 ns/run (run_cnt 13929)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7383  (runtime_success=1.0, runtime_score=0.4765, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 19:20:50,760 - INFO - Evaluated program f0b29b3b-2537-4f88-9a30-81d73ba9f56e in 73.45s: score=0.7383, combined_score=0.7383, compile_success=1.0000, object_bytes=689704.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1098.6000, runtime_score=0.4765
+2026-09-13 19:20:50,764 - INFO - Island 0 MAP-Elites cell improved: {'compile_success': 4, 'semantic_equivalent': 4} (fitness: 0.737 -> 0.738)
+2026-09-13 19:20:50,765 - INFO - Iteration 27: Program f0b29b3b-2537-4f88-9a30-81d73ba9f56e (parent: 23c38c82-bb40-4679-b310-639d273c5e6b) completed in 82.05s
+2026-09-13 19:20:50,765 - INFO - Metrics: score=0.7383, combined_score=0.7383, compile_success=1.0000, object_bytes=689704.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1098.6000, runtime_score=0.4765
+2026-09-13 19:20:50,773 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:21:06,283 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:21:06,290 - INFO - Iteration 28: 2 witness(es) approved by developer; implementing
+2026-09-13 19:21:06,302 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:21:19,436 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:21:19,521 - INFO - Iteration 28: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpfwaeghaz.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (689272 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['hists:hash'], witness=.wit
+[bpf_eval]   block_rq_issue: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   block_rq_issue: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/bitesize_runner /tmp/openevolve_bpf_1c49wjpq/tmpfwaeghaz.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   bitesize: 1126.6 ns/run (run_cnt 14323)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7351  (runtime_success=1.0, runtime_score=0.4702, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 19:22:32,960 - INFO - Evaluated program c981d730-63d4-47f9-8477-a1b81f43ad5c in 73.44s: score=0.7351, combined_score=0.7351, compile_success=1.0000, object_bytes=689272.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1126.6000, runtime_score=0.4702
+2026-09-13 19:22:32,965 - INFO - Iteration 28: Program c981d730-63d4-47f9-8477-a1b81f43ad5c (parent: cd6c8f17-88c1-422f-9121-ff78e24570de) completed in 86.66s
+2026-09-13 19:22:32,965 - INFO - Metrics: score=0.7351, combined_score=0.7351, compile_success=1.0000, object_bytes=689272.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=1126.6000, runtime_score=0.4702
+2026-09-13 19:22:32,977 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:22:54,354 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:22:54,362 - INFO - Iteration 29: 2 witness(es) approved by developer; implementing
+2026-09-13 19:22:54,374 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:23:04,480 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:23:04,565 - INFO - Iteration 29: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpx83b_lbd.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:23:05,555 - INFO - Evaluated program 730b46be-b4b9-49b8-82a2-8b4b087a6d87 in 0.99s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:23:05,558 - INFO - Iteration 29: Program 730b46be-b4b9-49b8-82a2-8b4b087a6d87 (parent: 20adeaac-765f-4ae7-8210-f213fb734417) completed in 11.18s
+2026-09-13 19:23:05,558 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:23:05,564 - INFO - Sampled model: gpt-5-nano
+2026-09-13 19:23:50,479 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:23:50,486 - INFO - Iteration 30: 2 witness(es) approved by developer; implementing
+2026-09-13 19:23:50,497 - INFO - Sampled model: gpt-5-mini
+2026-09-13 19:24:00,762 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 19:24:00,847 - INFO - Iteration 30: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpd2ph8xzn.bpf.c (tool=bitesize) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+2026-09-13 19:24:02,046 - INFO - Evaluated program 20f74a3b-7107-4b11-adf0-c9ec7dfe1ef2 in 1.20s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:24:02,049 - INFO - Iteration 30: Program 20f74a3b-7107-4b11-adf0-c9ec7dfe1ef2 (parent: 20adeaac-765f-4ae7-8210-f213fb734417) completed in 11.55s
+2026-09-13 19:24:02,049 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 19:24:02,049 - INFO - Checkpoint interval reached at iteration 30
+2026-09-13 19:24:02,050 - INFO - Island Status:
+2026-09-13 19:24:02,050 - INFO -  * Island 0: 14 programs, best=0.7514, avg=0.2116, diversity=48.73, gen=14 (best: 5e0fb322-f38a-43c5-8100-512d0baa3266)
+2026-09-13 19:24:02,050 - INFO -    Island 1: 15 programs, best=0.7415, avg=0.4901, diversity=128.97, gen=15 (best: 8cf8c340-c378-4fc3-a87e-c9a08ac0b10a)
+2026-09-13 19:24:02,079 - INFO - Saved database with 29 programs to openevolve_output/bpf_bitesize_verify_autoapprove/checkpoints/checkpoint_20260913_192402_30
+2026-09-13 19:24:02,080 - INFO - Saved best program at checkpoint 30 with metrics: score=0.7514, combined_score=0.7514, compile_success=1.0000, object_bytes=689680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=989.0200, runtime_score=0.5028
+2026-09-13 19:24:02,080 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_bitesize_verify_autoapprove/checkpoints/checkpoint_20260913_192402_30
+2026-09-13 19:24:02,080 - INFO - ✅ Evolution completed - Maximum iterations reached
+2026-09-13 19:24:02,114 - INFO - Saved database with 29 programs to openevolve_output/bpf_bitesize_verify_autoapprove/checkpoints/checkpoint_20260913_192402_30
+2026-09-13 19:24:02,114 - INFO - Saved best program at checkpoint 30 with metrics: score=0.7514, combined_score=0.7514, compile_success=1.0000, object_bytes=689680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=989.0200, runtime_score=0.5028
+2026-09-13 19:24:02,114 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_bitesize_verify_autoapprove/checkpoints/checkpoint_20260913_192402_30
+2026-09-13 19:24:02,115 - INFO - Received signal 15, initiating graceful shutdown...
+2026-09-13 19:24:02,115 - INFO - Graceful shutdown requested...
+2026-09-13 19:24:02,124 - INFO - Stopped process pool
+2026-09-13 19:24:02,124 - INFO - Using tracked best program: 5e0fb322-f38a-43c5-8100-512d0baa3266
+2026-09-13 19:24:02,124 - INFO - Evolution complete. Best program has metrics: score=0.7514, combined_score=0.7514, compile_success=1.0000, object_bytes=689680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__bitesize=989.0200, runtime_score=0.5028
+2026-09-13 19:24:02,124 - INFO - Saved best program to openevolve_output/bpf_bitesize_verify_autoapprove/best/best_program.c with program info to openevolve_output/bpf_bitesize_verify_autoapprove/best/best_program_info.json
+
+Evolution complete!
+Best program metrics:
+  score: 0.7514
+  combined_score: 0.7514
+  compile_success: 1.0000
+  object_bytes: 689680.0000
+  semantic_equivalent: 1.0000
+  runtime_success: 1.0000
+  ns_per_run__bitesize: 989.0200
+  runtime_score: 0.5028
+
+Per-iteration ns/run:
+  iter   0 (original): bitesize=989.02
+  iter   1: bitesize=1098.76
+  iter   2: bitesize=1131.65
+  iter   3: N/A (compile failed)
+  iter   4: bitesize=1070.41
+  iter   6: bitesize=1135.79
+  iter   8: bitesize=1104.74
+  iter   9: N/A (compile failed)
+  iter  10: bitesize=1157.08
+  iter  11: N/A (compile failed)
+  iter  12: bitesize=1171.91
+  iter  13: N/A (compile failed)
+  iter  14: N/A (compile failed)
+  iter  15: N/A (compile failed)
+  iter  16: bitesize=1113.13
+  iter  17: N/A (compile failed)
+  iter  18: N/A (not equivalent)
+  iter  19: N/A (compile failed)
+  iter  20: bitesize=1126.33
+  iter  21: N/A (compile failed)
+  iter  22: N/A (compile failed)
+  iter  23: bitesize=1135.78
+  iter  24: bitesize=1130.75
+  iter  25: N/A (compile failed)
+  iter  26: N/A (compile failed)
+  iter  27: bitesize=1098.60
+  iter  28: bitesize=1126.60
+  iter  29: N/A (compile failed)
+  iter  30: N/A (compile failed)
+
+LLM token usage (this run):
+  prompt:     565,956
+  completion: 134,354
+  total:      700,310
+
+Latest checkpoint saved at: openevolve_output/bpf_bitesize_verify_autoapprove/checkpoints/checkpoint_20260913_192402_30
+To resume, use: --checkpoint openevolve_output/bpf_bitesize_verify_autoapprove/checkpoints/checkpoint_20260913_192402_30

@@ -1,0 +1,766 @@
+2026-09-13 00:56:56,728 - INFO - Logging to openevolve_output/bpf_slabratetop_verify_autoapprove/logs/openevolve_20260913_005656.log
+2026-09-13 00:56:56,729 - INFO - Interactive review mode enabled. Queue dir: /users/xiang95/learn_heimdall/heimdall/openevolve/openevolve_output/bpf_slabratetop_verify_autoapprove/review_queue
+2026-09-13 00:56:56,736 - INFO - Set random seed to 42 for reproducibility
+2026-09-13 00:56:56,774 - INFO - Initialized OpenAI LLM with model: gpt-5-mini
+2026-09-13 00:56:56,785 - INFO - Initialized OpenAI LLM with model: gpt-5-nano
+2026-09-13 00:56:56,785 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 00:56:56,805 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 00:56:56,807 - INFO - Initialized prompt sampler
+2026-09-13 00:56:56,809 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 00:56:56,809 - INFO - Initialized program database with 0 programs
+2026-09-13 00:56:56,811 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 00:56:56,812 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 00:56:56,812 - INFO - Initialized OpenEvolve with /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/slabratetop.bpf.c
+2026-09-13 00:56:56,812 - INFO - Adding initial program to database
+[bpf_eval] === evaluate tmpdp3d97pl.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685536 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=no
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: EQUIVALENT
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_t2qnwnke/tmpdp3d97pl.o 60 kmem_cache_alloc kmem_cache_alloc_noprof
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   kmem_cache_alloc: 590.0 ns/run (run_cnt 89250)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.8145  (runtime_success=1.0, runtime_score=0.6289, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 00:58:17,101 - INFO - Evaluated program de03d4f4-4605-4fa4-91d7-90e76a5c9fdb in 80.29s: score=0.8145, combined_score=0.8145, compile_success=1.0000, object_bytes=685536.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=590.0000, runtime_score=0.6289
+2026-09-13 00:58:17,101 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 2}
+2026-09-13 00:58:17,102 - INFO - Stored artifacts for initial program
+2026-09-13 00:58:17,103 - INFO - Initialized process parallel controller with 1 workers
+2026-09-13 00:58:17,103 - INFO - Set max None tasks per child
+2026-09-13 00:58:17,104 - INFO - Started process pool with 1 processes
+2026-09-13 00:58:17,104 - INFO - Using island-based evolution with 2 islands
+2026-09-13 00:58:17,104 - INFO - Island Status:
+2026-09-13 00:58:17,104 - INFO -  * Island 0: 1 programs, best=0.8145, avg=0.8145, diversity=0.00, gen=0 (best: de03d4f4-4605-4fa4-91d7-90e76a5c9fdb)
+2026-09-13 00:58:17,104 - INFO -    Island 1: 0 programs, best=0.0000, avg=0.0000, diversity=0.00, gen=0
+2026-09-13 00:58:17,104 - INFO - Starting interactive (human-reviewed) evolution from iteration 1 for 30 iterations (total: 31)
+2026-09-13 00:58:17,131 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 00:58:17,174 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 00:58:17,176 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 00:58:17,178 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 00:58:17,178 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 00:58:17,182 - INFO - Sampled model: gpt-5-nano
+2026-09-13 00:59:19,419 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 00:59:19,491 - INFO - Iteration 1: 2 witness(es) approved by developer; implementing
+2026-09-13 00:59:19,495 - INFO - Sampled model: gpt-5-nano
+2026-09-13 00:59:28,008 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpyvnj7gcf.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685552 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=no
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 00:59:46,910 - INFO - Evaluated program 90c6cec5-7381-4e92-8ab5-d2f431209a6b in 18.90s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685552.0000, semantic_equivalent=0.0000
+2026-09-13 00:59:46,913 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 0}
+2026-09-13 00:59:46,913 - INFO - Iteration 1: Program 90c6cec5-7381-4e92-8ab5-d2f431209a6b (parent: de03d4f4-4605-4fa4-91d7-90e76a5c9fdb) completed in 27.42s
+2026-09-13 00:59:46,913 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685552.0000, semantic_equivalent=0.0000
+2026-09-13 00:59:46,915 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:00:13,069 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:00:13,075 - INFO - Iteration 2: 1 witness(es) approved by developer; implementing
+2026-09-13 01:00:13,079 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:00:25,927 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:00:26,012 - INFO - Iteration 2: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpeyg1e_qx.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685392 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:00:51,335 - INFO - Evaluated program f8b7c361-a7a5-4ec5-a12c-ea6a08942336 in 25.32s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685392.0000, semantic_equivalent=0.0000
+2026-09-13 01:00:51,338 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 2, 'semantic_equivalent': 0}
+2026-09-13 01:00:51,338 - INFO - Iteration 2: Program f8b7c361-a7a5-4ec5-a12c-ea6a08942336 (parent: 90c6cec5-7381-4e92-8ab5-d2f431209a6b) completed in 38.26s
+2026-09-13 01:00:51,338 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685392.0000, semantic_equivalent=0.0000
+2026-09-13 01:00:51,340 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:01:25,582 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:01:25,587 - INFO - Iteration 3: 1 witness(es) approved by developer; implementing
+2026-09-13 01:01:25,591 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:01:35,117 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:01:35,203 - INFO - Iteration 3: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp4rzv80dc.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685600 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:01:54,052 - INFO - Evaluated program 315c8008-cca0-4c4b-b8b5-f9a282a45fe6 in 18.85s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=0.0000
+2026-09-13 01:01:54,054 - INFO - Iteration 3: Program 315c8008-cca0-4c4b-b8b5-f9a282a45fe6 (parent: 90c6cec5-7381-4e92-8ab5-d2f431209a6b) completed in 28.46s
+2026-09-13 01:01:54,054 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=0.0000
+2026-09-13 01:01:54,056 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:02:34,351 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:02:34,357 - INFO - Iteration 4: 2 witness(es) approved by developer; implementing
+2026-09-13 01:02:34,361 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:02:41,184 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:02:41,269 - INFO - Iteration 4: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpg7qsyb8d.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685632 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:02:58,278 - INFO - Evaluated program de4a5e5d-ad14-4a5c-b470-a9a39672d31d in 17.01s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685632.0000, semantic_equivalent=0.0000
+2026-09-13 01:02:58,280 - INFO - Iteration 4: Program de4a5e5d-ad14-4a5c-b470-a9a39672d31d (parent: f8b7c361-a7a5-4ec5-a12c-ea6a08942336) completed in 23.92s
+2026-09-13 01:02:58,280 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685632.0000, semantic_equivalent=0.0000
+2026-09-13 01:02:58,282 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:03:32,875 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:03:32,881 - INFO - Iteration 5: 1 witness(es) approved by developer; implementing
+2026-09-13 01:03:32,885 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:03:39,397 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:03:39,482 - INFO - Iteration 5: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp1v8uqfgp.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685552 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:03:56,696 - INFO - Evaluated program c6f66dee-abdf-4674-b359-0c94fcb585ca in 17.21s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685552.0000, semantic_equivalent=0.0000
+2026-09-13 01:03:56,698 - INFO - Iteration 5: Program c6f66dee-abdf-4674-b359-0c94fcb585ca (parent: 90c6cec5-7381-4e92-8ab5-d2f431209a6b) completed in 23.81s
+2026-09-13 01:03:56,698 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685552.0000, semantic_equivalent=0.0000
+2026-09-13 01:03:56,701 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:04:24,277 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:04:24,283 - INFO - Iteration 6: 2 witness(es) approved by developer; implementing
+2026-09-13 01:04:24,287 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:04:33,009 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:04:33,097 - INFO - Iteration 6: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpmy2uovq0.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685448 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:04:50,731 - INFO - Evaluated program b50ade5e-6d6b-4c7b-bdee-cdd9913499e6 in 17.63s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685448.0000, semantic_equivalent=0.0000
+2026-09-13 01:04:50,734 - INFO - Iteration 6: Program b50ade5e-6d6b-4c7b-bdee-cdd9913499e6 (parent: de4a5e5d-ad14-4a5c-b470-a9a39672d31d) completed in 26.44s
+2026-09-13 01:04:50,734 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685448.0000, semantic_equivalent=0.0000
+2026-09-13 01:04:50,736 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:05:40,290 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:05:40,298 - INFO - Iteration 7: 2 witness(es) approved by developer; implementing
+2026-09-13 01:05:40,303 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:05:48,770 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpcwafooz_.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (684616 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=no
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Structural mismatch — C and Rust use different state storage:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Structural mismatch — C and Rust use different state storage:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:06:05,280 - INFO - Evaluated program 62d2b63b-22b2-48e2-bf12-8379dfc13459 in 16.50s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=684616.0000, semantic_equivalent=0.0000
+2026-09-13 01:06:05,282 - INFO - Iteration 7: Program 62d2b63b-22b2-48e2-bf12-8379dfc13459 (parent: 315c8008-cca0-4c4b-b8b5-f9a282a45fe6) completed in 24.98s
+2026-09-13 01:06:05,282 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=684616.0000, semantic_equivalent=0.0000
+2026-09-13 01:06:05,285 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:06:24,331 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:06:24,337 - INFO - Iteration 8: 2 witness(es) approved by developer; implementing
+2026-09-13 01:06:24,342 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:06:30,342 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:06:30,427 - INFO - Iteration 8: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp7sr4dfzi.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685544 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:06:48,910 - INFO - Evaluated program 6b3835db-338b-4d2d-8392-b5a521674c37 in 18.48s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685544.0000, semantic_equivalent=0.0000
+2026-09-13 01:06:48,912 - INFO - Iteration 8: Program 6b3835db-338b-4d2d-8392-b5a521674c37 (parent: de4a5e5d-ad14-4a5c-b470-a9a39672d31d) completed in 24.57s
+2026-09-13 01:06:48,913 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685544.0000, semantic_equivalent=0.0000
+2026-09-13 01:06:48,915 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:07:34,078 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:07:34,085 - INFO - Iteration 9: 2 witness(es) approved by developer; implementing
+2026-09-13 01:07:34,091 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:07:43,745 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpd1qnt4hg.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685608 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=no
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Structural mismatch — C and Rust use different state storage:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Structural mismatch — C and Rust use different state storage:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:08:00,390 - INFO - Evaluated program 26e92444-18fe-4d12-a991-2ef5cb364d6b in 16.64s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685608.0000, semantic_equivalent=0.0000
+2026-09-13 01:08:00,393 - INFO - Iteration 9: Program 26e92444-18fe-4d12-a991-2ef5cb364d6b (parent: 315c8008-cca0-4c4b-b8b5-f9a282a45fe6) completed in 26.30s
+2026-09-13 01:08:00,393 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685608.0000, semantic_equivalent=0.0000
+2026-09-13 01:08:00,395 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:08:22,907 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:08:22,912 - INFO - Iteration 10: 2 witness(es) approved by developer; implementing
+2026-09-13 01:08:22,918 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:08:30,515 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:08:30,602 - INFO - Iteration 10: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpo8j3e9mo.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685448 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:08:47,876 - INFO - Evaluated program 1c02ee7d-06f9-4777-be0d-69d16c20d486 in 17.27s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685448.0000, semantic_equivalent=0.0000
+2026-09-13 01:08:47,878 - INFO - Iteration 10: Program 1c02ee7d-06f9-4777-be0d-69d16c20d486 (parent: de4a5e5d-ad14-4a5c-b470-a9a39672d31d) completed in 24.96s
+2026-09-13 01:08:47,878 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685448.0000, semantic_equivalent=0.0000
+2026-09-13 01:08:47,878 - INFO - Checkpoint interval reached at iteration 10
+2026-09-13 01:08:47,879 - INFO - Island Status:
+2026-09-13 01:08:47,879 - INFO -  * Island 0: 6 programs, best=0.8145, avg=0.1357, diversity=6.38, gen=5 (best: de03d4f4-4605-4fa4-91d7-90e76a5c9fdb)
+2026-09-13 01:08:47,879 - INFO -    Island 1: 5 programs, best=0.0000, avg=0.0000, diversity=10.37, gen=5 (best: f8b7c361-a7a5-4ec5-a12c-ea6a08942336)
+2026-09-13 01:08:47,887 - INFO - Saved database with 11 programs to openevolve_output/bpf_slabratetop_verify_autoapprove/checkpoints/checkpoint_20260913_010847_10
+2026-09-13 01:08:47,888 - INFO - Saved best program at checkpoint 10 with metrics: score=0.8145, combined_score=0.8145, compile_success=1.0000, object_bytes=685536.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=590.0000, runtime_score=0.6289
+2026-09-13 01:08:47,888 - INFO - Saved checkpoint at iteration 10 to openevolve_output/bpf_slabratetop_verify_autoapprove/checkpoints/checkpoint_20260913_010847_10
+2026-09-13 01:08:47,890 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:09:14,728 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:09:14,735 - INFO - Iteration 11: 2 witness(es) approved by developer; implementing
+2026-09-13 01:09:14,741 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:09:23,330 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:09:23,415 - INFO - Iteration 11: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpday834lu.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (684616 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: EQUIVALENT
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_muyfnbmd/tmpday834lu.bpf.o 60 kmem_cache_alloc kmem_cache_alloc_noprof
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   kmem_cache_alloc: 671.95 ns/run (run_cnt 69423)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7991  (runtime_success=1.0, runtime_score=0.5981, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 01:10:43,605 - INFO - Evaluated program 273fd52e-9116-4d1a-9b55-16345e621126 in 80.19s: score=0.7991, combined_score=0.7991, compile_success=1.0000, object_bytes=684616.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=671.9500, runtime_score=0.5981
+2026-09-13 01:10:43,609 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 4}
+2026-09-13 01:10:43,609 - INFO - Iteration 11: Program 273fd52e-9116-4d1a-9b55-16345e621126 (parent: 62d2b63b-22b2-48e2-bf12-8379dfc13459) completed in 88.87s
+2026-09-13 01:10:43,609 - INFO - Metrics: score=0.7991, combined_score=0.7991, compile_success=1.0000, object_bytes=684616.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=671.9500, runtime_score=0.5981
+2026-09-13 01:10:43,615 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:11:12,246 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:11:12,253 - INFO - Iteration 12: 2 witness(es) approved by developer; implementing
+2026-09-13 01:11:12,259 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:11:23,227 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:11:23,312 - INFO - Iteration 12: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpd6u71rxq.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685464 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:11:39,358 - INFO - Evaluated program cfa7ef84-ae2d-427c-9fe5-d83acece9940 in 16.05s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685464.0000, semantic_equivalent=0.0000
+2026-09-13 01:11:39,360 - INFO - Iteration 12: Program cfa7ef84-ae2d-427c-9fe5-d83acece9940 (parent: de4a5e5d-ad14-4a5c-b470-a9a39672d31d) completed in 27.10s
+2026-09-13 01:11:39,360 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685464.0000, semantic_equivalent=0.0000
+2026-09-13 01:11:39,364 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:12:09,701 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:12:09,707 - INFO - Iteration 13: 2 witness(es) approved by developer; implementing
+2026-09-13 01:12:09,714 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:12:18,996 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:12:19,082 - INFO - Iteration 13: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpllljcuqq.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685600 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:12:37,276 - INFO - Evaluated program 33b0693e-c54a-4089-b1a7-cea4528506cb in 18.19s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=0.0000
+2026-09-13 01:12:37,278 - INFO - Iteration 13: Program 33b0693e-c54a-4089-b1a7-cea4528506cb (parent: 315c8008-cca0-4c4b-b8b5-f9a282a45fe6) completed in 27.56s
+2026-09-13 01:12:37,278 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=0.0000
+2026-09-13 01:12:37,282 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:13:11,420 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:13:11,449 - INFO - Iteration 14: no transformation witnesses found in proposal; retrying with feedback
+2026-09-13 01:13:11,456 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:13:30,915 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:13:30,920 - INFO - Iteration 15: 1 witness(es) approved by developer; implementing
+2026-09-13 01:13:30,927 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:13:42,028 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:13:42,117 - INFO - Iteration 15: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp4tblxddi.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685376 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:13:59,291 - INFO - Evaluated program a44e67a2-0090-43c7-aa88-ead6b55926a4 in 17.17s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685376.0000, semantic_equivalent=0.0000
+2026-09-13 01:13:59,294 - INFO - Iteration 15: Program a44e67a2-0090-43c7-aa88-ead6b55926a4 (parent: cfa7ef84-ae2d-427c-9fe5-d83acece9940) completed in 28.37s
+2026-09-13 01:13:59,294 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685376.0000, semantic_equivalent=0.0000
+2026-09-13 01:13:59,297 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:14:25,658 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:14:25,664 - INFO - Iteration 16: 2 witness(es) approved by developer; implementing
+2026-09-13 01:14:25,671 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:14:36,217 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:14:36,303 - INFO - Iteration 16: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp_8ak7v_0.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685464 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: EQUIVALENT
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_r7id2s06/tmp_8ak7v_0.bpf.o 60 kmem_cache_alloc kmem_cache_alloc_noprof
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   kmem_cache_alloc: 701.81 ns/run (run_cnt 68600)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7938  (runtime_success=1.0, runtime_score=0.5876, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 01:15:56,080 - INFO - Evaluated program 9dd13fa3-379c-4ad6-b65a-f31616206283 in 79.78s: score=0.7938, combined_score=0.7938, compile_success=1.0000, object_bytes=685464.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=701.8100, runtime_score=0.5876
+2026-09-13 01:15:56,084 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 2, 'semantic_equivalent': 4}
+2026-09-13 01:15:56,085 - INFO - Iteration 16: Program 9dd13fa3-379c-4ad6-b65a-f31616206283 (parent: 1c02ee7d-06f9-4777-be0d-69d16c20d486) completed in 90.41s
+2026-09-13 01:15:56,085 - INFO - Metrics: score=0.7938, combined_score=0.7938, compile_success=1.0000, object_bytes=685464.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=701.8100, runtime_score=0.5876
+2026-09-13 01:15:56,092 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:16:30,144 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:16:30,151 - INFO - Iteration 17: 1 witness(es) approved by developer; implementing
+2026-09-13 01:16:30,159 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:16:40,110 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:16:40,198 - INFO - Iteration 17: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmppkq4vzc7.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685600 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:16:57,391 - INFO - Evaluated program 69983f76-fab5-438a-accf-7716440b0294 in 17.19s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=0.0000
+2026-09-13 01:16:57,394 - INFO - Iteration 17: Program 69983f76-fab5-438a-accf-7716440b0294 (parent: 273fd52e-9116-4d1a-9b55-16345e621126) completed in 27.23s
+2026-09-13 01:16:57,394 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=0.0000
+2026-09-13 01:16:57,398 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:17:26,717 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:17:26,723 - INFO - Iteration 18: 1 witness(es) approved by developer; implementing
+2026-09-13 01:17:26,731 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:17:36,016 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:17:36,100 - INFO - Iteration 18: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp_jqodqji.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685176 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:17:53,605 - INFO - Evaluated program 85fbefd3-c9ad-4d7f-adf6-8994787be639 in 17.50s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685176.0000, semantic_equivalent=0.0000
+2026-09-13 01:17:53,608 - INFO - Iteration 18: Program 85fbefd3-c9ad-4d7f-adf6-8994787be639 (parent: cfa7ef84-ae2d-427c-9fe5-d83acece9940) completed in 26.87s
+2026-09-13 01:17:53,608 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685176.0000, semantic_equivalent=0.0000
+2026-09-13 01:17:53,613 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:18:17,115 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:18:17,121 - INFO - Iteration 19: 1 witness(es) approved by developer; implementing
+2026-09-13 01:18:17,130 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:18:24,993 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:18:25,078 - INFO - Iteration 19: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmphqaco4ta.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (684552 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:18:42,059 - INFO - Evaluated program 6c526d3c-4adf-4345-89e3-cbdcbe6ffe77 in 16.98s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=684552.0000, semantic_equivalent=0.0000
+2026-09-13 01:18:42,062 - INFO - Iteration 19: Program 6c526d3c-4adf-4345-89e3-cbdcbe6ffe77 (parent: 273fd52e-9116-4d1a-9b55-16345e621126) completed in 24.93s
+2026-09-13 01:18:42,062 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=684552.0000, semantic_equivalent=0.0000
+2026-09-13 01:18:42,066 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:19:16,835 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:19:16,842 - INFO - Iteration 20: 3 witness(es) approved by developer; implementing
+2026-09-13 01:19:16,849 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:19:29,052 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:19:29,139 - INFO - Iteration 20: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpkye5dcen.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685392 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:19:47,135 - INFO - Evaluated program 4ce4bb0e-1df7-43ad-b478-01549cdeec76 in 18.00s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685392.0000, semantic_equivalent=0.0000
+2026-09-13 01:19:47,137 - INFO - Iteration 20: Program 4ce4bb0e-1df7-43ad-b478-01549cdeec76 (parent: f8b7c361-a7a5-4ec5-a12c-ea6a08942336) completed in 30.29s
+2026-09-13 01:19:47,137 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685392.0000, semantic_equivalent=0.0000
+2026-09-13 01:19:47,138 - INFO - Checkpoint interval reached at iteration 20
+2026-09-13 01:19:47,138 - INFO - Island Status:
+2026-09-13 01:19:47,138 - INFO -  * Island 0: 11 programs, best=0.8145, avg=0.1467, diversity=0.88, gen=10 (best: de03d4f4-4605-4fa4-91d7-90e76a5c9fdb)
+2026-09-13 01:19:47,139 - INFO -    Island 1: 9 programs, best=0.7938, avg=0.0882, diversity=16.03, gen=9 (best: 9dd13fa3-379c-4ad6-b65a-f31616206283)
+2026-09-13 01:19:47,155 - INFO - Saved database with 20 programs to openevolve_output/bpf_slabratetop_verify_autoapprove/checkpoints/checkpoint_20260913_011947_20
+2026-09-13 01:19:47,156 - INFO - Saved best program at checkpoint 20 with metrics: score=0.8145, combined_score=0.8145, compile_success=1.0000, object_bytes=685536.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=590.0000, runtime_score=0.6289
+2026-09-13 01:19:47,156 - INFO - Saved checkpoint at iteration 20 to openevolve_output/bpf_slabratetop_verify_autoapprove/checkpoints/checkpoint_20260913_011947_20
+2026-09-13 01:19:47,160 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:20:12,501 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:20:12,507 - INFO - Iteration 21: 3 witness(es) approved by developer; implementing
+2026-09-13 01:20:12,516 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:20:25,618 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:20:25,703 - INFO - Iteration 21: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp6e26l3ic.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685600 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: EQUIVALENT
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_dpqf3jgd/tmp6e26l3ic.bpf.o 60 kmem_cache_alloc kmem_cache_alloc_noprof
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   kmem_cache_alloc: 699.44 ns/run (run_cnt 67260)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7942  (runtime_success=1.0, runtime_score=0.5884, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 01:21:45,445 - INFO - Evaluated program 0e089850-5c4c-4cc1-8f96-5db98ea92a2e in 79.74s: score=0.7942, combined_score=0.7942, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=699.4400, runtime_score=0.5884
+2026-09-13 01:21:45,450 - INFO - Iteration 21: Program 0e089850-5c4c-4cc1-8f96-5db98ea92a2e (parent: de03d4f4-4605-4fa4-91d7-90e76a5c9fdb) completed in 92.93s
+2026-09-13 01:21:45,450 - INFO - Metrics: score=0.7942, combined_score=0.7942, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=699.4400, runtime_score=0.5884
+2026-09-13 01:21:45,459 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:22:17,983 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:22:17,990 - INFO - Iteration 22: 1 witness(es) approved by developer; implementing
+2026-09-13 01:22:17,999 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:22:28,095 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:22:28,186 - INFO - Iteration 22: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpfweg0a_0.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685728 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:22:46,405 - INFO - Evaluated program 4676c6c9-651d-4d46-9904-655ec2761264 in 18.22s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685728.0000, semantic_equivalent=0.0000
+2026-09-13 01:22:46,407 - INFO - Iteration 22: Program 4676c6c9-651d-4d46-9904-655ec2761264 (parent: b50ade5e-6d6b-4c7b-bdee-cdd9913499e6) completed in 28.41s
+2026-09-13 01:22:46,408 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685728.0000, semantic_equivalent=0.0000
+2026-09-13 01:22:46,412 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:23:03,594 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:23:03,601 - INFO - Iteration 23: 2 witness(es) approved by developer; implementing
+2026-09-13 01:23:03,609 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:23:10,656 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:23:10,741 - INFO - Iteration 23: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpxtaat2yr.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685600 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:23:28,976 - INFO - Evaluated program 7553acaa-c22e-460a-9c8e-1c48899c78fd in 18.23s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=0.0000
+2026-09-13 01:23:28,979 - INFO - Iteration 23: Program 7553acaa-c22e-460a-9c8e-1c48899c78fd (parent: 315c8008-cca0-4c4b-b8b5-f9a282a45fe6) completed in 25.37s
+2026-09-13 01:23:28,979 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=0.0000
+2026-09-13 01:23:28,986 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:23:48,661 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:23:48,666 - INFO - Iteration 24: 2 witness(es) approved by developer; implementing
+2026-09-13 01:23:48,675 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:23:56,663 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:23:56,748 - INFO - Iteration 24: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpzfu7h8xk.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685448 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:24:13,853 - INFO - Evaluated program e8936317-6661-4400-9924-6dc296a5e80a in 17.10s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685448.0000, semantic_equivalent=0.0000
+2026-09-13 01:24:13,856 - INFO - Iteration 24: Program e8936317-6661-4400-9924-6dc296a5e80a (parent: b50ade5e-6d6b-4c7b-bdee-cdd9913499e6) completed in 25.18s
+2026-09-13 01:24:13,856 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685448.0000, semantic_equivalent=0.0000
+2026-09-13 01:24:13,861 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:24:46,121 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:24:46,128 - INFO - Iteration 25: 2 witness(es) approved by developer; implementing
+2026-09-13 01:24:46,138 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:24:57,024 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:24:57,112 - INFO - Iteration 25: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmps3jz3d4k.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685600 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: EQUIVALENT
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_vcjrg32s/tmps3jz3d4k.bpf.o 60 kmem_cache_alloc kmem_cache_alloc_noprof
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   kmem_cache_alloc: 637.62 ns/run (run_cnt 72439)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.8053  (runtime_success=1.0, runtime_score=0.6106, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 01:26:16,953 - INFO - Evaluated program e3d3ca87-c512-4c35-a758-e2f035b4a241 in 79.84s: score=0.8053, combined_score=0.8053, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=637.6200, runtime_score=0.6106
+2026-09-13 01:26:16,958 - INFO - Island 0 MAP-Elites cell improved: {'compile_success': 2, 'semantic_equivalent': 4} (fitness: 0.799 -> 0.805)
+2026-09-13 01:26:16,959 - INFO - Iteration 25: Program e3d3ca87-c512-4c35-a758-e2f035b4a241 (parent: de03d4f4-4605-4fa4-91d7-90e76a5c9fdb) completed in 90.82s
+2026-09-13 01:26:16,959 - INFO - Metrics: score=0.8053, combined_score=0.8053, compile_success=1.0000, object_bytes=685600.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=637.6200, runtime_score=0.6106
+2026-09-13 01:26:16,967 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:27:15,189 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:27:15,196 - INFO - Iteration 26: 2 witness(es) approved by developer; implementing
+2026-09-13 01:27:15,205 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:27:27,604 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpcixeaydr.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685432 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=no
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Structural mismatch — C and Rust use different state storage:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Structural mismatch — C and Rust use different state storage:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:27:45,276 - INFO - Evaluated program 60cc0408-e071-4c1b-9423-96922a3b8b94 in 17.67s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685432.0000, semantic_equivalent=0.0000
+2026-09-13 01:27:45,279 - INFO - Iteration 26: Program 60cc0408-e071-4c1b-9423-96922a3b8b94 (parent: cfa7ef84-ae2d-427c-9fe5-d83acece9940) completed in 30.07s
+2026-09-13 01:27:45,279 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685432.0000, semantic_equivalent=0.0000
+2026-09-13 01:27:45,284 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:28:11,216 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:28:11,223 - INFO - Iteration 27: 1 witness(es) approved by developer; implementing
+2026-09-13 01:28:11,234 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:28:21,614 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:28:21,703 - INFO - Iteration 27: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpn5e96m8e.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685416 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: EQUIVALENT
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_lzq4p3j6/tmpn5e96m8e.bpf.o 60 kmem_cache_alloc kmem_cache_alloc_noprof
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   kmem_cache_alloc: 683.28 ns/run (run_cnt 65620)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7970  (runtime_success=1.0, runtime_score=0.5941, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 01:29:41,209 - INFO - Evaluated program 02d6332d-11ec-4cfb-b9d9-db81b35d7bc9 in 79.51s: score=0.7970, combined_score=0.7970, compile_success=1.0000, object_bytes=685416.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=683.2800, runtime_score=0.5941
+2026-09-13 01:29:41,213 - INFO - Iteration 27: Program 02d6332d-11ec-4cfb-b9d9-db81b35d7bc9 (parent: e3d3ca87-c512-4c35-a758-e2f035b4a241) completed in 89.98s
+2026-09-13 01:29:41,214 - INFO - Metrics: score=0.7970, combined_score=0.7970, compile_success=1.0000, object_bytes=685416.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=683.2800, runtime_score=0.5941
+2026-09-13 01:29:41,224 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:30:31,586 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:30:31,594 - INFO - Iteration 28: 1 witness(es) approved by developer; implementing
+2026-09-13 01:30:31,603 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:30:46,435 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:30:46,521 - INFO - Iteration 28: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp467b49dr.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685984 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:31:03,975 - INFO - Evaluated program 863a1172-2a0b-4601-8f09-a5fd981cace8 in 17.45s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685984.0000, semantic_equivalent=0.0000
+2026-09-13 01:31:03,978 - INFO - Iteration 28: Program 863a1172-2a0b-4601-8f09-a5fd981cace8 (parent: 60cc0408-e071-4c1b-9423-96922a3b8b94) completed in 32.37s
+2026-09-13 01:31:03,978 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685984.0000, semantic_equivalent=0.0000
+2026-09-13 01:31:03,983 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:31:30,011 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:31:30,018 - INFO - Iteration 29: 2 witness(es) approved by developer; implementing
+2026-09-13 01:31:30,028 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:31:42,818 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:31:42,902 - INFO - Iteration 29: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpzhjwbk8p.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685416 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:32:01,468 - INFO - Evaluated program c86eaef9-dda1-4ee3-8dda-2ee1a22b87a9 in 18.57s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685416.0000, semantic_equivalent=0.0000
+2026-09-13 01:32:01,470 - INFO - Iteration 29: Program c86eaef9-dda1-4ee3-8dda-2ee1a22b87a9 (parent: 90c6cec5-7381-4e92-8ab5-d2f431209a6b) completed in 31.44s
+2026-09-13 01:32:01,470 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685416.0000, semantic_equivalent=0.0000
+2026-09-13 01:32:01,475 - INFO - Sampled model: gpt-5-nano
+2026-09-13 01:32:40,406 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:32:40,412 - INFO - Iteration 30: 1 witness(es) approved by developer; implementing
+2026-09-13 01:32:40,422 - INFO - Sampled model: gpt-5-mini
+2026-09-13 01:32:49,465 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 01:32:49,551 - INFO - Iteration 30: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpp2fbzzq4.bpf.c (tool=slabratetop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (685648 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 2 entrypoint(s) vs baseline, maps=['slab_entries:hash'], witness=.wit
+[bpf_eval]   kmem_cache_alloc: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   kmem_cache_alloc_noprof: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   kmem_cache_alloc_noprof: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 01:33:07,425 - INFO - Evaluated program 9f3e91fd-86b2-45b7-a8c5-187b0cd8d0bc in 17.87s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685648.0000, semantic_equivalent=0.0000
+2026-09-13 01:33:07,428 - INFO - Iteration 30: Program 9f3e91fd-86b2-45b7-a8c5-187b0cd8d0bc (parent: 1c02ee7d-06f9-4777-be0d-69d16c20d486) completed in 27.00s
+2026-09-13 01:33:07,428 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=685648.0000, semantic_equivalent=0.0000
+2026-09-13 01:33:07,428 - INFO - Checkpoint interval reached at iteration 30
+2026-09-13 01:33:07,429 - INFO - Island Status:
+2026-09-13 01:33:07,429 - INFO -  * Island 0: 15 programs, best=0.8145, avg=0.2141, diversity=13.85, gen=15 (best: de03d4f4-4605-4fa4-91d7-90e76a5c9fdb)
+2026-09-13 01:33:07,429 - INFO -    Island 1: 14 programs, best=0.7938, avg=0.0567, diversity=16.10, gen=14 (best: 9dd13fa3-379c-4ad6-b65a-f31616206283)
+2026-09-13 01:33:07,450 - INFO - Saved database with 29 programs to openevolve_output/bpf_slabratetop_verify_autoapprove/checkpoints/checkpoint_20260913_013307_30
+2026-09-13 01:33:07,451 - INFO - Saved best program at checkpoint 30 with metrics: score=0.8145, combined_score=0.8145, compile_success=1.0000, object_bytes=685536.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=590.0000, runtime_score=0.6289
+2026-09-13 01:33:07,451 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_slabratetop_verify_autoapprove/checkpoints/checkpoint_20260913_013307_30
+2026-09-13 01:33:07,451 - INFO - ✅ Evolution completed - Maximum iterations reached
+2026-09-13 01:33:07,481 - INFO - Saved database with 29 programs to openevolve_output/bpf_slabratetop_verify_autoapprove/checkpoints/checkpoint_20260913_013307_30
+2026-09-13 01:33:07,482 - INFO - Saved best program at checkpoint 30 with metrics: score=0.8145, combined_score=0.8145, compile_success=1.0000, object_bytes=685536.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=590.0000, runtime_score=0.6289
+2026-09-13 01:33:07,482 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_slabratetop_verify_autoapprove/checkpoints/checkpoint_20260913_013307_30
+2026-09-13 01:33:07,482 - INFO - Received signal 15, initiating graceful shutdown...
+2026-09-13 01:33:07,482 - INFO - Graceful shutdown requested...
+2026-09-13 01:33:07,491 - INFO - Stopped process pool
+2026-09-13 01:33:07,491 - INFO - Using tracked best program: de03d4f4-4605-4fa4-91d7-90e76a5c9fdb
+2026-09-13 01:33:07,491 - INFO - Evolution complete. Best program has metrics: score=0.8145, combined_score=0.8145, compile_success=1.0000, object_bytes=685536.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__kmem_cache_alloc=590.0000, runtime_score=0.6289
+2026-09-13 01:33:07,492 - INFO - Saved best program to openevolve_output/bpf_slabratetop_verify_autoapprove/best/best_program.c with program info to openevolve_output/bpf_slabratetop_verify_autoapprove/best/best_program_info.json
+
+Evolution complete!
+Best program metrics:
+  score: 0.8145
+  combined_score: 0.8145
+  compile_success: 1.0000
+  object_bytes: 685536.0000
+  semantic_equivalent: 1.0000
+  runtime_success: 1.0000
+  ns_per_run__kmem_cache_alloc: 590.0000
+  runtime_score: 0.6289
+
+Per-iteration ns/run:
+  iter   0 (original): kmem_cache_alloc=590.00
+  iter   1: N/A (not equivalent)
+  iter   2: N/A (not equivalent)
+  iter   3: N/A (not equivalent)
+  iter   4: N/A (not equivalent)
+  iter   5: N/A (not equivalent)
+  iter   6: N/A (not equivalent)
+  iter   7: N/A (not equivalent)
+  iter   8: N/A (not equivalent)
+  iter   9: N/A (not equivalent)
+  iter  10: N/A (not equivalent)
+  iter  12: N/A (not equivalent)
+  iter  13: N/A (not equivalent)
+  iter  15: N/A (not equivalent)
+  iter  16: kmem_cache_alloc=701.81
+  iter  17: N/A (not equivalent)
+  iter  18: N/A (not equivalent)
+  iter  19: N/A (not equivalent)
+  iter  20: N/A (not equivalent)
+  iter  21: kmem_cache_alloc=699.44
+  iter  22: N/A (not equivalent)
+  iter  23: N/A (not equivalent)
+  iter  24: N/A (not equivalent)
+  iter  25: kmem_cache_alloc=637.62
+  iter  26: N/A (not equivalent)
+  iter  27: kmem_cache_alloc=683.28
+  iter  28: N/A (not equivalent)
+  iter  29: N/A (not equivalent)
+  iter  30: N/A (not equivalent)
+
+LLM token usage (this run):
+  prompt:     345,483
+  completion: 146,364
+  total:      491,847
+
+Latest checkpoint saved at: openevolve_output/bpf_slabratetop_verify_autoapprove/checkpoints/checkpoint_20260913_013307_30
+To resume, use: --checkpoint openevolve_output/bpf_slabratetop_verify_autoapprove/checkpoints/checkpoint_20260913_013307_30

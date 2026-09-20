@@ -1,0 +1,1728 @@
+2026-09-13 21:27:07,959 - INFO - Logging to openevolve_output/bpf_mountsnoop_verify_autoapprove/logs/openevolve_20260913_212707.log
+2026-09-13 21:27:07,959 - INFO - Interactive review mode enabled. Queue dir: /users/xiang95/learn_heimdall/heimdall/openevolve/openevolve_output/bpf_mountsnoop_verify_autoapprove/review_queue
+2026-09-13 21:27:07,967 - INFO - Set random seed to 42 for reproducibility
+2026-09-13 21:27:08,002 - INFO - Initialized OpenAI LLM with model: gpt-5-mini
+2026-09-13 21:27:08,012 - INFO - Initialized OpenAI LLM with model: gpt-5-nano
+2026-09-13 21:27:08,012 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 21:27:08,032 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 21:27:08,034 - INFO - Initialized prompt sampler
+2026-09-13 21:27:08,036 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 21:27:08,036 - INFO - Initialized program database with 0 programs
+2026-09-13 21:27:08,038 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 21:27:08,038 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 21:27:08,038 - INFO - Initialized OpenEvolve with /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/mountsnoop.bpf.c
+2026-09-13 21:27:08,038 - INFO - Adding initial program to database
+[bpf_eval] === evaluate tmpi9erq0om.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735832 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=no
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_moudm7fl/tmpi9erq0om.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2429.04 ns/run (run_cnt 1055)
+[bpf_eval]   mount_exit: 2019.94 ns/run (run_cnt 1055)
+[bpf_eval]   umount_entry: 2011.18 ns/run (run_cnt 1299)
+[bpf_eval]   umount_exit: 1761.62 ns/run (run_cnt 1299)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6458  (runtime_success=1.0, runtime_score=0.2916, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 21:30:51,489 - INFO - Evaluated program 672f6cac-4965-47a8-8e01-c60af9afa809 in 223.45s: score=0.6458, combined_score=0.6458, compile_success=1.0000, object_bytes=735832.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2429.0400, ns_per_run__mount_exit=2019.9400, ns_per_run__umount_entry=2011.1800, ns_per_run__umount_exit=1761.6200, runtime_score=0.2916
+2026-09-13 21:30:51,489 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 2}
+2026-09-13 21:30:51,490 - INFO - Stored artifacts for initial program
+2026-09-13 21:30:51,491 - INFO - Initialized process parallel controller with 1 workers
+2026-09-13 21:30:51,491 - INFO - Set max None tasks per child
+2026-09-13 21:30:51,492 - INFO - Started process pool with 1 processes
+2026-09-13 21:30:51,492 - INFO - Using island-based evolution with 2 islands
+2026-09-13 21:30:51,492 - INFO - Island Status:
+2026-09-13 21:30:51,492 - INFO -  * Island 0: 1 programs, best=0.6458, avg=0.6458, diversity=0.00, gen=0 (best: 672f6cac-4965-47a8-8e01-c60af9afa809)
+2026-09-13 21:30:51,492 - INFO -    Island 1: 0 programs, best=0.0000, avg=0.0000, diversity=0.00, gen=0
+2026-09-13 21:30:51,492 - INFO - Starting interactive (human-reviewed) evolution from iteration 1 for 30 iterations (total: 31)
+2026-09-13 21:30:51,520 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 21:30:51,543 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 21:30:51,545 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 21:30:51,546 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 21:30:51,547 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 21:30:51,550 - INFO - Sampled model: gpt-5-nano
+2026-09-13 21:31:55,347 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+; argp->op line: 4 position: 20
+; argp->op line: 9 position: 20
+2026-09-13 21:31:55,415 - INFO - Iteration 1: 3 witness(es) approved by developer; implementing
+2026-09-13 21:31:55,419 - INFO - Sampled model: gpt-5-nano
+2026-09-13 21:32:17,585 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:32:17,673 - INFO - Iteration 1: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp7p9nm4ew.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735808 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_pu9de_kb/tmp7p9nm4ew.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2336.17 ns/run (run_cnt 1060)
+[bpf_eval]   mount_exit: 2043.06 ns/run (run_cnt 1060)
+[bpf_eval]   umount_entry: 2007.57 ns/run (run_cnt 1300)
+[bpf_eval]   umount_exit: 1701.32 ns/run (run_cnt 1300)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6499  (runtime_success=1.0, runtime_score=0.2997, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 21:36:03,573 - INFO - Evaluated program d6a8491d-f543-46f4-a3b2-7e090d543450 in 225.90s: score=0.6499, combined_score=0.6499, compile_success=1.0000, object_bytes=735808.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2336.1700, ns_per_run__mount_exit=2043.0600, ns_per_run__umount_entry=2007.5700, ns_per_run__umount_exit=1701.3200, runtime_score=0.2997
+2026-09-13 21:36:03,577 - INFO - Iteration 1: Program d6a8491d-f543-46f4-a3b2-7e090d543450 (parent: 672f6cac-4965-47a8-8e01-c60af9afa809) completed in 248.16s
+2026-09-13 21:36:03,577 - INFO - Metrics: score=0.6499, combined_score=0.6499, compile_success=1.0000, object_bytes=735808.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2336.1700, ns_per_run__mount_exit=2043.0600, ns_per_run__umount_entry=2007.5700, ns_per_run__umount_exit=1701.3200, runtime_score=0.2997
+2026-09-13 21:36:03,582 - INFO - Sampled model: gpt-5-mini
+2026-09-13 21:36:16,394 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:36:16,402 - INFO - Iteration 2: 1 witness(es) approved by developer; implementing
+2026-09-13 21:36:16,409 - INFO - Sampled model: gpt-5-nano
+2026-09-13 21:36:35,957 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:36:36,046 - INFO - Iteration 2: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpbsf671fo.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735744 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_1p149us8/tmpbsf671fo.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2293.1 ns/run (run_cnt 1060)
+[bpf_eval]   mount_exit: 2188.33 ns/run (run_cnt 1060)
+[bpf_eval]   umount_entry: 1961.77 ns/run (run_cnt 1304)
+[bpf_eval]   umount_exit: 1646.85 ns/run (run_cnt 1304)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6518  (runtime_success=1.0, runtime_score=0.3037, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 21:40:10,552 - INFO - Evaluated program ecd60805-fa5d-40ae-87bc-8b59342f9ef0 in 214.50s: score=0.6518, combined_score=0.6518, compile_success=1.0000, object_bytes=735744.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2293.1000, ns_per_run__mount_exit=2188.3300, ns_per_run__umount_entry=1961.7700, ns_per_run__umount_exit=1646.8500, runtime_score=0.3037
+2026-09-13 21:40:10,555 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 2, 'semantic_equivalent': 2}
+2026-09-13 21:40:10,555 - INFO - Iteration 2: Program ecd60805-fa5d-40ae-87bc-8b59342f9ef0 (parent: d6a8491d-f543-46f4-a3b2-7e090d543450) completed in 234.14s
+2026-09-13 21:40:10,555 - INFO - Metrics: score=0.6518, combined_score=0.6518, compile_success=1.0000, object_bytes=735744.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2293.1000, ns_per_run__mount_exit=2188.3300, ns_per_run__umount_entry=1961.7700, ns_per_run__umount_exit=1646.8500, runtime_score=0.3037
+2026-09-13 21:40:10,559 - INFO - Sampled model: gpt-5-mini
+2026-09-13 21:40:32,494 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:40:32,501 - INFO - Iteration 3: 2 witness(es) approved by developer; implementing
+2026-09-13 21:40:32,507 - INFO - Sampled model: gpt-5-mini
+2026-09-13 21:40:59,753 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:40:59,838 - INFO - Iteration 3: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmptbp0j72h.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (764688 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_6bt8t1_1/tmptbp0j72h.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2383.85 ns/run (run_cnt 1060)
+[bpf_eval]   mount_exit: 2033.79 ns/run (run_cnt 1060)
+[bpf_eval]   umount_entry: 1947.68 ns/run (run_cnt 1308)
+[bpf_eval]   umount_exit: 1612.52 ns/run (run_cnt 1308)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6478  (runtime_success=1.0, runtime_score=0.2955, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 21:44:40,209 - INFO - Evaluated program 8ee04127-c758-4a61-94f6-34234bee0615 in 220.37s: score=0.6478, combined_score=0.6478, compile_success=1.0000, object_bytes=764688.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2383.8500, ns_per_run__mount_exit=2033.7900, ns_per_run__umount_entry=1947.6800, ns_per_run__umount_exit=1612.5200, runtime_score=0.2955
+2026-09-13 21:44:40,213 - INFO - Iteration 3: Program 8ee04127-c758-4a61-94f6-34234bee0615 (parent: d6a8491d-f543-46f4-a3b2-7e090d543450) completed in 247.70s
+2026-09-13 21:44:40,214 - INFO - Metrics: score=0.6478, combined_score=0.6478, compile_success=1.0000, object_bytes=764688.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2383.8500, ns_per_run__mount_exit=2033.7900, ns_per_run__umount_entry=1947.6800, ns_per_run__umount_exit=1612.5200, runtime_score=0.2955
+2026-09-13 21:44:40,218 - INFO - Sampled model: gpt-5-mini
+2026-09-13 21:45:06,255 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:45:06,261 - INFO - Iteration 4: 2 witness(es) approved by developer; implementing
+2026-09-13 21:45:06,267 - INFO - Sampled model: gpt-5-nano
+2026-09-13 21:45:26,651 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:45:26,737 - INFO - Iteration 4: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpj5vfs__k.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: /tmp/tmpj5vfs__k.bpf.c:25:33: error: initializer element is not a compile-time constant
+2026-09-13 21:45:27,712 - INFO - Evaluated program 2ed0798d-ad3a-4981-969b-ac232bf6f9b4 in 0.97s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 21:45:27,714 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 0, 'semantic_equivalent': 0}
+2026-09-13 21:45:27,714 - INFO - Iteration 4: Program 2ed0798d-ad3a-4981-969b-ac232bf6f9b4 (parent: ecd60805-fa5d-40ae-87bc-8b59342f9ef0) completed in 21.45s
+2026-09-13 21:45:27,714 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 21:45:27,717 - INFO - Sampled model: gpt-5-mini
+2026-09-13 21:45:44,296 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:45:44,303 - INFO - Iteration 5: 1 witness(es) approved by developer; implementing
+2026-09-13 21:45:44,310 - INFO - Sampled model: gpt-5-mini
+2026-09-13 21:46:18,653 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:46:18,740 - INFO - Iteration 5: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmphwdsl26r.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735416 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_11tj0mww/tmphwdsl26r.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2362.69 ns/run (run_cnt 1061)
+[bpf_eval]   mount_exit: 2187.33 ns/run (run_cnt 1061)
+[bpf_eval]   umount_entry: 1982.75 ns/run (run_cnt 1309)
+[bpf_eval]   umount_exit: 1650.99 ns/run (run_cnt 1309)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6487  (runtime_success=1.0, runtime_score=0.2974, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 21:49:59,831 - INFO - Evaluated program 87bc83b5-95ca-4fc7-844f-e130ec0309d4 in 221.09s: score=0.6487, combined_score=0.6487, compile_success=1.0000, object_bytes=735416.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2362.6900, ns_per_run__mount_exit=2187.3300, ns_per_run__umount_entry=1982.7500, ns_per_run__umount_exit=1650.9900, runtime_score=0.2974
+2026-09-13 21:49:59,834 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 4, 'semantic_equivalent': 4}
+2026-09-13 21:49:59,834 - INFO - Iteration 5: Program 87bc83b5-95ca-4fc7-844f-e130ec0309d4 (parent: ecd60805-fa5d-40ae-87bc-8b59342f9ef0) completed in 255.52s
+2026-09-13 21:49:59,835 - INFO - Metrics: score=0.6487, combined_score=0.6487, compile_success=1.0000, object_bytes=735416.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2362.6900, ns_per_run__mount_exit=2187.3300, ns_per_run__umount_entry=1982.7500, ns_per_run__umount_exit=1650.9900, runtime_score=0.2974
+2026-09-13 21:49:59,839 - INFO - Sampled model: gpt-5-mini
+2026-09-13 21:50:13,601 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:50:13,607 - INFO - Iteration 6: 2 witness(es) approved by developer; implementing
+2026-09-13 21:50:13,612 - INFO - Sampled model: gpt-5-mini
+2026-09-13 21:50:40,816 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:50:40,901 - INFO - Iteration 6: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpo0yxfcc9.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735480 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_cjm1j0cw/tmpo0yxfcc9.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2354.37 ns/run (run_cnt 1059)
+[bpf_eval]   mount_exit: 2212.23 ns/run (run_cnt 1059)
+[bpf_eval]   umount_entry: 1996.01 ns/run (run_cnt 1299)
+[bpf_eval]   umount_exit: 1781.54 ns/run (run_cnt 1299)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6491  (runtime_success=1.0, runtime_score=0.2981, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 21:54:16,009 - INFO - Evaluated program c5e78dd5-4852-402e-b327-dc00594fa92f in 215.11s: score=0.6491, combined_score=0.6491, compile_success=1.0000, object_bytes=735480.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2354.3700, ns_per_run__mount_exit=2212.2300, ns_per_run__umount_entry=1996.0100, ns_per_run__umount_exit=1781.5400, runtime_score=0.2981
+2026-09-13 21:54:16,013 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 4, 'semantic_equivalent': 4}
+2026-09-13 21:54:16,013 - INFO - Iteration 6: Program c5e78dd5-4852-402e-b327-dc00594fa92f (parent: 2ed0798d-ad3a-4981-969b-ac232bf6f9b4) completed in 242.40s
+2026-09-13 21:54:16,013 - INFO - Metrics: score=0.6491, combined_score=0.6491, compile_success=1.0000, object_bytes=735480.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2354.3700, ns_per_run__mount_exit=2212.2300, ns_per_run__umount_entry=1996.0100, ns_per_run__umount_exit=1781.5400, runtime_score=0.2981
+2026-09-13 21:54:16,020 - INFO - Sampled model: gpt-5-nano
+2026-09-13 21:54:43,765 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:54:43,775 - INFO - Iteration 7: 2 witness(es) approved by developer; implementing
+2026-09-13 21:54:43,782 - INFO - Sampled model: gpt-5-mini
+2026-09-13 21:55:20,429 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpn86u7gvo.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735400 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=no
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_67ze753x/tmpn86u7gvo.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2339.96 ns/run (run_cnt 1061)
+[bpf_eval]   mount_exit: 2213.09 ns/run (run_cnt 1061)
+[bpf_eval]   umount_entry: 1961.55 ns/run (run_cnt 1303)
+[bpf_eval]   umount_exit: 1725.29 ns/run (run_cnt 1303)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6497  (runtime_success=1.0, runtime_score=0.2994, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 21:59:06,317 - INFO - Evaluated program 88e2cfad-d632-457a-996a-7b53dc7e24c6 in 225.88s: score=0.6497, combined_score=0.6497, compile_success=1.0000, object_bytes=735400.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2339.9600, ns_per_run__mount_exit=2213.0900, ns_per_run__umount_entry=1961.5500, ns_per_run__umount_exit=1725.2900, runtime_score=0.2994
+2026-09-13 21:59:06,321 - INFO - Iteration 7: Program 88e2cfad-d632-457a-996a-7b53dc7e24c6 (parent: d6a8491d-f543-46f4-a3b2-7e090d543450) completed in 262.54s
+2026-09-13 21:59:06,321 - INFO - Metrics: score=0.6497, combined_score=0.6497, compile_success=1.0000, object_bytes=735400.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2339.9600, ns_per_run__mount_exit=2213.0900, ns_per_run__umount_entry=1961.5500, ns_per_run__umount_exit=1725.2900, runtime_score=0.2994
+2026-09-13 21:59:06,328 - INFO - Sampled model: gpt-5-mini
+2026-09-13 21:59:46,900 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 21:59:46,907 - INFO - Iteration 8: 1 witness(es) approved by developer; implementing
+2026-09-13 21:59:46,914 - INFO - Sampled model: gpt-5-nano
+2026-09-13 22:00:17,639 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:00:17,725 - INFO - Iteration 8: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpneo8ojjp.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735216 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_1770mm87/tmpneo8ojjp.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2314.34 ns/run (run_cnt 1061)
+[bpf_eval]   mount_exit: 2196.07 ns/run (run_cnt 1061)
+[bpf_eval]   umount_entry: 1984.05 ns/run (run_cnt 1301)
+[bpf_eval]   umount_exit: 1763.35 ns/run (run_cnt 1301)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6509  (runtime_success=1.0, runtime_score=0.3017, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:03:56,970 - INFO - Evaluated program fc11ca19-a239-4f38-b5f3-22dadaf085b0 in 219.24s: score=0.6509, combined_score=0.6509, compile_success=1.0000, object_bytes=735216.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2314.3400, ns_per_run__mount_exit=2196.0700, ns_per_run__umount_entry=1984.0500, ns_per_run__umount_exit=1763.3500, runtime_score=0.3017
+2026-09-13 22:03:56,974 - INFO - Island 1 MAP-Elites cell improved: {'compile_success': 4, 'semantic_equivalent': 4} (fitness: 0.649 -> 0.651)
+2026-09-13 22:03:56,975 - INFO - Iteration 8: Program fc11ca19-a239-4f38-b5f3-22dadaf085b0 (parent: c5e78dd5-4852-402e-b327-dc00594fa92f) completed in 250.06s
+2026-09-13 22:03:56,975 - INFO - Metrics: score=0.6509, combined_score=0.6509, compile_success=1.0000, object_bytes=735216.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2314.3400, ns_per_run__mount_exit=2196.0700, ns_per_run__umount_entry=1984.0500, ns_per_run__umount_exit=1763.3500, runtime_score=0.3017
+2026-09-13 22:03:56,981 - INFO - Sampled model: gpt-5-nano
+2026-09-13 22:04:20,479 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:04:20,487 - INFO - Iteration 9: 3 witness(es) approved by developer; implementing
+2026-09-13 22:04:20,494 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:04:53,416 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:04:53,538 - INFO - Iteration 9: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpq093932b.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (764664 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_m0gtqgo7/tmpq093932b.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2309.82 ns/run (run_cnt 1060)
+[bpf_eval]   mount_exit: 1990.32 ns/run (run_cnt 1060)
+[bpf_eval]   umount_entry: 2007.96 ns/run (run_cnt 1304)
+[bpf_eval]   umount_exit: 1643.82 ns/run (run_cnt 1304)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6511  (runtime_success=1.0, runtime_score=0.3021, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:08:35,926 - INFO - Evaluated program 2b9f35bc-78cb-4934-8463-42fefaa27dcb in 222.39s: score=0.6511, combined_score=0.6511, compile_success=1.0000, object_bytes=764664.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2309.8200, ns_per_run__mount_exit=1990.3200, ns_per_run__umount_entry=2007.9600, ns_per_run__umount_exit=1643.8200, runtime_score=0.3021
+2026-09-13 22:08:35,929 - INFO - New best program 2b9f35bc-78cb-4934-8463-42fefaa27dcb replaces 672f6cac-4965-47a8-8e01-c60af9afa809 (combined_score: 0.6458 → 0.6511, +0.0053)
+2026-09-13 22:08:35,930 - INFO - Iteration 9: Program 2b9f35bc-78cb-4934-8463-42fefaa27dcb (parent: 8ee04127-c758-4a61-94f6-34234bee0615) completed in 255.43s
+2026-09-13 22:08:35,930 - INFO - Metrics: score=0.6511, combined_score=0.6511, compile_success=1.0000, object_bytes=764664.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2309.8200, ns_per_run__mount_exit=1990.3200, ns_per_run__umount_entry=2007.9600, ns_per_run__umount_exit=1643.8200, runtime_score=0.3021
+2026-09-13 22:08:35,930 - INFO - 🌟 New best solution found at iteration 9: 2b9f35bc-78cb-4934-8463-42fefaa27dcb
+2026-09-13 22:08:35,935 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:08:51,231 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:08:51,240 - INFO - Iteration 10: 2 witness(es) approved by developer; implementing
+2026-09-13 22:08:51,248 - INFO - Sampled model: gpt-5-nano
+2026-09-13 22:09:08,447 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:09:08,534 - INFO - Iteration 10: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpqb_12xam.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (764168 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_6u10owy8/tmpqb_12xam.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2376.66 ns/run (run_cnt 1059)
+[bpf_eval]   mount_exit: 2060.99 ns/run (run_cnt 1059)
+[bpf_eval]   umount_entry: 1971.38 ns/run (run_cnt 1302)
+[bpf_eval]   umount_exit: 1675.88 ns/run (run_cnt 1302)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6481  (runtime_success=1.0, runtime_score=0.2962, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:12:50,770 - INFO - Evaluated program c455f28b-3b0d-44d7-ab6d-82beb115d24e in 222.24s: score=0.6481, combined_score=0.6481, compile_success=1.0000, object_bytes=764168.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2376.6600, ns_per_run__mount_exit=2060.9900, ns_per_run__umount_entry=1971.3800, ns_per_run__umount_exit=1675.8800, runtime_score=0.2962
+2026-09-13 22:12:50,774 - INFO - Iteration 10: Program c455f28b-3b0d-44d7-ab6d-82beb115d24e (parent: fc11ca19-a239-4f38-b5f3-22dadaf085b0) completed in 239.52s
+2026-09-13 22:12:50,774 - INFO - Metrics: score=0.6481, combined_score=0.6481, compile_success=1.0000, object_bytes=764168.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2376.6600, ns_per_run__mount_exit=2060.9900, ns_per_run__umount_entry=1971.3800, ns_per_run__umount_exit=1675.8800, runtime_score=0.2962
+2026-09-13 22:12:50,774 - INFO - Checkpoint interval reached at iteration 10
+2026-09-13 22:12:50,781 - INFO - Island Status:
+2026-09-13 22:12:50,781 - INFO -  * Island 0: 6 programs, best=0.6511, avg=0.6488, diversity=51.37, gen=5 (best: 2b9f35bc-78cb-4934-8463-42fefaa27dcb)
+2026-09-13 22:12:50,781 - INFO -    Island 1: 4 programs, best=0.6518, avg=0.4877, diversity=140.80, gen=5 (best: ecd60805-fa5d-40ae-87bc-8b59342f9ef0)
+2026-09-13 22:12:50,811 - INFO - Saved database with 10 programs to openevolve_output/bpf_mountsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_221250_10
+2026-09-13 22:12:50,812 - INFO - Saved best program at checkpoint 10 with metrics: score=0.6511, combined_score=0.6511, compile_success=1.0000, object_bytes=764664.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2309.8200, ns_per_run__mount_exit=1990.3200, ns_per_run__umount_entry=2007.9600, ns_per_run__umount_exit=1643.8200, runtime_score=0.3021
+2026-09-13 22:12:50,813 - INFO - Saved checkpoint at iteration 10 to openevolve_output/bpf_mountsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_221250_10
+2026-09-13 22:12:50,819 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:13:06,610 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:13:06,617 - INFO - Iteration 11: 2 witness(es) approved by developer; implementing
+2026-09-13 22:13:06,625 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:13:37,343 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:13:37,429 - INFO - Iteration 11: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpxc4surhp.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (763968 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_uwcng_6p/tmpxc4surhp.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2303.09 ns/run (run_cnt 1063)
+[bpf_eval]   mount_exit: 2120.93 ns/run (run_cnt 1063)
+[bpf_eval]   umount_entry: 1982.36 ns/run (run_cnt 1313)
+[bpf_eval]   umount_exit: 1671.09 ns/run (run_cnt 1313)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6514  (runtime_success=1.0, runtime_score=0.3027, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:17:11,877 - INFO - Evaluated program c5a03329-8720-407e-864e-4e960cddce9c in 214.45s: score=0.6514, combined_score=0.6514, compile_success=1.0000, object_bytes=763968.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2303.0900, ns_per_run__mount_exit=2120.9300, ns_per_run__umount_entry=1982.3600, ns_per_run__umount_exit=1671.0900, runtime_score=0.3027
+2026-09-13 22:17:11,881 - INFO - Iteration 11: Program c5a03329-8720-407e-864e-4e960cddce9c (parent: 87bc83b5-95ca-4fc7-844f-e130ec0309d4) completed in 245.25s
+2026-09-13 22:17:11,881 - INFO - Metrics: score=0.6514, combined_score=0.6514, compile_success=1.0000, object_bytes=763968.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2303.0900, ns_per_run__mount_exit=2120.9300, ns_per_run__umount_entry=1982.3600, ns_per_run__umount_exit=1671.0900, runtime_score=0.3027
+2026-09-13 22:17:11,887 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:17:36,525 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:17:36,533 - INFO - Iteration 12: 3 witness(es) approved by developer; implementing
+2026-09-13 22:17:36,541 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:18:05,093 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:18:05,181 - INFO - Iteration 12: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp9hq3yhcf.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (764168 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_4amadxw1/tmp9hq3yhcf.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2453.85 ns/run (run_cnt 1058)
+[bpf_eval]   mount_exit: 2167.77 ns/run (run_cnt 1058)
+[bpf_eval]   umount_entry: 2041.36 ns/run (run_cnt 1300)
+[bpf_eval]   umount_exit: 1713.68 ns/run (run_cnt 1300)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6448  (runtime_success=1.0, runtime_score=0.2895, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:21:48,096 - INFO - Evaluated program 0f06bc9c-81c4-4a42-8042-efcf47ecc098 in 222.91s: score=0.6448, combined_score=0.6448, compile_success=1.0000, object_bytes=764168.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2453.8500, ns_per_run__mount_exit=2167.7700, ns_per_run__umount_entry=2041.3600, ns_per_run__umount_exit=1713.6800, runtime_score=0.2895
+2026-09-13 22:21:48,101 - INFO - Iteration 12: Program 0f06bc9c-81c4-4a42-8042-efcf47ecc098 (parent: fc11ca19-a239-4f38-b5f3-22dadaf085b0) completed in 251.56s
+2026-09-13 22:21:48,101 - INFO - Metrics: score=0.6448, combined_score=0.6448, compile_success=1.0000, object_bytes=764168.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2453.8500, ns_per_run__mount_exit=2167.7700, ns_per_run__umount_entry=2041.3600, ns_per_run__umount_exit=1713.6800, runtime_score=0.2895
+2026-09-13 22:21:48,108 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:22:09,671 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:22:09,681 - INFO - Iteration 13: 1 witness(es) approved by developer; implementing
+2026-09-13 22:22:09,689 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:22:41,656 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:22:41,743 - INFO - Iteration 13: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpcpryxgro.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (763968 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf__ta28xwz/tmpcpryxgro.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2428.51 ns/run (run_cnt 1059)
+[bpf_eval]   mount_exit: 2238.82 ns/run (run_cnt 1059)
+[bpf_eval]   umount_entry: 2023.8 ns/run (run_cnt 1303)
+[bpf_eval]   umount_exit: 1651.69 ns/run (run_cnt 1303)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6458  (runtime_success=1.0, runtime_score=0.2917, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:26:21,272 - INFO - Evaluated program 4d8c395f-7abc-40f2-8b8e-03f8a4466fbb in 219.53s: score=0.6458, combined_score=0.6458, compile_success=1.0000, object_bytes=763968.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2428.5100, ns_per_run__mount_exit=2238.8200, ns_per_run__umount_entry=2023.8000, ns_per_run__umount_exit=1651.6900, runtime_score=0.2917
+2026-09-13 22:26:21,277 - INFO - Iteration 13: Program 4d8c395f-7abc-40f2-8b8e-03f8a4466fbb (parent: 2b9f35bc-78cb-4934-8463-42fefaa27dcb) completed in 251.59s
+2026-09-13 22:26:21,277 - INFO - Metrics: score=0.6458, combined_score=0.6458, compile_success=1.0000, object_bytes=763968.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2428.5100, ns_per_run__mount_exit=2238.8200, ns_per_run__umount_entry=2023.8000, ns_per_run__umount_exit=1651.6900, runtime_score=0.2917
+2026-09-13 22:26:21,283 - INFO - Sampled model: gpt-5-nano
+2026-09-13 22:27:05,081 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:27:05,209 - INFO - Iteration 14: 1 witness(es) approved by developer; implementing
+2026-09-13 22:27:05,215 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:27:38,528 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp4utwf3o6.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: /tmp/tmp4utwf3o6.bpf.c:24:33: error: initializer element is not a compile-time constant
+2026-09-13 22:27:39,216 - INFO - Evaluated program 7a6799fd-4c4c-4a3b-b16d-2746997a9f0f in 0.68s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 22:27:39,219 - INFO - Iteration 14: Program 7a6799fd-4c4c-4a3b-b16d-2746997a9f0f (parent: ecd60805-fa5d-40ae-87bc-8b59342f9ef0) completed in 34.00s
+2026-09-13 22:27:39,219 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 22:27:39,223 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:28:03,719 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:28:03,730 - INFO - Iteration 15: 2 witness(es) approved by developer; implementing
+2026-09-13 22:28:03,740 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:28:44,084 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:28:44,174 - INFO - Iteration 15: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpn5iriohr.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735160 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_x45mrua_/tmpn5iriohr.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2379.75 ns/run (run_cnt 1060)
+[bpf_eval]   mount_exit: 2231.95 ns/run (run_cnt 1060)
+[bpf_eval]   umount_entry: 1956.35 ns/run (run_cnt 1306)
+[bpf_eval]   umount_exit: 1684.67 ns/run (run_cnt 1306)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6479  (runtime_success=1.0, runtime_score=0.2959, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:32:23,130 - INFO - Evaluated program 3e223537-eb5c-48e6-8970-7b6ca3868142 in 218.96s: score=0.6479, combined_score=0.6479, compile_success=1.0000, object_bytes=735160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2379.7500, ns_per_run__mount_exit=2231.9500, ns_per_run__umount_entry=1956.3500, ns_per_run__umount_exit=1684.6700, runtime_score=0.2959
+2026-09-13 22:32:23,136 - INFO - Iteration 15: Program 3e223537-eb5c-48e6-8970-7b6ca3868142 (parent: ecd60805-fa5d-40ae-87bc-8b59342f9ef0) completed in 259.39s
+2026-09-13 22:32:23,136 - INFO - Metrics: score=0.6479, combined_score=0.6479, compile_success=1.0000, object_bytes=735160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2379.7500, ns_per_run__mount_exit=2231.9500, ns_per_run__umount_entry=1956.3500, ns_per_run__umount_exit=1684.6700, runtime_score=0.2959
+2026-09-13 22:32:23,143 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:32:38,217 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:32:38,224 - INFO - Iteration 16: 1 witness(es) approved by developer; implementing
+2026-09-13 22:32:38,233 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:33:11,127 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:33:11,216 - INFO - Iteration 16: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpomj6_sff.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735480 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf__o6wp5ga/tmpomj6_sff.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2343.28 ns/run (run_cnt 1060)
+[bpf_eval]   mount_exit: 2192.76 ns/run (run_cnt 1060)
+[bpf_eval]   umount_entry: 1931.81 ns/run (run_cnt 1308)
+[bpf_eval]   umount_exit: 1747.25 ns/run (run_cnt 1308)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6496  (runtime_success=1.0, runtime_score=0.2991, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:36:51,483 - INFO - Evaluated program 3a850482-516c-4aa1-ad8d-96c92ecd96b3 in 220.27s: score=0.6496, combined_score=0.6496, compile_success=1.0000, object_bytes=735480.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2343.2800, ns_per_run__mount_exit=2192.7600, ns_per_run__umount_entry=1931.8100, ns_per_run__umount_exit=1747.2500, runtime_score=0.2991
+2026-09-13 22:36:51,488 - INFO - Iteration 16: Program 3a850482-516c-4aa1-ad8d-96c92ecd96b3 (parent: 2ed0798d-ad3a-4981-969b-ac232bf6f9b4) completed in 253.25s
+2026-09-13 22:36:51,489 - INFO - Metrics: score=0.6496, combined_score=0.6496, compile_success=1.0000, object_bytes=735480.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2343.2800, ns_per_run__mount_exit=2192.7600, ns_per_run__umount_entry=1931.8100, ns_per_run__umount_exit=1747.2500, runtime_score=0.2991
+2026-09-13 22:36:51,499 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:37:11,785 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:37:11,793 - INFO - Iteration 17: 1 witness(es) approved by developer; implementing
+2026-09-13 22:37:11,803 - INFO - Sampled model: gpt-5-nano
+2026-09-13 22:37:37,329 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:37:37,415 - INFO - Iteration 17: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpvqrklacz.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (764112 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_4qdncw_8/tmpvqrklacz.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2282.32 ns/run (run_cnt 1060)
+[bpf_eval]   mount_exit: 2161.95 ns/run (run_cnt 1060)
+[bpf_eval]   umount_entry: 1917.07 ns/run (run_cnt 1304)
+[bpf_eval]   umount_exit: 1617.07 ns/run (run_cnt 1304)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6523  (runtime_success=1.0, runtime_score=0.3047, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:41:14,113 - INFO - Evaluated program dc5f14d6-d83b-44f3-9b23-34a460769fe2 in 216.70s: score=0.6523, combined_score=0.6523, compile_success=1.0000, object_bytes=764112.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2282.3200, ns_per_run__mount_exit=2161.9500, ns_per_run__umount_entry=1917.0700, ns_per_run__umount_exit=1617.0700, runtime_score=0.3047
+2026-09-13 22:41:14,116 - INFO - Island 0 MAP-Elites cell improved: {'compile_success': 4, 'semantic_equivalent': 4} (fitness: 0.649 -> 0.652)
+2026-09-13 22:41:14,117 - INFO - Iteration 17: Program dc5f14d6-d83b-44f3-9b23-34a460769fe2 (parent: c5a03329-8720-407e-864e-4e960cddce9c) completed in 242.31s
+2026-09-13 22:41:14,117 - INFO - Metrics: score=0.6523, combined_score=0.6523, compile_success=1.0000, object_bytes=764112.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2282.3200, ns_per_run__mount_exit=2161.9500, ns_per_run__umount_entry=1917.0700, ns_per_run__umount_exit=1617.0700, runtime_score=0.3047
+2026-09-13 22:41:14,123 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:41:40,511 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:41:40,519 - INFO - Iteration 18: 2 witness(es) approved by developer; implementing
+2026-09-13 22:41:40,529 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:42:28,690 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:42:28,776 - INFO - Iteration 18: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpagrzasi2.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (763256 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_0vs19s7m/tmpagrzasi2.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2366.77 ns/run (run_cnt 1057)
+[bpf_eval]   mount_exit: 2106.58 ns/run (run_cnt 1057)
+[bpf_eval]   umount_entry: 1981.64 ns/run (run_cnt 1299)
+[bpf_eval]   umount_exit: 1646.54 ns/run (run_cnt 1299)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6485  (runtime_success=1.0, runtime_score=0.2970, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:46:10,366 - INFO - Evaluated program c5153d02-e2cb-4190-9296-657053f4deb4 in 221.59s: score=0.6485, combined_score=0.6485, compile_success=1.0000, object_bytes=763256.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2366.7700, ns_per_run__mount_exit=2106.5800, ns_per_run__umount_entry=1981.6400, ns_per_run__umount_exit=1646.5400, runtime_score=0.2970
+2026-09-13 22:46:10,369 - INFO - Iteration 18: Program c5153d02-e2cb-4190-9296-657053f4deb4 (parent: 0f06bc9c-81c4-4a42-8042-efcf47ecc098) completed in 269.84s
+2026-09-13 22:46:10,370 - INFO - Metrics: score=0.6485, combined_score=0.6485, compile_success=1.0000, object_bytes=763256.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2366.7700, ns_per_run__mount_exit=2106.5800, ns_per_run__umount_entry=1981.6400, ns_per_run__umount_exit=1646.5400, runtime_score=0.2970
+2026-09-13 22:46:10,380 - INFO - Sampled model: gpt-5-nano
+2026-09-13 22:46:53,593 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:46:53,605 - INFO - Iteration 19: 2 witness(es) approved by developer; implementing
+2026-09-13 22:46:53,616 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:47:42,515 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp5fcipiwy.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (766064 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=no
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_xvjvuu8w/tmp5fcipiwy.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2351.32 ns/run (run_cnt 1060)
+[bpf_eval]   mount_exit: 2080.17 ns/run (run_cnt 1060)
+[bpf_eval]   umount_entry: 1973.93 ns/run (run_cnt 1307)
+[bpf_eval]   umount_exit: 1613.98 ns/run (run_cnt 1307)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6492  (runtime_success=1.0, runtime_score=0.2984, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:51:18,750 - INFO - Evaluated program 929f9a43-4db2-4e83-b193-76fd354ce497 in 216.23s: score=0.6492, combined_score=0.6492, compile_success=1.0000, object_bytes=766064.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2351.3200, ns_per_run__mount_exit=2080.1700, ns_per_run__umount_entry=1973.9300, ns_per_run__umount_exit=1613.9800, runtime_score=0.2984
+2026-09-13 22:51:18,755 - INFO - Iteration 19: Program 929f9a43-4db2-4e83-b193-76fd354ce497 (parent: dc5f14d6-d83b-44f3-9b23-34a460769fe2) completed in 265.14s
+2026-09-13 22:51:18,755 - INFO - Metrics: score=0.6492, combined_score=0.6492, compile_success=1.0000, object_bytes=766064.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2351.3200, ns_per_run__mount_exit=2080.1700, ns_per_run__umount_entry=1973.9300, ns_per_run__umount_exit=1613.9800, runtime_score=0.2984
+2026-09-13 22:51:18,765 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:51:41,424 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:51:41,434 - INFO - Iteration 20: 1 witness(es) approved by developer; implementing
+2026-09-13 22:51:41,444 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:52:17,146 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:52:17,231 - INFO - Iteration 20: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpn_4rernm.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735216 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_hcddq2zp/tmpn_4rernm.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2323.21 ns/run (run_cnt 1060)
+[bpf_eval]   mount_exit: 2135.74 ns/run (run_cnt 1060)
+[bpf_eval]   umount_entry: 1970.18 ns/run (run_cnt 1308)
+[bpf_eval]   umount_exit: 1696.83 ns/run (run_cnt 1308)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6505  (runtime_success=1.0, runtime_score=0.3009, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 22:55:56,280 - INFO - Evaluated program f0e1c892-7671-44da-9ab9-30f76eb5c3de in 219.05s: score=0.6505, combined_score=0.6505, compile_success=1.0000, object_bytes=735216.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2323.2100, ns_per_run__mount_exit=2135.7400, ns_per_run__umount_entry=1970.1800, ns_per_run__umount_exit=1696.8300, runtime_score=0.3009
+2026-09-13 22:55:56,286 - INFO - Iteration 20: Program f0e1c892-7671-44da-9ab9-30f76eb5c3de (parent: 3a850482-516c-4aa1-ad8d-96c92ecd96b3) completed in 254.84s
+2026-09-13 22:55:56,286 - INFO - Metrics: score=0.6505, combined_score=0.6505, compile_success=1.0000, object_bytes=735216.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2323.2100, ns_per_run__mount_exit=2135.7400, ns_per_run__umount_entry=1970.1800, ns_per_run__umount_exit=1696.8300, runtime_score=0.3009
+2026-09-13 22:55:56,286 - INFO - Checkpoint interval reached at iteration 20
+2026-09-13 22:55:56,292 - INFO - Island Status:
+2026-09-13 22:55:56,293 - INFO -  * Island 0: 10 programs, best=0.6523, avg=0.6491, diversity=103.63, gen=10 (best: 2b9f35bc-78cb-4934-8463-42fefaa27dcb)
+2026-09-13 22:55:56,293 - INFO -    Island 1: 9 programs, best=0.6518, avg=0.5049, diversity=67.50, gen=10 (best: ecd60805-fa5d-40ae-87bc-8b59342f9ef0)
+2026-09-13 22:55:56,357 - INFO - Saved database with 19 programs to openevolve_output/bpf_mountsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_225556_20
+2026-09-13 22:55:56,358 - INFO - Saved best program at checkpoint 20 with metrics: score=0.6511, combined_score=0.6511, compile_success=1.0000, object_bytes=764664.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2309.8200, ns_per_run__mount_exit=1990.3200, ns_per_run__umount_entry=2007.9600, ns_per_run__umount_exit=1643.8200, runtime_score=0.3021
+2026-09-13 22:55:56,358 - INFO - Saved checkpoint at iteration 20 to openevolve_output/bpf_mountsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_225556_20
+2026-09-13 22:55:56,369 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:56:24,853 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:56:24,861 - INFO - Iteration 21: 2 witness(es) approved by developer; implementing
+2026-09-13 22:56:24,872 - INFO - Sampled model: gpt-5-mini
+2026-09-13 22:57:02,421 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 22:57:02,525 - INFO - Iteration 21: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpucdnjn6i.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (763968 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_5e0ljt4p/tmpucdnjn6i.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2315.22 ns/run (run_cnt 1059)
+[bpf_eval]   mount_exit: 2162.44 ns/run (run_cnt 1059)
+[bpf_eval]   umount_entry: 2007.95 ns/run (run_cnt 1307)
+[bpf_eval]   umount_exit: 1663.02 ns/run (run_cnt 1307)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6508  (runtime_success=1.0, runtime_score=0.3016, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 23:00:37,161 - INFO - Evaluated program efdc4afc-dd40-4a19-9b15-83ab776e8d4f in 214.64s: score=0.6508, combined_score=0.6508, compile_success=1.0000, object_bytes=763968.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2315.2200, ns_per_run__mount_exit=2162.4400, ns_per_run__umount_entry=2007.9500, ns_per_run__umount_exit=1663.0200, runtime_score=0.3016
+2026-09-13 23:00:37,165 - INFO - Iteration 21: Program efdc4afc-dd40-4a19-9b15-83ab776e8d4f (parent: 8ee04127-c758-4a61-94f6-34234bee0615) completed in 252.29s
+2026-09-13 23:00:37,165 - INFO - Metrics: score=0.6508, combined_score=0.6508, compile_success=1.0000, object_bytes=763968.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2315.2200, ns_per_run__mount_exit=2162.4400, ns_per_run__umount_entry=2007.9500, ns_per_run__umount_exit=1663.0200, runtime_score=0.3016
+2026-09-13 23:00:37,175 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:01:03,386 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:01:03,396 - INFO - Iteration 22: 2 witness(es) approved by developer; implementing
+2026-09-13 23:01:03,406 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:01:46,058 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:01:46,146 - INFO - Iteration 22: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpc9er1d7l.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (764168 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_gm1mvky0/tmpc9er1d7l.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2333.57 ns/run (run_cnt 1061)
+[bpf_eval]   mount_exit: 2064.03 ns/run (run_cnt 1061)
+[bpf_eval]   umount_entry: 1935.46 ns/run (run_cnt 1308)
+[bpf_eval]   umount_exit: 1608.24 ns/run (run_cnt 1308)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6500  (runtime_success=1.0, runtime_score=0.3000, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 23:05:21,770 - INFO - Evaluated program 87bd53c6-4245-4dc9-8b6d-4dc6cc6c1fc8 in 215.62s: score=0.6500, combined_score=0.6500, compile_success=1.0000, object_bytes=764168.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2333.5700, ns_per_run__mount_exit=2064.0300, ns_per_run__umount_entry=1935.4600, ns_per_run__umount_exit=1608.2400, runtime_score=0.3000
+2026-09-13 23:05:21,774 - INFO - Iteration 22: Program 87bd53c6-4245-4dc9-8b6d-4dc6cc6c1fc8 (parent: 2ed0798d-ad3a-4981-969b-ac232bf6f9b4) completed in 258.37s
+2026-09-13 23:05:21,774 - INFO - Metrics: score=0.6500, combined_score=0.6500, compile_success=1.0000, object_bytes=764168.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2333.5700, ns_per_run__mount_exit=2064.0300, ns_per_run__umount_entry=1935.4600, ns_per_run__umount_exit=1608.2400, runtime_score=0.3000
+2026-09-13 23:05:21,784 - INFO - Sampled model: gpt-5-nano
+2026-09-13 23:06:07,975 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:06:07,983 - INFO - Iteration 23: 1 witness(es) approved by developer; implementing
+2026-09-13 23:06:07,995 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:06:42,730 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:06:42,820 - INFO - Iteration 23: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpmeqlsk95.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (732320 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: NOT equivalent [witness_error]  assumption A1: path 'original.ctx.target_pid': no context field 'target_pid' for this program type. Known fields: ['common_flags', 'common_pid', 'common_preempt_count', 'common_type', 'remaining_8']
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 23:07:50,611 - INFO - Evaluated program c674f973-ee76-4364-acbc-fd4e814bc45f in 67.79s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=732320.0000, semantic_equivalent=0.0000
+2026-09-13 23:07:50,614 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 4, 'semantic_equivalent': 0}
+2026-09-13 23:07:50,614 - INFO - Iteration 23: Program c674f973-ee76-4364-acbc-fd4e814bc45f (parent: 3e223537-eb5c-48e6-8970-7b6ca3868142) completed in 102.62s
+2026-09-13 23:07:50,614 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=732320.0000, semantic_equivalent=0.0000
+2026-09-13 23:07:50,620 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:08:13,268 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:08:13,278 - INFO - Iteration 24: 1 witness(es) approved by developer; implementing
+2026-09-13 23:08:13,289 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:08:54,237 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:08:54,324 - INFO - Iteration 24: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp_bahrjq7.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735216 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_l04gyy11/tmp_bahrjq7.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2319.96 ns/run (run_cnt 1060)
+[bpf_eval]   mount_exit: 2157.14 ns/run (run_cnt 1060)
+[bpf_eval]   umount_entry: 1961.78 ns/run (run_cnt 1308)
+[bpf_eval]   umount_exit: 1705.16 ns/run (run_cnt 1308)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6506  (runtime_success=1.0, runtime_score=0.3012, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 23:12:41,246 - INFO - Evaluated program f2cb9b07-e11f-4b1e-ad0e-7cfc8e909ff9 in 226.92s: score=0.6506, combined_score=0.6506, compile_success=1.0000, object_bytes=735216.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2319.9600, ns_per_run__mount_exit=2157.1400, ns_per_run__umount_entry=1961.7800, ns_per_run__umount_exit=1705.1600, runtime_score=0.3012
+2026-09-13 23:12:41,250 - INFO - Iteration 24: Program f2cb9b07-e11f-4b1e-ad0e-7cfc8e909ff9 (parent: 3a850482-516c-4aa1-ad8d-96c92ecd96b3) completed in 267.96s
+2026-09-13 23:12:41,251 - INFO - Metrics: score=0.6506, combined_score=0.6506, compile_success=1.0000, object_bytes=735216.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2319.9600, ns_per_run__mount_exit=2157.1400, ns_per_run__umount_entry=1961.7800, ns_per_run__umount_exit=1705.1600, runtime_score=0.3012
+2026-09-13 23:12:41,260 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:12:55,662 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:12:55,699 - INFO - Iteration 25: no transformation witnesses found in proposal; retrying with feedback
+2026-09-13 23:12:55,712 - INFO - Sampled model: gpt-5-nano
+2026-09-13 23:13:57,509 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:13:57,522 - INFO - Iteration 26: 2 witness(es) approved by developer; implementing
+2026-09-13 23:13:57,533 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:14:33,056 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmptu_q4aaq.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (764808 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=no
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_jjrkic5r/tmptu_q4aaq.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2421.23 ns/run (run_cnt 1059)
+[bpf_eval]   mount_exit: 2041.26 ns/run (run_cnt 1059)
+[bpf_eval]   umount_entry: 1928.91 ns/run (run_cnt 1301)
+[bpf_eval]   umount_exit: 1555.54 ns/run (run_cnt 1301)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6461  (runtime_success=1.0, runtime_score=0.2923, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 23:18:11,682 - INFO - Evaluated program 20255eb0-1f7c-45c0-b23d-583601aa54ff in 218.62s: score=0.6461, combined_score=0.6461, compile_success=1.0000, object_bytes=764808.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2421.2300, ns_per_run__mount_exit=2041.2600, ns_per_run__umount_entry=1928.9100, ns_per_run__umount_exit=1555.5400, runtime_score=0.2923
+2026-09-13 23:18:11,687 - INFO - Iteration 26: Program 20255eb0-1f7c-45c0-b23d-583601aa54ff (parent: 2b9f35bc-78cb-4934-8463-42fefaa27dcb) completed in 254.15s
+2026-09-13 23:18:11,688 - INFO - Metrics: score=0.6461, combined_score=0.6461, compile_success=1.0000, object_bytes=764808.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2421.2300, ns_per_run__mount_exit=2041.2600, ns_per_run__umount_entry=1928.9100, ns_per_run__umount_exit=1555.5400, runtime_score=0.2923
+2026-09-13 23:18:11,699 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:18:43,794 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:18:43,802 - INFO - Iteration 27: 2 witness(es) approved by developer; implementing
+2026-09-13 23:18:43,815 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:19:16,583 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:19:16,671 - INFO - Iteration 27: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpou2sr38b.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (764112 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_dabn0wkd/tmpou2sr38b.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2349.09 ns/run (run_cnt 1058)
+[bpf_eval]   mount_exit: 2169.2 ns/run (run_cnt 1058)
+[bpf_eval]   umount_entry: 1934.21 ns/run (run_cnt 1302)
+[bpf_eval]   umount_exit: 1680.94 ns/run (run_cnt 1302)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6493  (runtime_success=1.0, runtime_score=0.2986, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 23:23:00,242 - INFO - Evaluated program 475277f5-5d24-4943-b9d6-15f0c0a8a64f in 223.57s: score=0.6493, combined_score=0.6493, compile_success=1.0000, object_bytes=764112.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2349.0900, ns_per_run__mount_exit=2169.2000, ns_per_run__umount_entry=1934.2100, ns_per_run__umount_exit=1680.9400, runtime_score=0.2986
+2026-09-13 23:23:00,248 - INFO - Iteration 27: Program 475277f5-5d24-4943-b9d6-15f0c0a8a64f (parent: 929f9a43-4db2-4e83-b193-76fd354ce497) completed in 256.43s
+2026-09-13 23:23:00,248 - INFO - Metrics: score=0.6493, combined_score=0.6493, compile_success=1.0000, object_bytes=764112.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2349.0900, ns_per_run__mount_exit=2169.2000, ns_per_run__umount_entry=1934.2100, ns_per_run__umount_exit=1680.9400, runtime_score=0.2986
+2026-09-13 23:23:00,262 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:23:20,081 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:23:20,089 - INFO - Iteration 28: 1 witness(es) approved by developer; implementing
+2026-09-13 23:23:20,102 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:24:12,308 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:24:12,395 - INFO - Iteration 28: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpfoumvr9g.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (764168 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_u5j0judm/tmpfoumvr9g.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+2026-09-13 23:27:50,094 - ERROR - ⏰ Iteration 28 implementation timed out after 270s (evaluator timeout: 240s + 30s buffer). Canceling future and continuing with next iteration.
+[bpf_eval]   mount_entry: 2342.06 ns/run (run_cnt 1058)
+[bpf_eval]   mount_exit: 2129.5 ns/run (run_cnt 1058)
+[bpf_eval]   umount_entry: 2002.63 ns/run (run_cnt 1296)
+[bpf_eval]   umount_exit: 1657.08 ns/run (run_cnt 1296)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6496  (runtime_success=1.0, runtime_score=0.2992, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 23:27:54,950 - INFO - Evaluated program 03e672aa-d139-4e91-a0a0-b10f00430d12 in 222.55s: score=0.6496, combined_score=0.6496, compile_success=1.0000, object_bytes=764168.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2342.0600, ns_per_run__mount_exit=2129.5000, ns_per_run__umount_entry=2002.6300, ns_per_run__umount_exit=1657.0800, runtime_score=0.2992
+2026-09-13 23:27:54,956 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:28:17,608 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:28:17,618 - INFO - Iteration 29: 1 witness(es) approved by developer; implementing
+2026-09-13 23:28:17,630 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:28:51,484 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:28:51,573 - INFO - Iteration 29: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpz0y6ji2m.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (764112 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=.wit
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_8lyfkp3_/tmpz0y6ji2m.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2310.37 ns/run (run_cnt 1058)
+[bpf_eval]   mount_exit: 2230.58 ns/run (run_cnt 1058)
+[bpf_eval]   umount_entry: 1946.48 ns/run (run_cnt 1299)
+[bpf_eval]   umount_exit: 1618.95 ns/run (run_cnt 1299)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6510  (runtime_success=1.0, runtime_score=0.3021, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 23:32:28,725 - INFO - Evaluated program 097794aa-8c18-4745-ba8a-539ceea420e1 in 217.15s: score=0.6510, combined_score=0.6510, compile_success=1.0000, object_bytes=764112.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2310.3700, ns_per_run__mount_exit=2230.5800, ns_per_run__umount_entry=1946.4800, ns_per_run__umount_exit=1618.9500, runtime_score=0.3021
+2026-09-13 23:32:28,729 - INFO - Iteration 29: Program 097794aa-8c18-4745-ba8a-539ceea420e1 (parent: 3e223537-eb5c-48e6-8970-7b6ca3868142) completed in 251.10s
+2026-09-13 23:32:28,729 - INFO - Metrics: score=0.6510, combined_score=0.6510, compile_success=1.0000, object_bytes=764112.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2310.3700, ns_per_run__mount_exit=2230.5800, ns_per_run__umount_entry=1946.4800, ns_per_run__umount_exit=1618.9500, runtime_score=0.3021
+2026-09-13 23:32:28,740 - INFO - Sampled model: gpt-5-nano
+2026-09-13 23:33:19,367 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 23:33:19,378 - INFO - Iteration 30: 3 witness(es) approved by developer; implementing
+2026-09-13 23:33:19,389 - INFO - Sampled model: gpt-5-mini
+2026-09-13 23:33:50,685 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp5subqvuq.bpf.c (tool=mountsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (735232 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['heap:array', 'args:hash'], witness=no
+[bpf_eval]   mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_entry: EQUIVALENT
+[bpf_eval]   mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   mount_exit: EQUIVALENT
+[bpf_eval]   umount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_entry: EQUIVALENT
+[bpf_eval]   umount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   umount_exit: EQUIVALENT
+[bpf_eval]   fsopen_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_entry: EQUIVALENT
+[bpf_eval]   fsopen_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsopen_exit: EQUIVALENT
+[bpf_eval]   fsconfig_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_entry: EQUIVALENT
+[bpf_eval]   fsconfig_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsconfig_exit: EQUIVALENT
+[bpf_eval]   fsmount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_entry: EQUIVALENT
+[bpf_eval]   fsmount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fsmount_exit: EQUIVALENT
+[bpf_eval]   move_mount_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_entry: EQUIVALENT
+[bpf_eval]   move_mount_exit: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   move_mount_exit: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = sudo ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_dnwuk783/tmp5subqvuq.bpf.o 60 mount_entry mount_exit umount_entry umount_exit fsopen_entry fsopen_exit fsconfig_entry fsconfig_exit fsmount_entry fsmount_exit move_mount_entry move_mount_exit
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   mount_entry: 2387.67 ns/run (run_cnt 1058)
+[bpf_eval]   mount_exit: 2153.77 ns/run (run_cnt 1058)
+[bpf_eval]   umount_entry: 2050.23 ns/run (run_cnt 1306)
+[bpf_eval]   umount_exit: 1714.43 ns/run (run_cnt 1306)
+[bpf_eval]   fsopen_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsopen_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsconfig_exit: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   fsmount_exit: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_entry: None ns/run (run_cnt 0)
+[bpf_eval]   move_mount_exit: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6476  (runtime_success=1.0, runtime_score=0.2952, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 23:37:21,684 - INFO - Evaluated program edaef670-da93-41fa-be39-b66af0c7ea29 in 210.99s: score=0.6476, combined_score=0.6476, compile_success=1.0000, object_bytes=735232.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2387.6700, ns_per_run__mount_exit=2153.7700, ns_per_run__umount_entry=2050.2300, ns_per_run__umount_exit=1714.4300, runtime_score=0.2952
+2026-09-13 23:37:21,688 - INFO - Iteration 30: Program edaef670-da93-41fa-be39-b66af0c7ea29 (parent: f0e1c892-7671-44da-9ab9-30f76eb5c3de) completed in 242.30s
+2026-09-13 23:37:21,688 - INFO - Metrics: score=0.6476, combined_score=0.6476, compile_success=1.0000, object_bytes=735232.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2387.6700, ns_per_run__mount_exit=2153.7700, ns_per_run__umount_entry=2050.2300, ns_per_run__umount_exit=1714.4300, runtime_score=0.2952
+2026-09-13 23:37:21,688 - INFO - Checkpoint interval reached at iteration 30
+2026-09-13 23:37:21,695 - INFO - Island Status:
+2026-09-13 23:37:21,695 - INFO -  * Island 0: 14 programs, best=0.6523, avg=0.6030, diversity=141.03, gen=14 (best: 2b9f35bc-78cb-4934-8463-42fefaa27dcb)
+2026-09-13 23:37:21,695 - INFO -    Island 1: 13 programs, best=0.6518, avg=0.5491, diversity=52.30, gen=14 (best: ecd60805-fa5d-40ae-87bc-8b59342f9ef0)
+2026-09-13 23:37:21,775 - INFO - Saved database with 27 programs to openevolve_output/bpf_mountsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_233721_30
+2026-09-13 23:37:21,775 - INFO - Saved best program at checkpoint 30 with metrics: score=0.6511, combined_score=0.6511, compile_success=1.0000, object_bytes=764664.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2309.8200, ns_per_run__mount_exit=1990.3200, ns_per_run__umount_entry=2007.9600, ns_per_run__umount_exit=1643.8200, runtime_score=0.3021
+2026-09-13 23:37:21,775 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_mountsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_233721_30
+2026-09-13 23:37:21,775 - INFO - ✅ Evolution completed - Maximum iterations reached
+2026-09-13 23:37:21,818 - INFO - Saved database with 27 programs to openevolve_output/bpf_mountsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_233721_30
+2026-09-13 23:37:21,819 - INFO - Saved best program at checkpoint 30 with metrics: score=0.6511, combined_score=0.6511, compile_success=1.0000, object_bytes=764664.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2309.8200, ns_per_run__mount_exit=1990.3200, ns_per_run__umount_entry=2007.9600, ns_per_run__umount_exit=1643.8200, runtime_score=0.3021
+2026-09-13 23:37:21,819 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_mountsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_233721_30
+2026-09-13 23:37:21,819 - INFO - Received signal 15, initiating graceful shutdown...
+2026-09-13 23:37:21,819 - INFO - Graceful shutdown requested...
+2026-09-13 23:37:21,835 - INFO - Stopped process pool
+2026-09-13 23:37:21,835 - INFO - Using tracked best program: 2b9f35bc-78cb-4934-8463-42fefaa27dcb
+2026-09-13 23:37:21,835 - INFO - Evolution complete. Best program has metrics: score=0.6511, combined_score=0.6511, compile_success=1.0000, object_bytes=764664.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__mount_entry=2309.8200, ns_per_run__mount_exit=1990.3200, ns_per_run__umount_entry=2007.9600, ns_per_run__umount_exit=1643.8200, runtime_score=0.3021
+2026-09-13 23:37:21,836 - INFO - Saved best program to openevolve_output/bpf_mountsnoop_verify_autoapprove/best/best_program.c with program info to openevolve_output/bpf_mountsnoop_verify_autoapprove/best/best_program_info.json
+
+Evolution complete!
+Best program metrics:
+  score: 0.6511
+  combined_score: 0.6511
+  compile_success: 1.0000
+  object_bytes: 764664.0000
+  semantic_equivalent: 1.0000
+  runtime_success: 1.0000
+  ns_per_run__mount_entry: 2309.8200
+  ns_per_run__mount_exit: 1990.3200
+  ns_per_run__umount_entry: 2007.9600
+  ns_per_run__umount_exit: 1643.8200
+  runtime_score: 0.3021
+
+Per-iteration ns/run:
+  iter   0 (original): mount_entry=2429.04  mount_exit=2019.94  umount_entry=2011.18  umount_exit=1761.62
+  iter   1: mount_entry=2336.17  mount_exit=2043.06  umount_entry=2007.57  umount_exit=1701.32
+  iter   2: mount_entry=2293.10  mount_exit=2188.33  umount_entry=1961.77  umount_exit=1646.85
+  iter   3: mount_entry=2383.85  mount_exit=2033.79  umount_entry=1947.68  umount_exit=1612.52
+  iter   4: N/A (compile failed)
+  iter   7: mount_entry=2339.96  mount_exit=2213.09  umount_entry=1961.55  umount_exit=1725.29
+  iter   8: mount_entry=2314.34  mount_exit=2196.07  umount_entry=1984.05  umount_exit=1763.35
+  iter   9: mount_entry=2309.82  mount_exit=1990.32  umount_entry=2007.96  umount_exit=1643.82
+  iter  10: mount_entry=2376.66  mount_exit=2060.99  umount_entry=1971.38  umount_exit=1675.88
+  iter  11: mount_entry=2303.09  mount_exit=2120.93  umount_entry=1982.36  umount_exit=1671.09
+  iter  12: mount_entry=2453.85  mount_exit=2167.77  umount_entry=2041.36  umount_exit=1713.68
+  iter  13: mount_entry=2428.51  mount_exit=2238.82  umount_entry=2023.80  umount_exit=1651.69
+  iter  14: N/A (compile failed)
+  iter  15: mount_entry=2379.75  mount_exit=2231.95  umount_entry=1956.35  umount_exit=1684.67
+  iter  16: mount_entry=2343.28  mount_exit=2192.76  umount_entry=1931.81  umount_exit=1747.25
+  iter  17: mount_entry=2282.32  mount_exit=2161.95  umount_entry=1917.07  umount_exit=1617.07
+  iter  18: mount_entry=2366.77  mount_exit=2106.58  umount_entry=1981.64  umount_exit=1646.54
+  iter  19: mount_entry=2351.32  mount_exit=2080.17  umount_entry=1973.93  umount_exit=1613.98
+  iter  20: mount_entry=2323.21  mount_exit=2135.74  umount_entry=1970.18  umount_exit=1696.83
+  iter  21: mount_entry=2315.22  mount_exit=2162.44  umount_entry=2007.95  umount_exit=1663.02
+  iter  22: mount_entry=2333.57  mount_exit=2064.03  umount_entry=1935.46  umount_exit=1608.24
+  iter  23: N/A (not equivalent)
+  iter  24: mount_entry=2319.96  mount_exit=2157.14  umount_entry=1961.78  umount_exit=1705.16
+  iter  26: mount_entry=2421.23  mount_exit=2041.26  umount_entry=1928.91  umount_exit=1555.54
+  iter  27: mount_entry=2349.09  mount_exit=2169.20  umount_entry=1934.21  umount_exit=1680.94
+  iter  29: mount_entry=2310.37  mount_exit=2230.58  umount_entry=1946.48  umount_exit=1618.95
+  iter  30: mount_entry=2387.67  mount_exit=2153.77  umount_entry=2050.23  umount_exit=1714.43
+
+Best program's optimization path (3 step(s) from its earliest known ancestor):
+  iter 1:
+    - Silence the -Wswitch warning by handling OP_MIN in the exit-path switch
+    - Replace a potentially extra-cost memcpy with a direct assignment for the sys_arg union
+    - Reduce memory footprint of event buffers by shrinking string/data field sizes
+  iter 3:
+    - Replace the multi-case switch in probe_entry with a single range check and direct union assignment to reduce branching.
+    - Mark probe_entry and probe_exit as always-inline to let the compiler inline them into the tracepoint handlers (removing call overhead).
+  iter 9:
+    - Unconditionally copy the union payload into arg.sys in probe_entry, removing the per-op branch that gates the copy; this reduces branch overhead and keeps the same final map state and return value.
+    - Binding changes to reflect that the entire arg struct is kept equivalent (no semantic change beyond the branch removal)
+    - Observation block for the single, safe, equivalence-preserving change
+
+LLM token usage (this run):
+  prompt:     1,184,954
+  completion: 211,259
+  total:      1,396,213
+
+Latest checkpoint saved at: openevolve_output/bpf_mountsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_233721_30
+To resume, use: --checkpoint openevolve_output/bpf_mountsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_233721_30

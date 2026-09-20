@@ -1,0 +1,1064 @@
+2026-09-13 06:20:43,713 - INFO - Logging to openevolve_output/bpf_runqslower_verify_autoapprove/logs/openevolve_20260913_062043.log
+2026-09-13 06:20:43,715 - INFO - Interactive review mode enabled. Queue dir: /users/xiang95/learn_heimdall/heimdall/openevolve/openevolve_output/bpf_runqslower_verify_autoapprove/review_queue
+2026-09-13 06:20:43,723 - INFO - Set random seed to 42 for reproducibility
+2026-09-13 06:20:43,759 - INFO - Initialized OpenAI LLM with model: gpt-5-mini
+2026-09-13 06:20:43,770 - INFO - Initialized OpenAI LLM with model: gpt-5-nano
+2026-09-13 06:20:43,770 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 06:20:43,790 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 06:20:43,792 - INFO - Initialized prompt sampler
+2026-09-13 06:20:43,794 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 06:20:43,794 - INFO - Initialized program database with 0 programs
+2026-09-13 06:20:43,797 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 06:20:43,797 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 06:20:43,797 - INFO - Initialized OpenEvolve with /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/runqslower.bpf.c
+2026-09-13 06:20:43,797 - INFO - Adding initial program to database
+[bpf_eval] === evaluate tmpczb6f7o2.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (727192 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=no
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: EQUIVALENT
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: EQUIVALENT
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: EQUIVALENT
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = python3 ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_28jizesj/tmpczb6f7o2.o 60 sched_wakeup sched_wakeup_new sched_switch handle_sched_wakeup handle_sched_wakeup_new handle_sched_switch
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   sched_wakeup: 492.1 ns/run (run_cnt 181155)
+[bpf_eval]   sched_wakeup_new: 1036.91 ns/run (run_cnt 35)
+[bpf_eval]   sched_switch: 852.39 ns/run (run_cnt 302610)
+[bpf_eval]   handle_sched_wakeup: 440.11 ns/run (run_cnt 181155)
+[bpf_eval]   handle_sched_wakeup_new: 792.29 ns/run (run_cnt 35)
+[bpf_eval]   handle_sched_switch: 342.8 ns/run (run_cnt 302608)
+[bpf_eval] benchmark: OK (6/6 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7455  (runtime_success=1.0, runtime_score=0.4909, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 06:22:41,587 - INFO - Evaluated program fb0541ac-90a4-4ea0-b671-4ff6d4459f57 in 117.79s: score=0.7455, combined_score=0.7455, compile_success=1.0000, object_bytes=727192.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=492.1000, ns_per_run__sched_wakeup_new=1036.9100, ns_per_run__sched_switch=852.3900, ns_per_run__handle_sched_wakeup=440.1100, ns_per_run__handle_sched_wakeup_new=792.2900, ns_per_run__handle_sched_switch=342.8000, runtime_score=0.4909
+2026-09-13 06:22:41,587 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 2}
+2026-09-13 06:22:41,587 - INFO - Stored artifacts for initial program
+2026-09-13 06:22:41,589 - INFO - Initialized process parallel controller with 1 workers
+2026-09-13 06:22:41,589 - INFO - Set max None tasks per child
+2026-09-13 06:22:41,590 - INFO - Started process pool with 1 processes
+2026-09-13 06:22:41,590 - INFO - Using island-based evolution with 2 islands
+2026-09-13 06:22:41,590 - INFO - Island Status:
+2026-09-13 06:22:41,590 - INFO -  * Island 0: 1 programs, best=0.7455, avg=0.7455, diversity=0.00, gen=0 (best: fb0541ac-90a4-4ea0-b671-4ff6d4459f57)
+2026-09-13 06:22:41,590 - INFO -    Island 1: 0 programs, best=0.0000, avg=0.0000, diversity=0.00, gen=0
+2026-09-13 06:22:41,590 - INFO - Starting interactive (human-reviewed) evolution from iteration 1 for 30 iterations (total: 31)
+2026-09-13 06:22:41,619 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 06:22:41,642 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 06:22:41,643 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 06:22:41,645 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 06:22:41,645 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 06:22:41,649 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:23:30,929 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+; tp line: 3 position: 36
+; pre-transformation line: 8 position: 31
+; post-transformation line: 9 position: 32
+; tp line: 11 position: 40
+; pre-transformation line: 16 position: 32
+; post-transformation line: 17 position: 32
+2026-09-13 06:23:30,978 - INFO - Iteration 1: 2 witness(es) approved by developer; implementing
+2026-09-13 06:23:30,980 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:23:46,613 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp8czg70i6.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (727160 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=no
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:24:28,611 - INFO - Evaluated program e7feac16-f9d9-4de7-85ca-3ee981ac03a7 in 41.99s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727160.0000, semantic_equivalent=0.0000
+2026-09-13 06:24:28,613 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 0}
+2026-09-13 06:24:28,614 - INFO - Iteration 1: Program e7feac16-f9d9-4de7-85ca-3ee981ac03a7 (parent: fb0541ac-90a4-4ea0-b671-4ff6d4459f57) completed in 57.63s
+2026-09-13 06:24:28,614 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727160.0000, semantic_equivalent=0.0000
+2026-09-13 06:24:28,616 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:25:02,551 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:25:02,555 - INFO - Iteration 2: 3 witness(es) approved by developer; implementing
+2026-09-13 06:25:02,557 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:25:23,502 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:25:23,578 - INFO - Iteration 2: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmphdpeac0v.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (727136 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:26:12,117 - INFO - Evaluated program c1946c97-b286-4eaa-bb58-648b4b29f75e in 48.54s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727136.0000, semantic_equivalent=0.0000
+2026-09-13 06:26:12,119 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 2, 'semantic_equivalent': 0}
+2026-09-13 06:26:12,119 - INFO - Iteration 2: Program c1946c97-b286-4eaa-bb58-648b4b29f75e (parent: e7feac16-f9d9-4de7-85ca-3ee981ac03a7) completed in 69.56s
+2026-09-13 06:26:12,119 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727136.0000, semantic_equivalent=0.0000
+2026-09-13 06:26:12,121 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:26:56,014 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:26:56,017 - INFO - Iteration 3: 3 witness(es) approved by developer; implementing
+2026-09-13 06:26:56,019 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:27:15,431 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:27:15,511 - INFO - Iteration 3: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp3glm3fie.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726944 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:27:57,791 - INFO - Evaluated program 29181aeb-e63d-4f39-b776-295adf44fa43 in 42.28s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726944.0000, semantic_equivalent=0.0000
+2026-09-13 06:27:57,793 - INFO - Iteration 3: Program 29181aeb-e63d-4f39-b776-295adf44fa43 (parent: e7feac16-f9d9-4de7-85ca-3ee981ac03a7) completed in 61.77s
+2026-09-13 06:27:57,793 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726944.0000, semantic_equivalent=0.0000
+2026-09-13 06:27:57,795 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:28:30,735 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:28:30,739 - INFO - Iteration 4: 1 witness(es) approved by developer; implementing
+2026-09-13 06:28:30,740 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:28:48,435 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:28:48,515 - INFO - Iteration 4: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpn06yla9q.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726792 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:29:30,944 - INFO - Evaluated program ef382dbb-ef23-4abf-9d8d-cc261485b639 in 42.43s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726792.0000, semantic_equivalent=0.0000
+2026-09-13 06:29:30,946 - INFO - Iteration 4: Program ef382dbb-ef23-4abf-9d8d-cc261485b639 (parent: c1946c97-b286-4eaa-bb58-648b4b29f75e) completed in 60.20s
+2026-09-13 06:29:30,946 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726792.0000, semantic_equivalent=0.0000
+2026-09-13 06:29:30,949 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:29:57,615 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:29:57,618 - INFO - Iteration 5: 1 witness(es) approved by developer; implementing
+2026-09-13 06:29:57,620 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:30:24,470 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:30:24,553 - INFO - Iteration 5: combined .wit built, syntax ok=False
+2026-09-13 06:30:24,553 - INFO - witness_dsl: /tmp/openevolve_bpf_wit_j8836nmj/d7c3fc1f-29ff-4fc7-a52b-79abaa2a53aa.wit:3:23: error: unexpected character '*'
+  |
+3 |     original.start[:].* = optimized.start[:].*;
+  |                       ^
+/tmp/openevolve_bpf_wit_j8836nmj/d7c3fc1f-29ff-4fc7-a52b-79abaa2a53aa.wit: FAILED (syntax error)
+[bpf_eval] === evaluate tmp9tcb_vk1.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726920 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=no
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:31:06,966 - INFO - Evaluated program d7c3fc1f-29ff-4fc7-a52b-79abaa2a53aa in 42.41s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726920.0000, semantic_equivalent=0.0000
+2026-09-13 06:31:06,968 - INFO - Iteration 5: Program d7c3fc1f-29ff-4fc7-a52b-79abaa2a53aa (parent: 29181aeb-e63d-4f39-b776-295adf44fa43) completed in 69.35s
+2026-09-13 06:31:06,968 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726920.0000, semantic_equivalent=0.0000
+2026-09-13 06:31:06,970 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:31:36,363 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:31:36,366 - INFO - Iteration 6: 2 witness(es) approved by developer; implementing
+2026-09-13 06:31:36,368 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:32:15,268 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:32:15,345 - INFO - Iteration 6: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpkoe9dhj7.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (731744 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:32:56,532 - INFO - Evaluated program b40cb9d5-2ffc-4f22-9483-bccc7cd24c3e in 41.19s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=731744.0000, semantic_equivalent=0.0000
+2026-09-13 06:32:56,534 - INFO - Iteration 6: Program b40cb9d5-2ffc-4f22-9483-bccc7cd24c3e (parent: c1946c97-b286-4eaa-bb58-648b4b29f75e) completed in 80.16s
+2026-09-13 06:32:56,534 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=731744.0000, semantic_equivalent=0.0000
+2026-09-13 06:32:56,537 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:33:43,012 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:33:43,016 - INFO - Iteration 7: 2 witness(es) approved by developer; implementing
+2026-09-13 06:33:43,018 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:34:13,020 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpd76qrw7y.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726920 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=no
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:34:55,137 - INFO - Evaluated program 448e50a9-32d8-4eab-a376-55ec30c3e073 in 42.11s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726920.0000, semantic_equivalent=0.0000
+2026-09-13 06:34:55,139 - INFO - Iteration 7: Program 448e50a9-32d8-4eab-a376-55ec30c3e073 (parent: e7feac16-f9d9-4de7-85ca-3ee981ac03a7) completed in 72.12s
+2026-09-13 06:34:55,139 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726920.0000, semantic_equivalent=0.0000
+2026-09-13 06:34:55,142 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:35:31,736 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:35:31,740 - INFO - Iteration 8: 2 witness(es) approved by developer; implementing
+2026-09-13 06:35:31,742 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:35:47,418 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:35:47,496 - INFO - Iteration 8: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpi2xkbcy0.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (729728 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:36:29,519 - INFO - Evaluated program f2d264fe-5047-4428-949d-7356c22b6ae7 in 42.02s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=729728.0000, semantic_equivalent=0.0000
+2026-09-13 06:36:29,521 - INFO - Iteration 8: Program f2d264fe-5047-4428-949d-7356c22b6ae7 (parent: b40cb9d5-2ffc-4f22-9483-bccc7cd24c3e) completed in 57.78s
+2026-09-13 06:36:29,522 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=729728.0000, semantic_equivalent=0.0000
+2026-09-13 06:36:29,524 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:37:02,624 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:37:02,627 - INFO - Iteration 9: 1 witness(es) approved by developer; implementing
+2026-09-13 06:37:02,630 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:37:23,137 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpplb8ysub.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726800 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=no
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:38:05,823 - INFO - Evaluated program 17844d18-463f-4ff1-9699-7176c5cfe353 in 42.68s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726800.0000, semantic_equivalent=0.0000
+2026-09-13 06:38:05,825 - INFO - Iteration 9: Program 17844d18-463f-4ff1-9699-7176c5cfe353 (parent: d7c3fc1f-29ff-4fc7-a52b-79abaa2a53aa) completed in 63.19s
+2026-09-13 06:38:05,825 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726800.0000, semantic_equivalent=0.0000
+2026-09-13 06:38:05,828 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:38:40,434 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:38:40,437 - INFO - Iteration 10: 2 witness(es) approved by developer; implementing
+2026-09-13 06:38:40,440 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:38:54,838 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:38:54,915 - INFO - Iteration 10: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpf1_3uzzh.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (729728 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:39:37,498 - INFO - Evaluated program 5e4cd1ff-cb09-4a06-8188-260b70620ec4 in 42.58s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=729728.0000, semantic_equivalent=0.0000
+2026-09-13 06:39:37,500 - INFO - Iteration 10: Program 5e4cd1ff-cb09-4a06-8188-260b70620ec4 (parent: b40cb9d5-2ffc-4f22-9483-bccc7cd24c3e) completed in 57.06s
+2026-09-13 06:39:37,500 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=729728.0000, semantic_equivalent=0.0000
+2026-09-13 06:39:37,501 - INFO - Checkpoint interval reached at iteration 10
+2026-09-13 06:39:37,502 - INFO - Island Status:
+2026-09-13 06:39:37,502 - INFO -  * Island 0: 6 programs, best=0.7455, avg=0.1242, diversity=31.22, gen=5 (best: fb0541ac-90a4-4ea0-b671-4ff6d4459f57)
+2026-09-13 06:39:37,502 - INFO -    Island 1: 5 programs, best=0.0000, avg=0.0000, diversity=78.32, gen=5 (best: c1946c97-b286-4eaa-bb58-648b4b29f75e)
+2026-09-13 06:39:37,511 - INFO - Saved database with 11 programs to openevolve_output/bpf_runqslower_verify_autoapprove/checkpoints/checkpoint_20260913_063937_10
+2026-09-13 06:39:37,511 - INFO - Saved best program at checkpoint 10 with metrics: score=0.7455, combined_score=0.7455, compile_success=1.0000, object_bytes=727192.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=492.1000, ns_per_run__sched_wakeup_new=1036.9100, ns_per_run__sched_switch=852.3900, ns_per_run__handle_sched_wakeup=440.1100, ns_per_run__handle_sched_wakeup_new=792.2900, ns_per_run__handle_sched_switch=342.8000, runtime_score=0.4909
+2026-09-13 06:39:37,511 - INFO - Saved checkpoint at iteration 10 to openevolve_output/bpf_runqslower_verify_autoapprove/checkpoints/checkpoint_20260913_063937_10
+2026-09-13 06:39:37,514 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:40:16,492 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:40:16,496 - INFO - Iteration 11: 1 witness(es) approved by developer; implementing
+2026-09-13 06:40:16,499 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:40:35,538 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:40:35,616 - INFO - Iteration 11: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpvs10t2pk.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726824 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:41:17,659 - INFO - Evaluated program 66f8508f-edce-4729-8b62-4303d24d886f in 42.04s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726824.0000, semantic_equivalent=0.0000
+2026-09-13 06:41:17,661 - INFO - Iteration 11: Program 66f8508f-edce-4729-8b62-4303d24d886f (parent: d7c3fc1f-29ff-4fc7-a52b-79abaa2a53aa) completed in 61.16s
+2026-09-13 06:41:17,662 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726824.0000, semantic_equivalent=0.0000
+2026-09-13 06:41:17,665 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:41:45,033 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:41:45,037 - INFO - Iteration 12: 1 witness(es) approved by developer; implementing
+2026-09-13 06:41:45,039 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:42:04,960 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:42:05,048 - INFO - Iteration 12: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpcl3_m27c.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (729600 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:42:47,255 - INFO - Evaluated program 1eb75e50-364c-43af-ac34-ca7873e7b7b0 in 42.21s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=729600.0000, semantic_equivalent=0.0000
+2026-09-13 06:42:47,257 - INFO - Iteration 12: Program 1eb75e50-364c-43af-ac34-ca7873e7b7b0 (parent: f2d264fe-5047-4428-949d-7356c22b6ae7) completed in 62.22s
+2026-09-13 06:42:47,257 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=729600.0000, semantic_equivalent=0.0000
+2026-09-13 06:42:47,260 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:43:07,958 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:43:07,962 - INFO - Iteration 13: 2 witness(es) approved by developer; implementing
+2026-09-13 06:43:07,965 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:43:36,161 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:43:36,237 - INFO - Iteration 13: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpv0f2t5s3.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (727088 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: EQUIVALENT
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: EQUIVALENT
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: EQUIVALENT
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:44:31,506 - INFO - Evaluated program fb395eed-eeab-44be-bc44-857d1edeb737 in 55.27s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727088.0000, semantic_equivalent=0.0000
+2026-09-13 06:44:31,509 - INFO - Iteration 13: Program fb395eed-eeab-44be-bc44-857d1edeb737 (parent: fb0541ac-90a4-4ea0-b671-4ff6d4459f57) completed in 83.54s
+2026-09-13 06:44:31,509 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727088.0000, semantic_equivalent=0.0000
+2026-09-13 06:44:31,512 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:45:30,837 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:45:30,840 - INFO - Iteration 14: 1 witness(es) approved by developer; implementing
+2026-09-13 06:45:30,843 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:46:21,856 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp995hyjyv.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (730776 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=no
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:47:08,630 - INFO - Evaluated program 81bd61b4-1925-4a51-a955-a0effa0573dd in 46.77s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=730776.0000, semantic_equivalent=0.0000
+2026-09-13 06:47:08,632 - INFO - Iteration 14: Program 81bd61b4-1925-4a51-a955-a0effa0573dd (parent: f2d264fe-5047-4428-949d-7356c22b6ae7) completed in 97.79s
+2026-09-13 06:47:08,632 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=730776.0000, semantic_equivalent=0.0000
+2026-09-13 06:47:08,635 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:47:47,979 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:47:47,987 - INFO - Iteration 15: 2 witness(es) approved by developer; implementing
+2026-09-13 06:47:47,994 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:48:12,605 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:48:12,691 - INFO - Iteration 15: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpve6ki3fr.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726968 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:48:58,870 - INFO - Evaluated program 98e76c5e-27da-49e7-a034-5a49d359ebb1 in 46.18s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726968.0000, semantic_equivalent=0.0000
+2026-09-13 06:48:58,873 - INFO - Iteration 15: Program 98e76c5e-27da-49e7-a034-5a49d359ebb1 (parent: 66f8508f-edce-4729-8b62-4303d24d886f) completed in 70.88s
+2026-09-13 06:48:58,873 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726968.0000, semantic_equivalent=0.0000
+2026-09-13 06:48:58,877 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:49:40,684 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:49:40,691 - INFO - Iteration 16: 2 witness(es) approved by developer; implementing
+2026-09-13 06:49:40,699 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:50:10,893 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:50:10,981 - INFO - Iteration 16: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpflgpfpf6.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (727928 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:50:57,106 - INFO - Evaluated program 86c8dfef-14b8-469d-9ad9-93d3f3832a06 in 46.12s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727928.0000, semantic_equivalent=0.0000
+2026-09-13 06:50:57,108 - INFO - Iteration 16: Program 86c8dfef-14b8-469d-9ad9-93d3f3832a06 (parent: 81bd61b4-1925-4a51-a955-a0effa0573dd) completed in 76.41s
+2026-09-13 06:50:57,109 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727928.0000, semantic_equivalent=0.0000
+2026-09-13 06:50:57,112 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:51:27,088 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:51:27,094 - INFO - Iteration 17: 2 witness(es) approved by developer; implementing
+2026-09-13 06:51:27,103 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:51:42,048 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:51:42,135 - INFO - Iteration 17: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpazo8xmsf.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726952 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: EQUIVALENT
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: EQUIVALENT
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: EQUIVALENT
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = python3 ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_266hy8zs/tmpazo8xmsf.bpf.o 60 sched_wakeup sched_wakeup_new sched_switch handle_sched_wakeup handle_sched_wakeup_new handle_sched_switch
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   sched_wakeup: 498.45 ns/run (run_cnt 173904)
+[bpf_eval]   sched_wakeup_new: 788.87 ns/run (run_cnt 15)
+[bpf_eval]   sched_switch: 835.08 ns/run (run_cnt 289307)
+[bpf_eval]   handle_sched_wakeup: 431.02 ns/run (run_cnt 173904)
+[bpf_eval]   handle_sched_wakeup_new: 567.53 ns/run (run_cnt 15)
+[bpf_eval]   handle_sched_switch: 378.39 ns/run (run_cnt 289307)
+[bpf_eval] benchmark: OK (6/6 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7725  (runtime_success=1.0, runtime_score=0.5449, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 06:53:42,942 - INFO - Evaluated program f0d7ae2f-642e-46e3-9043-acc44f3a1045 in 120.81s: score=0.7725, combined_score=0.7725, compile_success=1.0000, object_bytes=726952.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=498.4500, ns_per_run__sched_wakeup_new=788.8700, ns_per_run__sched_switch=835.0800, ns_per_run__handle_sched_wakeup=431.0200, ns_per_run__handle_sched_wakeup_new=567.5300, ns_per_run__handle_sched_switch=378.3900, runtime_score=0.5449
+2026-09-13 06:53:42,944 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 4}
+2026-09-13 06:53:42,945 - INFO - Iteration 17: Program f0d7ae2f-642e-46e3-9043-acc44f3a1045 (parent: fb0541ac-90a4-4ea0-b671-4ff6d4459f57) completed in 135.84s
+2026-09-13 06:53:42,945 - INFO - Metrics: score=0.7725, combined_score=0.7725, compile_success=1.0000, object_bytes=726952.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=498.4500, ns_per_run__sched_wakeup_new=788.8700, ns_per_run__sched_switch=835.0800, ns_per_run__handle_sched_wakeup=431.0200, ns_per_run__handle_sched_wakeup_new=567.5300, ns_per_run__handle_sched_switch=378.3900, runtime_score=0.5449
+2026-09-13 06:53:42,948 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:54:23,875 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:54:23,886 - INFO - Iteration 18: 2 witness(es) approved by developer; implementing
+2026-09-13 06:54:23,893 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:54:48,820 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:54:48,909 - INFO - Iteration 18: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpba5xu14u.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (720960 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:55:35,636 - INFO - Evaluated program 9c842783-9ed7-47ba-b9ff-ec92b1abe2d8 in 46.73s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=720960.0000, semantic_equivalent=0.0000
+2026-09-13 06:55:35,639 - INFO - Iteration 18: Program 9c842783-9ed7-47ba-b9ff-ec92b1abe2d8 (parent: 86c8dfef-14b8-469d-9ad9-93d3f3832a06) completed in 71.74s
+2026-09-13 06:55:35,639 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=720960.0000, semantic_equivalent=0.0000
+2026-09-13 06:55:35,642 - INFO - Sampled model: gpt-5-nano
+2026-09-13 06:56:32,425 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:56:32,586 - INFO - Iteration 19: 2 witness(es) approved by developer; implementing
+2026-09-13 06:56:32,592 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:57:10,013 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:57:10,101 - INFO - Iteration 19: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpk_h3fd74.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: /tmp/tmpk_h3fd74.bpf.c:144:47: error: use of undeclared identifier 'comp'; did you mean 'commp'?
+2026-09-13 06:57:11,120 - INFO - Evaluated program 012c1193-6232-4e7d-ac88-2624374948fe in 1.02s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 06:57:11,122 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 0, 'semantic_equivalent': 0}
+2026-09-13 06:57:11,122 - INFO - Iteration 19: Program 012c1193-6232-4e7d-ac88-2624374948fe (parent: 448e50a9-32d8-4eab-a376-55ec30c3e073) completed in 38.53s
+2026-09-13 06:57:11,122 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 06:57:11,126 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:57:40,204 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:57:40,210 - INFO - Iteration 20: 2 witness(es) approved by developer; implementing
+2026-09-13 06:57:40,219 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:58:01,773 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:58:01,861 - INFO - Iteration 20: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpv921qsn4.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (727056 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 06:58:48,034 - INFO - Evaluated program e386d358-330d-49a4-a4ce-e65bce33c4f2 in 46.17s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727056.0000, semantic_equivalent=0.0000
+2026-09-13 06:58:48,037 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 4, 'semantic_equivalent': 0}
+2026-09-13 06:58:48,037 - INFO - Iteration 20: Program e386d358-330d-49a4-a4ce-e65bce33c4f2 (parent: 448e50a9-32d8-4eab-a376-55ec30c3e073) completed in 67.82s
+2026-09-13 06:58:48,037 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727056.0000, semantic_equivalent=0.0000
+2026-09-13 06:58:48,038 - INFO - Checkpoint interval reached at iteration 20
+2026-09-13 06:58:48,039 - INFO - Island Status:
+2026-09-13 06:58:48,040 - INFO -  * Island 0: 11 programs, best=0.7725, avg=0.1380, diversity=85.87, gen=10 (best: fb0541ac-90a4-4ea0-b671-4ff6d4459f57)
+2026-09-13 06:58:48,040 - INFO -    Island 1: 10 programs, best=0.0000, avg=0.0000, diversity=834.12, gen=10 (best: c1946c97-b286-4eaa-bb58-648b4b29f75e)
+2026-09-13 06:58:48,065 - INFO - Saved database with 21 programs to openevolve_output/bpf_runqslower_verify_autoapprove/checkpoints/checkpoint_20260913_065848_20
+2026-09-13 06:58:48,065 - INFO - Saved best program at checkpoint 20 with metrics: score=0.7455, combined_score=0.7455, compile_success=1.0000, object_bytes=727192.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=492.1000, ns_per_run__sched_wakeup_new=1036.9100, ns_per_run__sched_switch=852.3900, ns_per_run__handle_sched_wakeup=440.1100, ns_per_run__handle_sched_wakeup_new=792.2900, ns_per_run__handle_sched_switch=342.8000, runtime_score=0.4909
+2026-09-13 06:58:48,065 - INFO - Saved checkpoint at iteration 20 to openevolve_output/bpf_runqslower_verify_autoapprove/checkpoints/checkpoint_20260913_065848_20
+2026-09-13 06:58:48,071 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:59:15,538 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:59:15,547 - INFO - Iteration 21: 2 witness(es) approved by developer; implementing
+2026-09-13 06:59:15,556 - INFO - Sampled model: gpt-5-mini
+2026-09-13 06:59:42,107 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 06:59:42,195 - INFO - Iteration 21: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpismecz_1.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726952 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: EQUIVALENT
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: EQUIVALENT
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: EQUIVALENT
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = python3 ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_ajdcjk4x/tmpismecz_1.bpf.o 60 sched_wakeup sched_wakeup_new sched_switch handle_sched_wakeup handle_sched_wakeup_new handle_sched_switch
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   sched_wakeup: 481.4 ns/run (run_cnt 174307)
+[bpf_eval]   sched_wakeup_new: 996.5 ns/run (run_cnt 30)
+[bpf_eval]   sched_switch: 816.41 ns/run (run_cnt 291203)
+[bpf_eval]   handle_sched_wakeup: 424.71 ns/run (run_cnt 174306)
+[bpf_eval]   handle_sched_wakeup_new: 723.37 ns/run (run_cnt 30)
+[bpf_eval]   handle_sched_switch: 388.15 ns/run (run_cnt 291201)
+[bpf_eval] benchmark: OK (6/6 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7504  (runtime_success=1.0, runtime_score=0.5009, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 07:01:43,871 - INFO - Evaluated program 17c58e7c-8e45-4a01-b136-ba87a3822604 in 121.68s: score=0.7504, combined_score=0.7504, compile_success=1.0000, object_bytes=726952.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=481.4000, ns_per_run__sched_wakeup_new=996.5000, ns_per_run__sched_switch=816.4100, ns_per_run__handle_sched_wakeup=424.7100, ns_per_run__handle_sched_wakeup_new=723.3700, ns_per_run__handle_sched_switch=388.1500, runtime_score=0.5009
+2026-09-13 07:01:43,873 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 4, 'semantic_equivalent': 4}
+2026-09-13 07:01:43,873 - INFO - Iteration 21: Program 17c58e7c-8e45-4a01-b136-ba87a3822604 (parent: fb0541ac-90a4-4ea0-b671-4ff6d4459f57) completed in 148.32s
+2026-09-13 07:01:43,873 - INFO - Metrics: score=0.7504, combined_score=0.7504, compile_success=1.0000, object_bytes=726952.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=481.4000, ns_per_run__sched_wakeup_new=996.5000, ns_per_run__sched_switch=816.4100, ns_per_run__handle_sched_wakeup=424.7100, ns_per_run__handle_sched_wakeup_new=723.3700, ns_per_run__handle_sched_switch=388.1500, runtime_score=0.5009
+2026-09-13 07:01:43,877 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:02:01,331 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:02:01,338 - INFO - Iteration 22: 1 witness(es) approved by developer; implementing
+2026-09-13 07:02:01,346 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:02:20,296 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:02:20,382 - INFO - Iteration 22: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpn5i5qr6_.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726800 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 07:03:05,505 - INFO - Evaluated program 030dc11d-c555-4dcc-acf7-c61c9f5d0c14 in 45.12s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726800.0000, semantic_equivalent=0.0000
+2026-09-13 07:03:05,508 - INFO - Iteration 22: Program 030dc11d-c555-4dcc-acf7-c61c9f5d0c14 (parent: c1946c97-b286-4eaa-bb58-648b4b29f75e) completed in 64.16s
+2026-09-13 07:03:05,508 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726800.0000, semantic_equivalent=0.0000
+2026-09-13 07:03:05,513 - INFO - Sampled model: gpt-5-nano
+2026-09-13 07:04:09,963 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:04:09,975 - INFO - Iteration 23: 4 witness(es) approved by developer; implementing
+2026-09-13 07:04:09,985 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:04:36,691 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp8tsx7uqq.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (731784 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=no
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: EQUIVALENT
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: EQUIVALENT
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: EQUIVALENT
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 07:05:37,404 - INFO - Evaluated program 40f561d1-5dbd-4c8a-849c-f23fd8702f08 in 60.71s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=731784.0000, semantic_equivalent=0.0000
+2026-09-13 07:05:37,408 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 4, 'semantic_equivalent': 0}
+2026-09-13 07:05:37,409 - INFO - Iteration 23: Program 40f561d1-5dbd-4c8a-849c-f23fd8702f08 (parent: f0d7ae2f-642e-46e3-9043-acc44f3a1045) completed in 87.42s
+2026-09-13 07:05:37,409 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=731784.0000, semantic_equivalent=0.0000
+2026-09-13 07:05:37,419 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:06:18,548 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:06:18,554 - INFO - Iteration 24: 1 witness(es) approved by developer; implementing
+2026-09-13 07:06:18,564 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:06:38,053 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:06:38,139 - INFO - Iteration 24: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpswyu60_i.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (726920 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 07:07:26,824 - INFO - Evaluated program 0ffa3be4-ea22-44f3-82b4-180c8abce6ae in 48.68s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726920.0000, semantic_equivalent=0.0000
+2026-09-13 07:07:26,828 - INFO - Iteration 24: Program 0ffa3be4-ea22-44f3-82b4-180c8abce6ae (parent: c1946c97-b286-4eaa-bb58-648b4b29f75e) completed in 68.26s
+2026-09-13 07:07:26,828 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=726920.0000, semantic_equivalent=0.0000
+2026-09-13 07:07:26,836 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:08:09,897 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:08:09,904 - INFO - Iteration 25: 2 witness(es) approved by developer; implementing
+2026-09-13 07:08:09,914 - INFO - Sampled model: gpt-5-nano
+2026-09-13 07:08:41,394 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:08:41,480 - INFO - Iteration 25: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpzdvgs26b.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (727152 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: EQUIVALENT
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: EQUIVALENT
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: EQUIVALENT
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = python3 ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_ac5nkayw/tmpzdvgs26b.bpf.o 60 sched_wakeup sched_wakeup_new sched_switch handle_sched_wakeup handle_sched_wakeup_new handle_sched_switch
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   sched_wakeup: 486.18 ns/run (run_cnt 175386)
+[bpf_eval]   sched_wakeup_new: 831.94 ns/run (run_cnt 16)
+[bpf_eval]   sched_switch: 835.66 ns/run (run_cnt 293631)
+[bpf_eval]   handle_sched_wakeup: 436.38 ns/run (run_cnt 175386)
+[bpf_eval]   handle_sched_wakeup_new: 615.88 ns/run (run_cnt 16)
+[bpf_eval]   handle_sched_switch: 384.31 ns/run (run_cnt 293631)
+[bpf_eval] benchmark: OK (6/6 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7724  (runtime_success=1.0, runtime_score=0.5448, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 07:10:43,034 - INFO - Evaluated program cc26de70-37a0-4cd9-83f3-0b0dd866666a in 121.55s: score=0.7724, combined_score=0.7724, compile_success=1.0000, object_bytes=727152.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=486.1800, ns_per_run__sched_wakeup_new=831.9400, ns_per_run__sched_switch=835.6600, ns_per_run__handle_sched_wakeup=436.3800, ns_per_run__handle_sched_wakeup_new=615.8800, ns_per_run__handle_sched_switch=384.3100, runtime_score=0.5448
+2026-09-13 07:10:43,037 - INFO - Iteration 25: Program cc26de70-37a0-4cd9-83f3-0b0dd866666a (parent: 17c58e7c-8e45-4a01-b136-ba87a3822604) completed in 153.12s
+2026-09-13 07:10:43,037 - INFO - Metrics: score=0.7724, combined_score=0.7724, compile_success=1.0000, object_bytes=727152.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=486.1800, ns_per_run__sched_wakeup_new=831.9400, ns_per_run__sched_switch=835.6600, ns_per_run__handle_sched_wakeup=436.3800, ns_per_run__handle_sched_wakeup_new=615.8800, ns_per_run__handle_sched_switch=384.3100, runtime_score=0.5448
+2026-09-13 07:10:43,041 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:11:16,323 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:11:16,330 - INFO - Iteration 26: 2 witness(es) approved by developer; implementing
+2026-09-13 07:11:16,340 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:11:40,652 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:11:40,739 - INFO - Iteration 26: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpxjxi3kof.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (727328 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 07:12:26,771 - INFO - Evaluated program 473b53cf-bf29-48ba-9c16-c0a0585521d8 in 46.03s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727328.0000, semantic_equivalent=0.0000
+2026-09-13 07:12:26,773 - INFO - Iteration 26: Program 473b53cf-bf29-48ba-9c16-c0a0585521d8 (parent: c1946c97-b286-4eaa-bb58-648b4b29f75e) completed in 70.43s
+2026-09-13 07:12:26,773 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727328.0000, semantic_equivalent=0.0000
+2026-09-13 07:12:26,778 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:13:01,934 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:13:01,942 - INFO - Iteration 27: 3 witness(es) approved by developer; implementing
+2026-09-13 07:13:01,953 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:13:21,712 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:13:21,803 - INFO - Iteration 27: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpbj29k8sl.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (731608 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: EQUIVALENT
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: EQUIVALENT
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: EQUIVALENT
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = python3 ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_lzm9v972/tmpbj29k8sl.bpf.o 60 sched_wakeup sched_wakeup_new sched_switch handle_sched_wakeup handle_sched_wakeup_new handle_sched_switch
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   sched_wakeup: 488.43 ns/run (run_cnt 172162)
+[bpf_eval]   sched_wakeup_new: 864.58 ns/run (run_cnt 19)
+[bpf_eval]   sched_switch: 813.0 ns/run (run_cnt 287679)
+[bpf_eval]   handle_sched_wakeup: 440.18 ns/run (run_cnt 172162)
+[bpf_eval]   handle_sched_wakeup_new: 654.89 ns/run (run_cnt 19)
+[bpf_eval]   handle_sched_switch: 364.01 ns/run (run_cnt 287679)
+[bpf_eval] benchmark: OK (6/6 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7682  (runtime_success=1.0, runtime_score=0.5363, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 07:15:23,490 - INFO - Evaluated program 0d0811f9-e2a7-49d1-9e26-e64155bebbaa in 121.69s: score=0.7682, combined_score=0.7682, compile_success=1.0000, object_bytes=731608.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=488.4300, ns_per_run__sched_wakeup_new=864.5800, ns_per_run__sched_switch=813.0000, ns_per_run__handle_sched_wakeup=440.1800, ns_per_run__handle_sched_wakeup_new=654.8900, ns_per_run__handle_sched_switch=364.0100, runtime_score=0.5363
+2026-09-13 07:15:23,492 - INFO - Iteration 27: Program 0d0811f9-e2a7-49d1-9e26-e64155bebbaa (parent: cc26de70-37a0-4cd9-83f3-0b0dd866666a) completed in 141.54s
+2026-09-13 07:15:23,492 - INFO - Metrics: score=0.7682, combined_score=0.7682, compile_success=1.0000, object_bytes=731608.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=488.4300, ns_per_run__sched_wakeup_new=864.5800, ns_per_run__sched_switch=813.0000, ns_per_run__handle_sched_wakeup=440.1800, ns_per_run__handle_sched_wakeup_new=654.8900, ns_per_run__handle_sched_switch=364.0100, runtime_score=0.5363
+2026-09-13 07:15:23,497 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:16:08,014 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:16:08,023 - INFO - Iteration 28: 2 witness(es) approved by developer; implementing
+2026-09-13 07:16:08,033 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:16:45,366 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:16:45,451 - INFO - Iteration 28: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpsxlp14ee.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (728080 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 07:17:30,898 - INFO - Evaluated program d70aa09b-ccaa-4e3a-94a7-a7705216a942 in 45.45s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=728080.0000, semantic_equivalent=0.0000
+2026-09-13 07:17:30,901 - INFO - Iteration 28: Program d70aa09b-ccaa-4e3a-94a7-a7705216a942 (parent: 81bd61b4-1925-4a51-a955-a0effa0573dd) completed in 82.87s
+2026-09-13 07:17:30,901 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=728080.0000, semantic_equivalent=0.0000
+2026-09-13 07:17:30,906 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:18:00,850 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:18:00,857 - INFO - Iteration 29: 2 witness(es) approved by developer; implementing
+2026-09-13 07:18:00,868 - INFO - Sampled model: gpt-5-nano
+2026-09-13 07:18:14,488 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:18:14,574 - INFO - Iteration 29: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmphikc6e9t.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (731608 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: EQUIVALENT
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: EQUIVALENT
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: EQUIVALENT
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: EQUIVALENT
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = python3 ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_2a6jxsm9/tmphikc6e9t.bpf.o 60 sched_wakeup sched_wakeup_new sched_switch handle_sched_wakeup handle_sched_wakeup_new handle_sched_switch
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   sched_wakeup: 477.44 ns/run (run_cnt 175799)
+[bpf_eval]   sched_wakeup_new: 792.64 ns/run (run_cnt 14)
+[bpf_eval]   sched_switch: 803.44 ns/run (run_cnt 293069)
+[bpf_eval]   handle_sched_wakeup: 427.38 ns/run (run_cnt 175799)
+[bpf_eval]   handle_sched_wakeup_new: 591.0 ns/run (run_cnt 14)
+[bpf_eval]   handle_sched_switch: 366.46 ns/run (run_cnt 293069)
+[bpf_eval] benchmark: OK (6/6 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7772  (runtime_success=1.0, runtime_score=0.5545, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 07:20:14,538 - INFO - Evaluated program 5b3448ed-2d41-4fca-b0f3-e70ad953bfd8 in 119.96s: score=0.7772, combined_score=0.7772, compile_success=1.0000, object_bytes=731608.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=477.4400, ns_per_run__sched_wakeup_new=792.6400, ns_per_run__sched_switch=803.4400, ns_per_run__handle_sched_wakeup=427.3800, ns_per_run__handle_sched_wakeup_new=591.0000, ns_per_run__handle_sched_switch=366.4600, runtime_score=0.5545
+2026-09-13 07:20:14,541 - INFO - Iteration 29: Program 5b3448ed-2d41-4fca-b0f3-e70ad953bfd8 (parent: cc26de70-37a0-4cd9-83f3-0b0dd866666a) completed in 133.67s
+2026-09-13 07:20:14,541 - INFO - Metrics: score=0.7772, combined_score=0.7772, compile_success=1.0000, object_bytes=731608.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=477.4400, ns_per_run__sched_wakeup_new=792.6400, ns_per_run__sched_switch=803.4400, ns_per_run__handle_sched_wakeup=427.3800, ns_per_run__handle_sched_wakeup_new=591.0000, ns_per_run__handle_sched_switch=366.4600, runtime_score=0.5545
+2026-09-13 07:20:14,546 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:20:48,458 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:20:48,466 - INFO - Iteration 30: 3 witness(es) approved by developer; implementing
+2026-09-13 07:20:48,476 - INFO - Sampled model: gpt-5-mini
+2026-09-13 07:21:15,196 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 07:21:15,287 - INFO - Iteration 30: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpeez2i3ml.bpf.c (tool=runqslower) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (727544 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 6 entrypoint(s) vs baseline, maps=['start:hash'], witness=.wit
+[bpf_eval]   sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_wakeup_new: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_wakeup_new: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval]   handle_sched_switch: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_sched_switch: NOT equivalent [error]  BTF mismatch: map 'events' value_size C=4 vs Rust=0
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 07:22:00,946 - INFO - Evaluated program 80a6028a-1731-4456-83dc-677ccb7040da in 45.66s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727544.0000, semantic_equivalent=0.0000
+2026-09-13 07:22:00,949 - INFO - Iteration 30: Program 80a6028a-1731-4456-83dc-677ccb7040da (parent: c1946c97-b286-4eaa-bb58-648b4b29f75e) completed in 72.47s
+2026-09-13 07:22:00,949 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=727544.0000, semantic_equivalent=0.0000
+2026-09-13 07:22:00,949 - INFO - Checkpoint interval reached at iteration 30
+2026-09-13 07:22:00,951 - INFO - Island Status:
+2026-09-13 07:22:00,951 - INFO -  * Island 0: 16 programs, best=0.7772, avg=0.2866, diversity=101.85, gen=15 (best: fb0541ac-90a4-4ea0-b671-4ff6d4459f57)
+2026-09-13 07:22:00,951 - INFO -    Island 1: 15 programs, best=0.0000, avg=0.0000, diversity=108.60, gen=15 (best: c1946c97-b286-4eaa-bb58-648b4b29f75e)
+2026-09-13 07:22:00,984 - INFO - Saved database with 31 programs to openevolve_output/bpf_runqslower_verify_autoapprove/checkpoints/checkpoint_20260913_072200_30
+2026-09-13 07:22:00,984 - INFO - Saved best program at checkpoint 30 with metrics: score=0.7455, combined_score=0.7455, compile_success=1.0000, object_bytes=727192.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=492.1000, ns_per_run__sched_wakeup_new=1036.9100, ns_per_run__sched_switch=852.3900, ns_per_run__handle_sched_wakeup=440.1100, ns_per_run__handle_sched_wakeup_new=792.2900, ns_per_run__handle_sched_switch=342.8000, runtime_score=0.4909
+2026-09-13 07:22:00,985 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_runqslower_verify_autoapprove/checkpoints/checkpoint_20260913_072200_30
+2026-09-13 07:22:00,985 - INFO - ✅ Evolution completed - Maximum iterations reached
+2026-09-13 07:22:01,019 - INFO - Saved database with 31 programs to openevolve_output/bpf_runqslower_verify_autoapprove/checkpoints/checkpoint_20260913_072200_30
+2026-09-13 07:22:01,020 - INFO - Saved best program at checkpoint 30 with metrics: score=0.7455, combined_score=0.7455, compile_success=1.0000, object_bytes=727192.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=492.1000, ns_per_run__sched_wakeup_new=1036.9100, ns_per_run__sched_switch=852.3900, ns_per_run__handle_sched_wakeup=440.1100, ns_per_run__handle_sched_wakeup_new=792.2900, ns_per_run__handle_sched_switch=342.8000, runtime_score=0.4909
+2026-09-13 07:22:01,020 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_runqslower_verify_autoapprove/checkpoints/checkpoint_20260913_072200_30
+2026-09-13 07:22:01,020 - INFO - Received signal 15, initiating graceful shutdown...
+2026-09-13 07:22:01,020 - INFO - Graceful shutdown requested...
+2026-09-13 07:22:01,029 - INFO - Stopped process pool
+2026-09-13 07:22:01,029 - INFO - Using tracked best program: fb0541ac-90a4-4ea0-b671-4ff6d4459f57
+2026-09-13 07:22:01,029 - INFO - Evolution complete. Best program has metrics: score=0.7455, combined_score=0.7455, compile_success=1.0000, object_bytes=727192.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__sched_wakeup=492.1000, ns_per_run__sched_wakeup_new=1036.9100, ns_per_run__sched_switch=852.3900, ns_per_run__handle_sched_wakeup=440.1100, ns_per_run__handle_sched_wakeup_new=792.2900, ns_per_run__handle_sched_switch=342.8000, runtime_score=0.4909
+2026-09-13 07:22:01,030 - INFO - Saved best program to openevolve_output/bpf_runqslower_verify_autoapprove/best/best_program.c with program info to openevolve_output/bpf_runqslower_verify_autoapprove/best/best_program_info.json
+
+Evolution complete!
+Best program metrics:
+  score: 0.7455
+  combined_score: 0.7455
+  compile_success: 1.0000
+  object_bytes: 727192.0000
+  semantic_equivalent: 1.0000
+  runtime_success: 1.0000
+  ns_per_run__sched_wakeup: 492.1000
+  ns_per_run__sched_wakeup_new: 1036.9100
+  ns_per_run__sched_switch: 852.3900
+  ns_per_run__handle_sched_wakeup: 440.1100
+  ns_per_run__handle_sched_wakeup_new: 792.2900
+  ns_per_run__handle_sched_switch: 342.8000
+  runtime_score: 0.4909
+
+Per-iteration ns/run:
+  iter   0 (original): handle_sched_switch=342.80  handle_sched_wakeup=440.11  handle_sched_wakeup_new=792.29  sched_switch=852.39  sched_wakeup=492.10  sched_wakeup_new=1036.91
+  iter   1: N/A (not equivalent)
+  iter   2: N/A (not equivalent)
+  iter   3: N/A (not equivalent)
+  iter   4: N/A (not equivalent)
+  iter   5: N/A (not equivalent)
+  iter   6: N/A (not equivalent)
+  iter   7: N/A (not equivalent)
+  iter   8: N/A (not equivalent)
+  iter   9: N/A (not equivalent)
+  iter  10: N/A (not equivalent)
+  iter  11: N/A (not equivalent)
+  iter  12: N/A (not equivalent)
+  iter  13: N/A (not equivalent)
+  iter  14: N/A (not equivalent)
+  iter  15: N/A (not equivalent)
+  iter  16: N/A (not equivalent)
+  iter  17: handle_sched_switch=378.39  handle_sched_wakeup=431.02  handle_sched_wakeup_new=567.53  sched_switch=835.08  sched_wakeup=498.45  sched_wakeup_new=788.87
+  iter  18: N/A (not equivalent)
+  iter  19: N/A (compile failed)
+  iter  20: N/A (not equivalent)
+  iter  21: handle_sched_switch=388.15  handle_sched_wakeup=424.71  handle_sched_wakeup_new=723.37  sched_switch=816.41  sched_wakeup=481.40  sched_wakeup_new=996.50
+  iter  22: N/A (not equivalent)
+  iter  23: N/A (not equivalent)
+  iter  24: N/A (not equivalent)
+  iter  25: handle_sched_switch=384.31  handle_sched_wakeup=436.38  handle_sched_wakeup_new=615.88  sched_switch=835.66  sched_wakeup=486.18  sched_wakeup_new=831.94
+  iter  26: N/A (not equivalent)
+  iter  27: handle_sched_switch=364.01  handle_sched_wakeup=440.18  handle_sched_wakeup_new=654.89  sched_switch=813.00  sched_wakeup=488.43  sched_wakeup_new=864.58
+  iter  28: N/A (not equivalent)
+  iter  29: handle_sched_switch=366.46  handle_sched_wakeup=427.38  handle_sched_wakeup_new=591.00  sched_switch=803.44  sched_wakeup=477.44  sched_wakeup_new=792.64
+  iter  30: N/A (not equivalent)
+
+LLM token usage (this run):
+  prompt:     605,787
+  completion: 179,504
+  total:      785,291
+
+Latest checkpoint saved at: openevolve_output/bpf_runqslower_verify_autoapprove/checkpoints/checkpoint_20260913_072200_30
+To resume, use: --checkpoint openevolve_output/bpf_runqslower_verify_autoapprove/checkpoints/checkpoint_20260913_072200_30
