@@ -198,8 +198,12 @@ _WIT_FENCE_PATTERN = re.compile(
     re.DOTALL | re.IGNORECASE,
 )
 # One `<keyword> { ... }` section of a .wit program (brace-flat by grammar).
+# Only assumption/binding are real sections -- the DSL has no `observation`
+# block (heimdall always compares every output), so a model that still
+# writes one (stale habit / stale examples) has its content silently
+# dropped here rather than merged into invalid output.
 _WIT_SECTION_PATTERN = re.compile(
-    r"\b(assumption|binding|observation)\b\s*\{(?P<body>.*?)\}", re.DOTALL
+    r"\b(assumption|binding)\b\s*\{(?P<body>.*?)\}", re.DOTALL
 )
 _WIT_COMMENT_PATTERN = re.compile(r"/\*.*?\*/|//[^\n]*", re.DOTALL)
 
@@ -455,17 +459,18 @@ def combine_witness_dsl_blocks(
     """Merge the per-change `wit` blocks (transformation-witness DSL text, see
     extract_transformation_witnesses) into ONE .wit program: the union of each
     section's statements, order-preserving and deduped, in canonical
-    assumption / binding / observation order.
+    assumption / binding order.
 
     Purely textual -- it does NOT validate the result. Returns "" when no
-    witness carries a `wit` block. `assumption` / `binding` are emitted only
-    when non-empty; `observation` is emitted whenever anything was collected,
-    so a set that states assumptions/bindings but no observation yields a
-    trailing `observation {}` -- the syntax error the checker should surface.
+    witness carries a `wit` block, or when every block's `assumption`/`binding`
+    sections were empty (there is no `observation` block in the DSL --
+    heimdall always compares every output -- so a witness with nothing in
+    `assumption`/`binding` has nothing left to say and is equivalent to no
+    witness at all). Each section is emitted only when non-empty.
 
     only_approved: skip witnesses whose `developer_approved` is not exactly True.
     """
-    sections: Dict[str, List[str]] = {"assumption": [], "binding": [], "observation": []}
+    sections: Dict[str, List[str]] = {"assumption": [], "binding": []}
     seen = set()
     for w in witnesses or []:
         if only_approved and w.get("developer_approved") is not True:
@@ -485,9 +490,9 @@ def combine_witness_dsl_blocks(
     if not any(sections.values()):
         return ""
     out: List[str] = []
-    for kind in ("assumption", "binding", "observation"):
+    for kind in ("assumption", "binding"):
         stmts = sections[kind]
-        if kind != "observation" and not stmts:
+        if not stmts:
             continue
         out.append(kind + " {")
         out.extend("    " + s for s in stmts)
