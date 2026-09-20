@@ -1,18 +1,23 @@
 """
-Tests for examples/bpf_compile/evaluator.py's _save_candidate().
+Tests for examples/bpf_compile/evaluator.py's _save_candidate() and _log().
 
 examples/bpf_compile/evaluator.py isn't a package (no __init__.py) and pulls in
 heimdall/BTF-specific globals at import time, so it's loaded directly from its
-file path rather than via a normal package import. _save_candidate() itself has
-no external dependencies (no clang, no BTF) -- it's plain file I/O -- so it's
-safe to exercise in isolation with SAVE_DIR/SAVE_PROGRAMS monkeypatched to a
-temp directory.
+file path rather than via a normal package import. Both functions under test
+have no external dependencies (no clang, no BTF) -- plain file I/O / logging --
+so they're safe to exercise in isolation.
 
-Regression coverage for: filenames gained an `iterNNNN_` prefix when an
-`iteration` number is available (forwarded from OpenEvolve via
-evaluate()'s `iteration` param -- see test_evaluator_witness_forwarding.py),
-so a developer can tell which iteration produced a saved candidate without
-opening its .json sidecar.
+Regression coverage for two things:
+  * _save_candidate(): filenames gained an `iterNNNN_` prefix when an
+    `iteration` number is available (forwarded from OpenEvolve via
+    evaluate()'s `iteration` param -- see test_evaluator_witness_forwarding.py),
+    so a developer can tell which iteration produced a saved candidate
+    without opening its .json sidecar.
+  * _log(): now routed through `logging.getLogger("bpf_eval")` instead of a
+    bare print() -- print() only ever reached the terminal's live scrollback,
+    never OpenEvolve's own <output_dir>/logs/openevolve_*.log file, so a
+    run's per-iteration eval progress ("compiling...", "checking entry
+    X...", timeouts) was unrecoverable once the terminal was gone.
 """
 
 import importlib.util
@@ -86,6 +91,32 @@ class TestSaveCandidate(unittest.TestCase):
         with patch.object(bpf_evaluator, "SAVE_PROGRAMS", False):
             bpf_evaluator._save_candidate("int main(){}", {"score": 1.0}, iteration=1)
         self.assertFalse(self.save_dir.exists())
+
+
+class TestLogRoutedThroughLogging(unittest.TestCase):
+    """_log() must go through `logging`, not print() -- see module docstring.
+
+    Records land on a logger named "bpf_eval" (not the root logger directly)
+    so a caller can attach/inspect handlers without fighting over root; in
+    the real run, propagation (on by default) carries them up to whatever
+    handlers OpenEvolve's own controller._setup_logging() already attached
+    to root (console + <output_dir>/logs/openevolve_*.log).
+    """
+
+    def test_log_emits_an_info_record_on_the_bpf_eval_logger(self):
+        with self.assertLogs("bpf_eval", level="INFO") as cm:
+            bpf_evaluator._log("compiling candidate with clang -target bpf ...")
+        self.assertEqual(
+            cm.output,
+            ["INFO:bpf_eval:[bpf_eval] compiling candidate with clang -target bpf ..."],
+        )
+
+    def test_log_silent_when_verbose_disabled(self):
+        with patch.object(bpf_evaluator, "_VERBOSE", False):
+            with self.assertRaises(AssertionError):
+                # assertLogs itself raises AssertionError when nothing was logged.
+                with self.assertLogs("bpf_eval", level="INFO"):
+                    bpf_evaluator._log("should not appear")
 
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@ by the default fio workload -- override BPF_WORKLOAD_CMD for those.
 
 import os
 import json
+import logging
 import re
 import signal
 import subprocess
@@ -32,14 +33,23 @@ from openevolve.evaluation_result import EvaluationResult
 from openevolve.utils.code_utils import build_heimdall_witness_file
 
 
-# Live progress lines to the run's stdout (worker processes inherit it). Set
-# BPF_EVAL_VERBOSE=0 to silence.
+# Live progress lines. Routed through `logging` (not print()) so they land in
+# BOTH the run's console AND OpenEvolve's own log file
+# (<output_dir>/logs/openevolve_<timestamp>.log) -- a bare print() only ever
+# reaches the terminal's live scrollback, never that file, so a run's
+# per-iteration eval progress ("compiling...", "checking entry X...",
+# timeouts) would otherwise be unrecoverable once the terminal is gone.
+# Worker processes are forked (the default ProcessPoolExecutor start method
+# on Linux) AFTER the main process's root logger/handlers are already set up,
+# so this logger's records propagate to that same file/console handlers with
+# no extra wiring needed. Set BPF_EVAL_VERBOSE=0 to silence.
 _VERBOSE = os.environ.get("BPF_EVAL_VERBOSE", "1") != "0"
+_logger = logging.getLogger("bpf_eval")
 
 
 def _log(msg: str) -> None:
     if _VERBOSE:
-        print(f"[bpf_eval] {msg}", flush=True)
+        _logger.info(f"[bpf_eval] {msg}")
 
 
 # Default: this OpenEvolve checkout is the `openevolve/` submodule of a Heimdall
@@ -1173,6 +1183,12 @@ if __name__ == "__main__":
 
     if len(sys.argv) != 2:
         raise SystemExit("usage: python evaluator.py <candidate.bpf.c>")
+
+    # Standalone invocation (see README's "Smoke-test the evaluator
+    # directly"): OpenEvolve's own logging setup never runs in this path, so
+    # without a handler here _log()'s records would be silently dropped
+    # (logging's handler-of-last-resort only surfaces WARNING+).
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     evaluation = evaluate(sys.argv[1])
     print(json.dumps({"metrics": evaluation.metrics, "artifacts": evaluation.artifacts}, indent=2))
