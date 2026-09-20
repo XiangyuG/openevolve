@@ -135,6 +135,7 @@ class Evaluator:
         program_id: str = "",
         witnesses: Optional[List[Dict[str, Any]]] = None,
         wit_path: Optional[str] = None,
+        iteration: Optional[int] = None,
     ) -> Dict[str, float]:
         """
         Evaluate a program and return scores
@@ -148,6 +149,10 @@ class Evaluator:
                 (the common case) are completely unaffected.
             wit_path: Optional path to a syntax-checked, combined `.wit` file,
                 forwarded the same way if `evaluate()` declares `wit_path`.
+            iteration: Optional current iteration number, forwarded the same way
+                if `evaluate()` declares `iteration` - lets an evaluator that
+                saves its own copy of each candidate (e.g. examples/bpf_compile)
+                name it by iteration instead of only a timestamp/uuid.
 
         Returns:
             Dictionary of metric name to score
@@ -174,7 +179,7 @@ class Evaluator:
                 else:
                     # Run direct evaluation
                     result = await self._direct_evaluate(
-                        temp_file_path, witnesses=witnesses, wit_path=wit_path
+                        temp_file_path, witnesses=witnesses, wit_path=wit_path, iteration=iteration
                     )
 
                 # Process the result based on type
@@ -343,6 +348,7 @@ class Evaluator:
         program_path: str,
         witnesses: Optional[List[Dict[str, Any]]] = None,
         wit_path: Optional[str] = None,
+        iteration: Optional[int] = None,
     ) -> Union[Dict[str, float], EvaluationResult]:
         """
         Directly evaluate a program using the evaluation function with timeout
@@ -353,6 +359,7 @@ class Evaluator:
                 only if its signature declares one - evaluators that only take
                 `program_path` are completely unaffected.
             wit_path: Forwarded the same way if `evaluate_function` declares `wit_path`.
+            iteration: Forwarded the same way if `evaluate_function` declares `iteration`.
 
         Returns:
             Dictionary of metrics or EvaluationResult with metrics and artifacts
@@ -371,6 +378,8 @@ class Evaluator:
                 call_kwargs["witnesses"] = witnesses
             if wit_path is not None and "wit_path" in accepted:
                 call_kwargs["wit_path"] = wit_path
+            if iteration is not None and "iteration" in accepted:
+                call_kwargs["iteration"] = iteration
         except (TypeError, ValueError):
             pass
 

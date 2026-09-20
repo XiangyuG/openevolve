@@ -468,11 +468,20 @@ EQUIV_RESULT_TYPE_PATTERN = re.compile(r"^result_type:\s*(\S+)\s*$", re.MULTILIN
 EQUIV_COUNTEREXAMPLE_PATTERN = re.compile(r"^counter_example:\s*(.*)", re.MULTILINE | re.DOTALL)
 
 
-def _save_candidate(source: str, metrics: dict) -> None:
+def _save_candidate(source: str, metrics: dict, iteration: "int | None" = None) -> None:
+    """Save one candidate's source + metrics to SAVE_DIR. `iteration` is the
+    OpenEvolve iteration number that produced this candidate (forwarded by
+    evaluate_program()/_direct_evaluate() -- see evaluate()'s `iteration`
+    param) -- included in the filename, when known, so a developer can tell
+    which run/iteration a file came from without opening its .json sidecar.
+    None when evaluate() is invoked directly (e.g. the README's
+    "Smoke-test the evaluator directly" usage), outside OpenEvolve's own
+    iteration loop."""
     if not SAVE_PROGRAMS:
         return
     SAVE_DIR.mkdir(parents=True, exist_ok=True)
-    stamp = f"{time.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+    iter_prefix = f"iter{iteration:04d}_" if iteration is not None else ""
+    stamp = f"{iter_prefix}{time.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
     (SAVE_DIR / f"{stamp}.bpf.c").write_text(source, encoding="utf-8")
     (SAVE_DIR / f"{stamp}.json").write_text(
         json.dumps(metrics, indent=2, sort_keys=True), encoding="utf-8"
@@ -1006,6 +1015,7 @@ def evaluate(
     program_path: str,
     witnesses: "list[dict] | None" = None,
     wit_path: "str | None" = None,
+    iteration: "int | None" = None,
 ) -> EvaluationResult:
     source_path = Path(program_path)
     source = source_path.read_text(encoding="utf-8", errors="replace")
@@ -1046,7 +1056,7 @@ def evaluate(
                 "compile_success": 0.0,
                 "semantic_equivalent": 0.0,
             }
-            _save_candidate(source, timeout_metrics)
+            _save_candidate(source, timeout_metrics, iteration=iteration)
             return EvaluationResult(
                 metrics=timeout_metrics,
                 artifacts={
@@ -1084,7 +1094,7 @@ def evaluate(
             first_err = (result.stderr or result.stdout).strip().splitlines()
             _log(f"compile FAILED: {first_err[0] if first_err else '(no diagnostic)'}")
             artifacts["error"] = "clang compilation failed"
-            _save_candidate(source, metrics)
+            _save_candidate(source, metrics, iteration=iteration)
             return EvaluationResult(metrics=metrics, artifacts=artifacts)
         _log(f"compile OK ({object_size} bytes)")
 
@@ -1154,7 +1164,7 @@ def evaluate(
                 f"equiv_factor={equiv_factor:.2f})"
             )
 
-        _save_candidate(source, metrics)
+        _save_candidate(source, metrics, iteration=iteration)
         return EvaluationResult(metrics=metrics, artifacts=artifacts)
 
 

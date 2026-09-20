@@ -431,7 +431,9 @@ def _run_iteration_worker(
         import uuid
 
         child_id = str(uuid.uuid4())
-        child_metrics = asyncio.run(_worker_evaluator.evaluate_program(child_code, child_id))
+        child_metrics = asyncio.run(
+            _worker_evaluator.evaluate_program(child_code, child_id, iteration=iteration)
+        )
 
         # Get artifacts
         artifacts = _worker_evaluator.get_pending_artifacts(child_id)
@@ -864,7 +866,7 @@ def _run_iteration_worker_implement(
 
         child_metrics = asyncio.run(
             _worker_evaluator.evaluate_program(
-                child_code, child_id, witnesses=accumulated, wit_path=wit_path
+                child_code, child_id, witnesses=accumulated, wit_path=wit_path, iteration=iteration
             )
         )
 
@@ -1046,6 +1048,7 @@ class ProcessParallelController:
 
     def _dump_witness_file(
         self,
+        iteration: int,
         child_program: Program,
         witnesses: List[Dict[str, Any]],
         qualifying: List[Dict[str, Any]],
@@ -1060,6 +1063,13 @@ class ProcessParallelController:
         pending review task, and this dump has neither an "iteration" key nor
         the witnesses/child_code shape a task needs -- co-locating it there
         made it show up in the review UI as a bogus task ("Iteration ?").
+
+        Filenames are prefixed with the zero-padded iteration number (e.g.
+        "0007_<child_id>.json") so `ls` sorts them in run order and a
+        developer can tell which iteration produced which file without
+        cross-referencing the log -- the child UUID alone doesn't say that.
+        The ".wit" copy is written unconditionally, even when it's empty --
+        see the comment above its write call.
 
         "heimdall_witness_file" is exactly what evaluate()'s relaxed check will
         (or would) hand heimdall as --witness-file for this child; it's the
@@ -1094,7 +1104,8 @@ class ProcessParallelController:
             ],
         }
         witness_files_dir = self.review_gate.queue_dir / "witness_files"
-        path = witness_files_dir / f"{child_program.id}.json"
+        stem = f"{iteration:04d}_{child_program.id}"
+        path = witness_files_dir / f"{stem}.json"
         try:
             witness_files_dir.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(dump, indent=2))
@@ -1104,14 +1115,20 @@ class ProcessParallelController:
         # Persist the combined .wit the worker already syntax-checked (see
         # _run_iteration_worker_implement) as a durable, developer-facing copy -
         # the worker's own copy lives in a throwaway temp dir that may not
-        # outlive the call.
+        # outlive the call. Always written, even when empty (every approved
+        # witness left both blocks blank, or nothing was approved) -- an
+        # absent .wit file reads as "did this even run?"; a present one with
+        # an explanatory comment reads as "confirmed empty, here's why".
         wit_text = child_program.metadata.get("wit_text")
-        if wit_text:
-            wit_path = witness_files_dir / f"{child_program.id}.wit"
-            try:
-                wit_path.write_text(wit_text if wit_text.endswith("\n") else wit_text + "\n")
-            except OSError as e:
-                logger.warning(f"Could not write .wit copy to {wit_path}: {e}")
+        content = wit_text or (
+            "// No assumption/binding statements: every approved witness left both\n"
+            "// blocks empty (a purely structural change), or nothing was approved.\n"
+        )
+        wit_path = witness_files_dir / f"{stem}.wit"
+        try:
+            wit_path.write_text(content if content.endswith("\n") else content + "\n")
+        except OSError as e:
+            logger.warning(f"Could not write .wit copy to {wit_path}: {e}")
 
     def _serialize_config(self, config: Config) -> dict:
         """Serialize config object to a dictionary that can be pickled"""
@@ -1835,6 +1852,7 @@ class ProcessParallelController:
             # the worker (_run_iteration_worker_implement) - this is purely a
             # developer-facing diagnostic dump of what was already decided there.
             self._dump_witness_file(
+                current_iteration,
                 child_program,
                 child_program.metadata.get("witnesses") or [],
                 child_program.metadata.get("approved_witnesses") or [],

@@ -250,6 +250,55 @@ def evaluate(program_path):
         self.assertIsNone(error_result.child_program_dict)
 
 
+class TestDumpWitnessFile(unittest.TestCase):
+    """_dump_witness_file(): filenames are prefixed with the zero-padded
+    iteration number so `ls` sorts them in run order and a developer can
+    tell which iteration produced a given witness_files/ entry without
+    cross-referencing the log (the child UUID alone doesn't say that)."""
+
+    def setUp(self):
+        self.test_dir = tempfile.mkdtemp()
+        self.eval_file = os.path.join(self.test_dir, "evaluator.py")
+        with open(self.eval_file, "w") as f:
+            f.write("def evaluate(program_path):\n    return {'score': 0.5}\n")
+        config = Config()
+        config.database.in_memory = True
+        database = ProgramDatabase(config.database)
+        self.queue_dir = Path(self.test_dir) / "review_queue"
+        self.controller = ProcessParallelController(config, self.eval_file, database)
+        self.controller.review_gate = Mock(queue_dir=self.queue_dir)
+
+    def tearDown(self):
+        import shutil
+
+        shutil.rmtree(self.test_dir, ignore_errors=True)
+
+    def test_filenames_prefixed_with_zero_padded_iteration(self):
+        child = Program(id="abc-123", code="int main(){}", language="c", metrics={})
+        child.metadata["wit_text"] = "binding {\n    original.x = optimized.x;\n}\n"
+
+        self.controller._dump_witness_file(iteration=7, child_program=child, witnesses=[], qualifying=[])
+
+        witness_files_dir = self.queue_dir / "witness_files"
+        self.assertTrue((witness_files_dir / "0007_abc-123.json").exists())
+        self.assertTrue((witness_files_dir / "0007_abc-123.wit").exists())
+
+    def test_placeholder_wit_file_when_wit_text_absent(self):
+        """Matches combine_witness_dsl_blocks() returning "" for an
+        all-empty-blocks proposal: the .wit is still written (so its absence
+        never reads as "did this even run?"), with an explanatory comment
+        instead of the actual (nonexistent) combined text."""
+        child = Program(id="def-456", code="int main(){}", language="c", metrics={})
+
+        self.controller._dump_witness_file(iteration=3, child_program=child, witnesses=[], qualifying=[])
+
+        witness_files_dir = self.queue_dir / "witness_files"
+        self.assertTrue((witness_files_dir / "0003_def-456.json").exists())
+        wit_path = witness_files_dir / "0003_def-456.wit"
+        self.assertTrue(wit_path.exists())
+        self.assertIn("No assumption/binding statements", wit_path.read_text())
+
+
 class TestWriteAndCheckWit(unittest.TestCase):
     """_write_and_check_wit(): the checker subprocess runs with
     cwd=_c2rust_dir(), not this process's cwd, so a RELATIVE wit_path (e.g.

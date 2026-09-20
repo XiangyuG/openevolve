@@ -1,10 +1,13 @@
 """
-Tests for Evaluator.evaluate_program's optional witnesses/wit_path forwarding.
+Tests for Evaluator.evaluate_program's optional witnesses/wit_path/iteration
+forwarding.
 
 Regression coverage for the single-pass equivalence check redesign: evaluate_program
 gained optional `witnesses`/`wit_path` kwargs, forwarded to the evaluation module's
 `evaluate()` only when its signature declares them (mirrors the same
-inspect.signature-based pattern already used elsewhere for optional hooks). Every
+inspect.signature-based pattern already used elsewhere for optional hooks). `iteration`
+was added the same way later, so an evaluator that saves its own copy of each
+candidate (e.g. examples/bpf_compile) can name it by iteration number. Every
 existing single-arg `evaluate(program_path)` evaluator must be completely unaffected.
 """
 
@@ -83,6 +86,41 @@ class TestEvaluatorWitnessForwarding(unittest.TestCase):
         result = asyncio.run(run_test())
         self.assertEqual(result["saw_witnesses"], 0.0)
         self.assertEqual(result["saw_wit_path"], 0.0)
+
+    def test_forwards_iteration_when_declared(self):
+        evaluator = self._make_evaluator(
+            "def evaluate(program_path, iteration=None):\n"
+            "    return {'iteration_seen': float(iteration)}\n"
+        )
+
+        async def run_test():
+            return await evaluator.evaluate_program("code", "id4", iteration=7)
+
+        result = asyncio.run(run_test())
+        self.assertEqual(result["iteration_seen"], 7.0)
+
+    def test_plain_evaluator_without_iteration_param_is_unaffected(self):
+        evaluator = self._make_evaluator(
+            "def evaluate(program_path):\n" "    return {'score': 1.0}\n"
+        )
+
+        async def run_test():
+            return await evaluator.evaluate_program("code", "id5", iteration=7)
+
+        result = asyncio.run(run_test())
+        self.assertEqual(result["score"], 1.0)
+
+    def test_no_iteration_passed_is_a_no_op(self):
+        evaluator = self._make_evaluator(
+            "def evaluate(program_path, iteration=None):\n"
+            "    return {'iteration_seen': float(iteration is not None)}\n"
+        )
+
+        async def run_test():
+            return await evaluator.evaluate_program("code", "id6")
+
+        result = asyncio.run(run_test())
+        self.assertEqual(result["iteration_seen"], 0.0)
 
 
 if __name__ == "__main__":
