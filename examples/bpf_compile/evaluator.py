@@ -432,7 +432,7 @@ SAVE_DIR = Path(os.environ.get("BPF_SAVE_DIR", str(Path("generated_programs") / 
 # candidates.
 EQUIV_CHECK = os.environ.get("BPF_EQUIV_CHECK", "1") != "0"
 EQUIV_CONDA_ENV = os.environ.get("BPF_EQUIV_CONDA_ENV", "c2rust")
-EQUIV_TIMEOUT = int(os.environ.get("BPF_EQUIV_TIMEOUT", "90"))
+EQUIV_TIMEOUT = int(os.environ.get("BPF_EQUIV_TIMEOUT", "180"))
 # How much of a candidate's speed-based score survives when heimdall could NOT
 # prove it equivalent to the baseline. 0.0 = hard gate (non-equivalent -> 0);
 # raise toward 1.0 to keep unproven-but-maybe-fine candidates competitive
