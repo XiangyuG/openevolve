@@ -92,6 +92,16 @@ def extract_diffs(
     return [(match[0].rstrip(), match[1].rstrip()) for match in diff_blocks]
 
 
+# Fence language tags that are never the program itself -- e.g. the
+# transformation-witness DSL's ```witness/```wit block that some prompts
+# (see examples/bpf_compile) require alongside every proposed change. If the
+# model forgets to tag its actual code fence with `language`, the naive
+# "any fence" fallback below would otherwise grab this one instead (it's
+# often the ONLY other fence in the response), silently trying to compile
+# witness DSL text as the program.
+_NON_CODE_FENCE_TAGS = {"witness", "wit"}
+
+
 def parse_full_rewrite(llm_response: str, language: str = "python") -> Optional[str]:
     """
     Extract a full rewrite from an LLM response
@@ -109,12 +119,16 @@ def parse_full_rewrite(llm_response: str, language: str = "python") -> Optional[
     if matches:
         return matches[0].strip()
 
-    # Fallback to any code block
-    code_block_pattern = r"```(.*?)```"
-    matches = re.findall(code_block_pattern, llm_response, re.DOTALL)
-
-    if matches:
-        return matches[0].strip()
+    # Fallback to any code block, but skip ones opened with a known non-code
+    # tag (see _NON_CODE_FENCE_TAGS) -- picking the FIRST *remaining* fence
+    # keeps the historical "any fence" behavior for the common case (a bare
+    # ``` ... ``` block, or one tagged with some other language) while no
+    # longer mistaking a ```witness block for the program.
+    fallback_pattern = re.compile(r"```([ \t]*\S*)[ \t]*\r?\n(.*?)```", re.DOTALL)
+    for m in fallback_pattern.finditer(llm_response):
+        if m.group(1).strip().lower() in _NON_CODE_FENCE_TAGS:
+            continue
+        return m.group(2).strip()
 
     # No closed code block found. If the response never used a fence at all,
     # treat the whole response as code -- some models return bare code with

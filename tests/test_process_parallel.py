@@ -24,7 +24,11 @@ os.environ["OPENAI_API_KEY"] = "test"
 from openevolve.config import Config, DatabaseConfig, EvaluatorConfig, LLMConfig, PromptConfig
 from openevolve.database import Program, ProgramDatabase
 from openevolve import process_parallel as process_parallel_module
-from openevolve.process_parallel import ProcessParallelController, SerializableResult
+from openevolve.process_parallel import (
+    ProcessParallelController,
+    SerializableResult,
+    _write_and_check_wit,
+)
 
 
 class TestProcessParallel(unittest.TestCase):
@@ -244,6 +248,31 @@ def evaluate(program_path):
         error_result = SerializableResult(error="Test error", iteration=5)
         self.assertEqual(error_result.error, "Test error")
         self.assertIsNone(error_result.child_program_dict)
+
+
+class TestWriteAndCheckWit(unittest.TestCase):
+    """_write_and_check_wit(): the checker subprocess runs with
+    cwd=_c2rust_dir(), not this process's cwd, so a RELATIVE wit_path (e.g.
+    the default BPF_SAVE_DIR="generated_programs/<tool>") must still resolve
+    correctly for both the write and the check -- regression test for a bug
+    found by an actual openevolve run: the file was written successfully but
+    the checker then reported "No such file or directory" because it
+    resolved the same relative path against the wrong cwd."""
+
+    def test_relative_wit_path_resolves_from_this_process_cwd(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            old_cwd = os.getcwd()
+            try:
+                os.chdir(tmp)
+                rel_path = Path("generated_programs/filetop/witnesses/testprog.wit")
+                result = _write_and_check_wit(
+                    "binding { original.x = optimized.x; }", rel_path
+                )
+            finally:
+                os.chdir(old_cwd)
+
+        self.assertIs(result["ok"], True, result)
+        self.assertTrue(os.path.isabs(result["path"]), result["path"])
 
 
 if __name__ == "__main__":

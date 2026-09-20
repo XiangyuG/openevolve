@@ -83,6 +83,14 @@ def _write_and_check_wit(text: str, wit_path: "Path") -> Dict[str, Any]:
     import subprocess
     import sys
 
+    # Resolve to an absolute path FIRST. The checker subprocess below runs
+    # with cwd=_c2rust_dir() (so `import witness_dsl` works), not this
+    # process's cwd -- if `wit_path` were left relative (e.g. the default
+    # BPF_SAVE_DIR="generated_programs/<tool>"), the write lands relative to
+    # here but the checker would then look for it relative to
+    # _c2rust_dir() instead and report "No such file or directory" even
+    # though the file was just written successfully.
+    wit_path = Path(wit_path).resolve()
     try:
         wit_path.parent.mkdir(parents=True, exist_ok=True)
         wit_path.write_text(text if text.endswith("\n") else text + "\n", encoding="utf-8")

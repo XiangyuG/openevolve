@@ -11,6 +11,7 @@ from openevolve.utils.code_utils import (
     extract_diffs,
     format_diff_summary,
     merge_witnesses,
+    parse_full_rewrite,
 )
 
 
@@ -320,6 +321,61 @@ class TestMergeWitnesses(unittest.TestCase):
             [{"summary": "pure refactor"}],
         )
         self.assertEqual(merged, [])
+
+
+class TestParseFullRewrite(unittest.TestCase):
+    """parse_full_rewrite(): must never mistake a ```witness/```wit block
+    (see examples/bpf_compile's prompts) for the program itself when the
+    model forgets to tag its actual code fence with `language`. Regression
+    coverage for a bug found by an actual openevolve run against
+    examples/bpf_compile: the response had no ```c fence around the C
+    program, and the "any fence" fallback grabbed the trailing ```witness
+    block instead, so the candidate's .bpf.c started with the literal text
+    "witness" and failed to compile."""
+
+    def test_properly_tagged_code_fence_is_unaffected(self):
+        response = (
+            "Some prose.\n```c\nint main() { return 0; }\n```\n"
+            "```witness\nbinding { original.x = optimized.x; }\n```\n"
+        )
+        self.assertEqual(parse_full_rewrite(response, "c").strip(), "int main() { return 0; }")
+
+    def test_bare_fence_with_no_witness_block_is_unaffected(self):
+        response = "prose\n```\nint main() { return 0; }\n```\n"
+        self.assertEqual(parse_full_rewrite(response, "c").strip(), "int main() { return 0; }")
+
+    def test_bare_code_fence_preferred_over_later_witness_fence(self):
+        response = (
+            "prose\n```\nint main() { return 0; }\n```\n"
+            "```witness\nbinding { original.x = optimized.x; }\n```\n"
+        )
+        self.assertEqual(parse_full_rewrite(response, "c").strip(), "int main() { return 0; }")
+
+    def test_fully_unfenced_response_returned_as_is(self):
+        response = "int main() { return 0; }"
+        self.assertEqual(parse_full_rewrite(response, "c"), response)
+
+    def test_unfenced_code_plus_witness_fence_does_not_extract_witness_text(self):
+        """The exact shape that triggered the bug: the C code is never
+        fenced, but a ```witness block is. There's no way to cleanly recover
+        the program here, so this must fail closed (None -> "No valid code
+        found in response") rather than silently returning the witness
+        block's content as if it were the program."""
+        response = (
+            "/* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause) */\n"
+            "int main() { return 0; }\n"
+            "I made the following changes:\n"
+            "(1) some change\n"
+            "    Witness (.wit):\n"
+            "    ```witness\n"
+            "    binding {\n"
+            "        original.zero_value[:] = optimized.zero_value[:];\n"
+            "    }\n"
+            "    ```\n"
+            "    Formula (pre-transformation): (assert true)\n"
+        )
+        result = parse_full_rewrite(response, "c")
+        self.assertIsNone(result)
 
 
 if __name__ == "__main__":
