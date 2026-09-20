@@ -20,6 +20,7 @@ by the default fio workload -- override BPF_WORKLOAD_CMD for those.
 
 import os
 import json
+import logging
 import re
 import signal
 import subprocess
@@ -32,7 +33,29 @@ from openevolve.evaluation_result import EvaluationResult
 from openevolve.utils.code_utils import build_heimdall_witness_file
 
 
-HEIMDALL_ROOT = Path(os.environ.get("HEIMDALL_ROOT", "/users/xiang95/heimdall-private"))
+# Live progress lines. Routed through `logging` (not print()) so they land in
+# BOTH the run's console AND OpenEvolve's own log file
+# (<output_dir>/logs/openevolve_<timestamp>.log) -- a bare print() only ever
+# reaches the terminal's live scrollback, never that file, so a run's
+# per-iteration eval progress ("compiling...", "checking entry X...",
+# timeouts) would otherwise be unrecoverable once the terminal is gone.
+# Worker processes are forked (the default ProcessPoolExecutor start method
+# on Linux) AFTER the main process's root logger/handlers are already set up,
+# so this logger's records propagate to that same file/console handlers with
+# no extra wiring needed. Set BPF_EVAL_VERBOSE=0 to silence.
+_VERBOSE = os.environ.get("BPF_EVAL_VERBOSE", "1") != "0"
+_logger = logging.getLogger("bpf_eval")
+
+
+def _log(msg: str) -> None:
+    if _VERBOSE:
+        _logger.info(f"[bpf_eval] {msg}")
+
+
+# Default: this OpenEvolve checkout is the `openevolve/` submodule of a Heimdall
+# repo, so the repo root is three levels up from examples/bpf_compile/.
+_DEFAULT_HEIMDALL_ROOT = Path(__file__).resolve().parents[3]
+HEIMDALL_ROOT = Path(os.environ.get("HEIMDALL_ROOT", str(_DEFAULT_HEIMDALL_ROOT)))
 C2RUST_ROOT = HEIMDALL_ROOT / "c2rust_translation"
 LIBBPF_TOOLS_DIR = Path(
     os.environ.get(
@@ -394,7 +417,12 @@ TOOLS = {
 BPF_TOOL = os.environ.get("BPF_TOOL", "filetop")
 if BPF_TOOL not in TOOLS:
     raise ValueError(f"BPF_TOOL={BPF_TOOL!r} is not one of {sorted(TOOLS)}")
-TOOL = TOOLS[BPF_TOOL]
+TOOL = dict(TOOLS[BPF_TOOL])  # copy: we override "source" below
+# The evolution seed AND the equivalence baseline are always <BPF_TOOL>.bpf.c --
+# the canonical upstream libbpf-tools program -- not a pre-optimized _op variant.
+# Pass that exact file as the initial_program to openevolve-run.py. Override with
+# BPF_TOOL_SOURCE if you really want a different baseline.
+TOOL["source"] = os.environ.get("BPF_TOOL_SOURCE", f"{BPF_TOOL}.bpf.c")
 RUNNER = Path(os.environ.get("BPF_RUNNER", str(LIBBPF_TOOLS_DIR / TOOL["runner"])))
 
 # Every candidate this evaluator sees gets a permanent copy on disk, regardless
@@ -414,9 +442,24 @@ SAVE_DIR = Path(os.environ.get("BPF_SAVE_DIR", str(Path("generated_programs") / 
 # candidates.
 EQUIV_CHECK = os.environ.get("BPF_EQUIV_CHECK", "1") != "0"
 EQUIV_CONDA_ENV = os.environ.get("BPF_EQUIV_CONDA_ENV", "c2rust")
-EQUIV_TIMEOUT = int(os.environ.get("BPF_EQUIV_TIMEOUT", "90"))
+EQUIV_TIMEOUT = int(os.environ.get("BPF_EQUIV_TIMEOUT", "180"))
+# How much of a candidate's speed-based score survives when heimdall could NOT
+# prove it equivalent to the baseline. 0.0 = hard gate (non-equivalent -> 0);
+# raise toward 1.0 to keep unproven-but-maybe-fine candidates competitive
+# (the symbolic checker has known false negatives, e.g. lookup-then-mutate
+# via the returned pointer). Only applied when EQUIV_CHECK is on.
+EQUIV_SCORE_FLOOR = float(os.environ.get("BPF_EQUIV_SCORE_FLOOR", "0.0"))
 EQUIV_VERIFIER = HEIMDALL_ROOT / "c2rust_translation" / "verify_mixed_entries.py"
 BTF_PARSER = HEIMDALL_ROOT / "c2rust_translation" / "btf_parser.py"
+
+# "relaxed" (default): evaluate() uses whatever developer-approved witnesses are
+# passed in for a given candidate (degrades to an ordinary strict check when a
+# candidate has none). "strict": ignore witnesses entirely for the whole run, the
+# same unconditional check every candidate always got before this flag existed.
+# One flag for the whole run, not a per-candidate choice.
+EQUIV_MODE = os.environ.get("BPF_EQUIV_MODE", "relaxed").strip().lower()
+if EQUIV_MODE not in ("relaxed", "strict"):
+    EQUIV_MODE = "relaxed"
 
 
 RUNNER_ROW_PATTERN = re.compile(
@@ -435,11 +478,20 @@ EQUIV_RESULT_TYPE_PATTERN = re.compile(r"^result_type:\s*(\S+)\s*$", re.MULTILIN
 EQUIV_COUNTEREXAMPLE_PATTERN = re.compile(r"^counter_example:\s*(.*)", re.MULTILINE | re.DOTALL)
 
 
-def _save_candidate(source: str, metrics: dict) -> None:
+def _save_candidate(source: str, metrics: dict, iteration: "int | None" = None) -> None:
+    """Save one candidate's source + metrics to SAVE_DIR. `iteration` is the
+    OpenEvolve iteration number that produced this candidate (forwarded by
+    evaluate_program()/_direct_evaluate() -- see evaluate()'s `iteration`
+    param) -- included in the filename, when known, so a developer can tell
+    which run/iteration a file came from without opening its .json sidecar.
+    None when evaluate() is invoked directly (e.g. the README's
+    "Smoke-test the evaluator directly" usage), outside OpenEvolve's own
+    iteration loop."""
     if not SAVE_PROGRAMS:
         return
     SAVE_DIR.mkdir(parents=True, exist_ok=True)
-    stamp = f"{time.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+    iter_prefix = f"iter{iteration:04d}_" if iteration is not None else ""
+    stamp = f"{iter_prefix}{time.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
     (SAVE_DIR / f"{stamp}.bpf.c").write_text(source, encoding="utf-8")
     (SAVE_DIR / f"{stamp}.json").write_text(
         json.dumps(metrics, indent=2, sort_keys=True), encoding="utf-8"
@@ -491,10 +543,10 @@ def _baseline_object() -> Path | None:
     return _baseline_object_cache
 
 
-def _map_value_sizes(obj: Path) -> dict[str, int]:
-    """Real BTF value_size (bytes) per map in `obj`, via btf_parser.py --json
-    in the c2rust conda env. Empty dict on any failure (missing BTF, timeout,
-    bad JSON) -- callers must treat that as "unknown", not "zero-size"."""
+def _map_field_sizes(obj: Path, field: str) -> dict[str, int]:
+    """Real BTF <field> (bytes, field is "key_size" or "value_size") per map in
+    `obj`, via btf_parser.py --json in the c2rust conda env. Empty dict on any
+    failure -- callers must treat that as "unknown", not "zero-size"."""
     try:
         result = subprocess.run(
             ["conda", "run", "-n", EQUIV_CONDA_ENV, "python", str(BTF_PARSER), str(obj), "--json"],
@@ -506,10 +558,19 @@ def _map_value_sizes(obj: Path) -> dict[str, int]:
         parsed = json.loads(result.stdout)
     except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError):
         return {}
-    return {name: meta["value_size"] for name, meta in parsed.items() if "value_size" in meta}
+    return {name: meta[field] for name, meta in parsed.items() if field in meta}
+
+
+def _map_value_sizes(obj: Path) -> dict[str, int]:
+    return _map_field_sizes(obj, "value_size")
+
+
+def _map_key_sizes(obj: Path) -> dict[str, int]:
+    return _map_field_sizes(obj, "key_size")
 
 
 _baseline_map_value_sizes_cache: object = _UNSET
+_baseline_map_key_sizes_cache: object = _UNSET
 
 
 def _baseline_map_value_sizes() -> dict[str, int]:
@@ -526,13 +587,27 @@ def _baseline_map_value_sizes() -> dict[str, int]:
     return _baseline_map_value_sizes_cache
 
 
+def _baseline_map_key_sizes() -> dict[str, int]:
+    """_map_key_sizes() for the fixed baseline object, cached."""
+    global _baseline_map_key_sizes_cache
+    if _baseline_map_key_sizes_cache is not _UNSET:
+        return _baseline_map_key_sizes_cache
+    baseline_object = _baseline_object()
+    _baseline_map_key_sizes_cache = (
+        _map_key_sizes(baseline_object) if baseline_object is not None else {}
+    )
+    return _baseline_map_key_sizes_cache
+
+
 def _correct_map_width_change_hints(
     witnesses: "list[dict]", candidate_object: Path
 ) -> "list[dict]":
-    """Replace each witness's self-reported map_width_change (old_bytes,
-    new_bytes) with the REAL BTF value_size of that map in (respectively) the
-    baseline object and this specific candidate object, whenever both are
-    known.
+    """Replace each witness's self-reported map_width_change /
+    map_key_width_change (old_bytes, new_bytes) with the REAL BTF value_size /
+    key_size of that map in (respectively) the fixed baseline object and this
+    candidate object, whenever both are known. (`ctx_field` / `bound` on a key
+    hint are semantic claims BTF can't supply -- left as the LLM stated and
+    the developer approved.)
 
     Why: heimdall (verify_equivalence.py) only honors a --relax-map-value-width
     hint when it EXACTLY equals the two binaries' real BTF value_size -- by
@@ -555,56 +630,57 @@ def _correct_map_width_change_hints(
     can't be determined, are returned unchanged -- heimdall's own exact-match
     gate is the backstop either way, so an uncorrected/wrong hint can only
     ever fall back to the strict check, never produce an unsound accept."""
-    baseline_sizes = _baseline_map_value_sizes()
-    if not baseline_sizes:
-        return witnesses
-    candidate_sizes = _map_value_sizes(candidate_object)
-    if not candidate_sizes:
-        return witnesses
+    base_val = _baseline_map_value_sizes()
+    base_key = _baseline_map_key_sizes()
+    cand_val = _map_value_sizes(candidate_object) if base_val else {}
+    cand_key = _map_key_sizes(candidate_object) if base_key else {}
+
+    def _fix(w, hint_key, base_sizes, cand_sizes):
+        h = w.get(hint_key)
+        if not (isinstance(h, dict) and base_sizes and cand_sizes):
+            return w
+        name = h.get("map")
+        real_old, real_new = base_sizes.get(name), cand_sizes.get(name)
+        if real_old is None or real_new is None:
+            return w
+        w = dict(w)
+        w[hint_key] = {**h, "map": name, "old_bytes": real_old, "new_bytes": real_new}
+        return w
 
     corrected = []
     for w in witnesses:
-        mwc = w.get("map_width_change")
-        if not mwc:
-            corrected.append(w)
-            continue
-        map_name = mwc.get("map")
-        real_old = baseline_sizes.get(map_name)
-        real_new = candidate_sizes.get(map_name)
-        if real_old is None or real_new is None:
-            corrected.append(w)
-            continue
-        w = dict(w)
-        w["map_width_change"] = {"map": map_name, "old_bytes": real_old, "new_bytes": real_new}
+        w = _fix(w, "map_width_change", base_val, cand_val)
+        w = _fix(w, "map_key_width_change", base_key, cand_key)
         corrected.append(w)
     return corrected
 
 
 def _witness_file_args(
-    witnesses: "list[dict] | None", tmp_dir: str
+    witnesses: "list[dict] | None", tmp_dir: str, wit_path: "str | None" = None
 ) -> tuple[list[str], "Path | None"]:
-    """Write developer-approved witnesses (see
-    openevolve/utils/code_utils.py's extract_transformation_witnesses) out as a
-    heimdall-private --witness-file JSON (build_heimdall_witness_file) and
-    return the ["--witness-file", path] flag for verify_mixed_entries.py,
-    plus the path itself (so the caller can leave it in tmp_dir's lifetime).
+    """Return the ["--witness", path] flag for verify_mixed_entries.py.
 
-    --witness-file lets heimdall derive BOTH --relax-map-value-width hints
-    (from each witness's "map_width_change") AND map-fusion groups (from
-    "map_fusion") itself, and cross-validate them against the object files'
-    real BTF metadata / its own extracted formulas before relaxing anything or
-    treating two maps as merged -- a wrong or stale hint here can't force a
-    false "equivalent" verdict.
+    Prefers `wit_path` when given: a transformation-witness DSL (.wit) file
+    already syntax-checked by OpenEvolve (see process_parallel.py's
+    _reverify_approved_witnesses). heimdall's load_witness lowers it to the
+    same relaxed check.
 
-    Returns ([], None) if there are no qualifying witnesses (nothing to
-    write)."""
+    Otherwise falls back to writing the developer-approved tag-line hints as a
+    legacy witness JSON (build_heimdall_witness_file -> a single
+    {"witness": {bindings, assumptions, observations}} object).
+
+    Returns ([], None) when there is nothing to pass."""
+    if wit_path and Path(wit_path).is_file():
+        return ["--witness", str(wit_path)], Path(wit_path)
+
     witness_file_data = build_heimdall_witness_file(witnesses or [])
-    if not witness_file_data["witnesses"]:
+    spec = witness_file_data.get("witness", {})
+    if not (spec.get("bindings") or spec.get("assumptions")):
         return [], None
 
-    witness_file_path = Path(tmp_dir) / "witnesses.json"
+    witness_file_path = Path(tmp_dir) / "witness.json"
     witness_file_path.write_text(json.dumps(witness_file_data, indent=2))
-    return ["--witness-file", str(witness_file_path)], witness_file_path
+    return ["--witness", str(witness_file_path)], witness_file_path
 
 
 def _check_equivalence(
@@ -612,6 +688,7 @@ def _check_equivalence(
     witnesses: "list[dict] | None" = None,
     metric_key: str = "semantic_equivalent",
     detail_key: str = "equivalence_detail",
+    wit_path: "str | None" = None,
 ) -> tuple[dict, dict]:
     """Symbolically check candidate_object against the baseline for every entry
     point in TOOL["equiv_entries"]. Returns (metrics, artifacts); metrics always
@@ -646,9 +723,15 @@ def _check_equivalence(
     all_equivalent = True
 
     with tempfile.TemporaryDirectory(prefix="openevolve_bpf_witness_") as witness_tmp_dir:
-        witness_args, _ = _witness_file_args(witnesses, witness_tmp_dir)
+        witness_args, _ = _witness_file_args(witnesses, witness_tmp_dir, wit_path=wit_path)
+        _kind = ".wit" if (wit_path and witness_args) else ("json" if witness_args else "no")
+        _log(
+            f"[{metric_key}] {len(entries)} entrypoint(s) vs baseline, "
+            f"maps={maps or '[]'}, witness={_kind}"
+        )
 
         for entry in entries:
+            _log(f"  {entry}: checking (timeout {EQUIV_TIMEOUT}s in env '{EQUIV_CONDA_ENV}')...")
             safe_entry = re.sub(r"[^A-Za-z0-9_.-]", "_", entry)
             json_output_path = Path(witness_tmp_dir) / f"result_{safe_entry}.json"
             cmd = [
@@ -676,6 +759,7 @@ def _check_equivalence(
                     timeout=EQUIV_TIMEOUT,
                 )
             except subprocess.TimeoutExpired:
+                _log(f"  {entry}: TIMEOUT (no result within {EQUIV_TIMEOUT}s)")
                 per_entry[entry] = {
                     "equivalent": None,
                     "result_type": "timeout",
@@ -726,95 +810,22 @@ def _check_equivalence(
             if equivalent is not True:
                 all_equivalent = False
 
+            _pe = per_entry[entry]
+            if _pe.get("equivalent") is True:
+                _log(f"  {entry}: EQUIVALENT")
+            else:
+                ce = (_pe.get("counter_example") or "").strip().splitlines()
+                ce_head = ce[0] if ce else ""
+                _log(
+                    f"  {entry}: NOT equivalent "
+                    f"[{_pe.get('result_type')}]" + (f"  {ce_head}" if ce_head else "")
+                )
+
+    _log(f"[{metric_key}] {'ALL equivalent' if all_equivalent else 'NOT all equivalent'} "
+         f"-> {metric_key}={1.0 if all_equivalent else 0.0}")
     metrics = {metric_key: 1.0 if all_equivalent else 0.0}
     artifacts = {detail_key: json.dumps(per_entry, indent=2, sort_keys=True)}
     return metrics, artifacts
-
-
-def reverify_with_witnesses(program_path: str, witnesses: list) -> EvaluationResult:
-    """Optional second-pass equivalence re-check, called only by OpenEvolve's
-    interactive review flow (openevolve/process_parallel.py's
-    _reverify_approved_witnesses) after a developer has approved specific
-    transformation witnesses claiming a BPF map's value type was narrowed
-    and/or two or more maps were merged.
-
-    `witnesses` is a list of developer-approved, self-proven witness dicts,
-    each carrying a "map_width_change" and/or "map_fusion" hint (see
-    extract_transformation_witnesses). This recompiles the candidate and
-    re-runs the same heimdall checker as the unconditional evaluate() path,
-    but with a --witness-file (see _witness_file_args) that lets it skip the
-    exact BTF value_size equality gate for narrowed map(s) and treat declared
-    source maps as merged into their target -- everything else about the
-    check (the rest of the symbolic proof) is unchanged, and the checker
-    itself is expected to verify each hint against the object files' real BTF
-    metadata before honoring it. Result is stored under a distinct metric
-    (semantic_equivalent_relaxed), never overwriting the unconditional
-    semantic_equivalent from evaluate()."""
-    source_path = Path(program_path)
-
-    if not witnesses:
-        return EvaluationResult(
-            metrics={"semantic_equivalent_relaxed": 0.0},
-            artifacts={"error": "reverify_with_witnesses called with no witnesses"},
-        )
-
-    with tempfile.TemporaryDirectory(prefix="openevolve_bpf_reverify_") as tmp_dir:
-        output_path = Path(tmp_dir) / f"{source_path.stem}.o"
-        cmd = [
-            CLANG,
-            "-g",
-            "-O2",
-            "-target",
-            "bpf",
-            "-D__TARGET_ARCH_x86",
-            "-I",
-            str(LIBBPF_TOOLS_DIR),
-            "-I",
-            "/usr/include/x86_64-linux-gnu",
-            "-c",
-            str(source_path),
-            "-o",
-            str(output_path),
-        ]
-
-        try:
-            result = subprocess.run(
-                cmd, cwd=str(HEIMDALL_ROOT), capture_output=True, text=True, timeout=TIMEOUT_SECONDS
-            )
-        except subprocess.TimeoutExpired:
-            return EvaluationResult(
-                metrics={"semantic_equivalent_relaxed": 0.0},
-                artifacts={"error": f"clang timed out after {TIMEOUT_SECONDS}s (reverify)"},
-            )
-
-        if result.returncode != 0 or not output_path.exists():
-            return EvaluationResult(
-                metrics={"semantic_equivalent_relaxed": 0.0},
-                artifacts={
-                    "error": "clang compilation failed (reverify)",
-                    "stderr": result.stderr[-4000:],
-                },
-            )
-
-        # Replace each witness's self-reported map_width_change with the REAL
-        # baseline-vs-this-candidate BTF value_size (see
-        # _correct_map_width_change_hints) -- this is what makes a witness
-        # narrowing an already-narrowed map (i.e. anything past the first
-        # generation of a given map's narrowing) actually match heimdall's
-        # exact-equality hint gate instead of silently falling back to the
-        # strict check every time.
-        witnesses = _correct_map_width_change_hints(witnesses, output_path)
-
-        metrics, artifacts = _check_equivalence(
-            output_path,
-            witnesses=witnesses,
-            metric_key="semantic_equivalent_relaxed",
-            detail_key="equivalence_relaxed_detail",
-        )
-        artifacts["relaxed_hints"] = json.dumps(
-            build_heimdall_witness_file(witnesses), sort_keys=True
-        )
-        return EvaluationResult(metrics=metrics, artifacts=artifacts)
 
 
 def _parse_runner_stats(output: str) -> dict[str, dict[str, float | int | None]]:
@@ -902,6 +913,8 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
             "--group_reporting",
         ]
     runner_cmd = ["sudo", "-n", str(RUNNER), *TOOL["args"](object_path)]
+    _log(f"benchmark: workload = {workload_cmd[0]} ... (runtime up to {FIO_RUNTIME}s)")
+    _log(f"benchmark: runner = {' '.join(runner_cmd)}")
 
     workload_process = subprocess.Popen(
         workload_cmd,
@@ -914,6 +927,7 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
 
     try:
         time.sleep(FIO_WARMUP_SECONDS)
+        _log(f"benchmark: workload warmed up, measuring for {RUNNER_SECONDS}s...")
 
         if workload_process.poll() is not None:
             workload_stdout, workload_stderr = workload_process.communicate(timeout=1)
@@ -953,22 +967,37 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
     runner_output = f"{runner_result.stdout}\n{runner_result.stderr}"
     runner_stats = _parse_runner_stats(runner_output)
 
-    ns_values = [
-        values["ns_per_run"]
-        for values in runner_stats.values()
-        if values.get("ns_per_run") is not None and values.get("run_cnt", 0) > 0
-    ]
-    avg_ns_per_run = float(sum(ns_values) / len(ns_values)) if ns_values else 0.0
-    total_run_cnt = float(sum(values.get("run_cnt", 0) or 0 for values in runner_stats.values()))
-    runtime_success = 1.0 if runner_result.returncode == 0 and ns_values else 0.0
-
-    metrics = {
-        "runtime_success": runtime_success,
-        "avg_ns_per_run": avg_ns_per_run,
-        "total_run_cnt": total_run_cnt,
+    # per-function ns/run -- reported and scored individually, never summed or
+    # averaged into one figure.
+    per_fn_ns = {
+        prog: float(v["ns_per_run"])
+        for prog, v in runner_stats.items()
+        if v.get("ns_per_run") is not None and v.get("run_cnt", 0) > 0
     }
-    if avg_ns_per_run > 0:
-        metrics["runtime_score"] = 1.0 / (1.0 + avg_ns_per_run / 1000.0)
+    runtime_success = 1.0 if runner_result.returncode == 0 and per_fn_ns else 0.0
+
+    if runner_stats:
+        for prog, v in runner_stats.items():
+            _log(f"  {prog}: {v.get('ns_per_run')} ns/run (run_cnt {v.get('run_cnt')})")
+    _log(f"benchmark: {'OK' if runtime_success else 'FAILED'} "
+         f"({len(per_fn_ns)}/{len(runner_stats)} function(s) measured, "
+         f"runner rc={runner_result.returncode})")
+
+    metrics = {"runtime_success": runtime_success}
+    # per-function ns/run as first-class metrics (plain keys -- OpenEvolve's
+    # feature-grid parser dislikes punctuation).
+    for prog, ns in per_fn_ns.items():
+        metrics[f"ns_per_run__{re.sub(r'[^A-Za-z0-9_]', '_', prog)}"] = ns
+
+    # runtime_score: one scalar OpenEvolve can rank on, reduced from the
+    # per-function ns/run WITHOUT summing/averaging. BPF_RUNTIME_SCORE_REDUCE
+    # picks which function drives it: "max" (default) scores the SLOWEST
+    # function, so a candidate only wins if it doesn't regress any of them;
+    # "min" scores the fastest.
+    if per_fn_ns:
+        reduce = os.environ.get("BPF_RUNTIME_SCORE_REDUCE", "max").lower()
+        driver_ns = min(per_fn_ns.values()) if reduce == "min" else max(per_fn_ns.values())
+        metrics["runtime_score"] = 1.0 / (1.0 + driver_ns / 1000.0)
     else:
         metrics["runtime_score"] = 0.0
 
@@ -992,9 +1021,16 @@ def _run_workload_benchmark(object_path: Path) -> tuple[dict[str, float], dict[s
     return metrics, artifacts
 
 
-def evaluate(program_path: str) -> EvaluationResult:
+def evaluate(
+    program_path: str,
+    witnesses: "list[dict] | None" = None,
+    wit_path: "str | None" = None,
+    iteration: "int | None" = None,
+) -> EvaluationResult:
     source_path = Path(program_path)
     source = source_path.read_text(encoding="utf-8", errors="replace")
+    _log(f"=== evaluate {source_path.name} (tool={BPF_TOOL}) ===")
+    _log("step 1/3: compiling candidate with clang -target bpf ...")
 
     with tempfile.TemporaryDirectory(prefix="openevolve_bpf_") as tmp_dir:
         output_path = Path(tmp_dir) / f"{source_path.stem}.o"
@@ -1030,7 +1066,7 @@ def evaluate(program_path: str) -> EvaluationResult:
                 "compile_success": 0.0,
                 "semantic_equivalent": 0.0,
             }
-            _save_candidate(source, timeout_metrics)
+            _save_candidate(source, timeout_metrics, iteration=iteration)
             return EvaluationResult(
                 metrics=timeout_metrics,
                 artifacts={
@@ -1065,27 +1101,80 @@ def evaluate(program_path: str) -> EvaluationResult:
         }
 
         if compile_success == 0.0:
+            first_err = (result.stderr or result.stdout).strip().splitlines()
+            _log(f"compile FAILED: {first_err[0] if first_err else '(no diagnostic)'}")
             artifacts["error"] = "clang compilation failed"
-            _save_candidate(source, metrics)
+            _save_candidate(source, metrics, iteration=iteration)
             return EvaluationResult(metrics=metrics, artifacts=artifacts)
+        _log(f"compile OK ({object_size} bytes)")
 
         if EQUIV_CHECK:
-            equiv_metrics, equiv_artifacts = _check_equivalence(output_path)
+            _log("step 2/3: symbolic equivalence check vs baseline ...")
+            # Single pass: EQUIV_MODE picks whether an approved witness (if any
+            # was passed in) is used at all. "strict" ignores witnesses/wit_path
+            # entirely for the whole run; "relaxed" (default) uses whatever was
+            # approved for THIS candidate, which is a no-op when there's none --
+            # _check_equivalence already falls back to a plain strict check when
+            # there's nothing to relax. There is no separate later re-check
+            # anymore, so this is the one and only equivalence verdict.
+            effective_witnesses = None
+            effective_wit_path = None
+            if EQUIV_MODE == "relaxed" and (witnesses or wit_path):
+                effective_witnesses = _correct_map_width_change_hints(
+                    witnesses or [], output_path
+                )
+                effective_wit_path = wit_path
+            equiv_metrics, equiv_artifacts = _check_equivalence(
+                output_path, witnesses=effective_witnesses, wit_path=effective_wit_path
+            )
             metrics.update(equiv_metrics)
             artifacts.update(equiv_artifacts)
+            artifacts["equivalence_mode"] = EQUIV_MODE
+            artifacts["witness_source"] = (
+                "wit" if effective_wit_path else ("hints" if effective_witnesses else "none")
+            )
+        else:
+            _log("step 2/3: equivalence check SKIPPED (BPF_EQUIV_CHECK=0)")
 
         if RUN_BENCHMARK:
-            runtime_metrics, runtime_artifacts = _run_workload_benchmark(output_path)
-            metrics.update(runtime_metrics)
-            artifacts.update(runtime_artifacts)
+            # Skip the benchmark (60s+, sudo BPF attach, real workload) for a
+            # candidate that isn't proven equivalent -- its score is zeroed by
+            # equiv_factor below regardless of how fast it is, so measuring it
+            # only wastes time and risks the overall evaluation timeout. Doesn't
+            # apply when EQUIV_CHECK itself is off (BPF_EQUIV_CHECK=0): there is
+            # no verdict to gate on, so benchmark unconditionally as before.
+            should_measure = not EQUIV_CHECK or metrics.get("semantic_equivalent", 0.0) == 1.0
+            if should_measure:
+                _log("step 3/3: workload + runner benchmark ...")
+                runtime_metrics, runtime_artifacts = _run_workload_benchmark(output_path)
+                metrics.update(runtime_metrics)
+                artifacts.update(runtime_artifacts)
+            else:
+                _log("step 3/3: SKIPPED (not proven equivalent)")
+
+            # semantic_equivalent gates the score: a candidate heimdall cannot
+            # prove equivalent to the baseline keeps only EQUIV_SCORE_FLOOR of
+            # what its speed alone would earn (0.0 by default = hard gate).
+            equiv_factor = 1.0
+            if EQUIV_CHECK:
+                equiv = metrics.get("semantic_equivalent", 0.0)
+                equiv_factor = EQUIV_SCORE_FLOOR + (1.0 - EQUIV_SCORE_FLOOR) * equiv
             metrics["score"] = (
                 compile_success
                 * metrics.get("runtime_success", 0.0)
                 * (0.5 + 0.5 * metrics.get("runtime_score", 0.0))
+                * equiv_factor
             )
             metrics["combined_score"] = metrics["score"]
+            _log(
+                f"score = {metrics['score']:.4f}  "
+                f"(runtime_success={metrics.get('runtime_success', 0.0)}, "
+                f"runtime_score={metrics.get('runtime_score', 0.0):.4f}, "
+                f"semantic_equivalent={metrics.get('semantic_equivalent', 0.0)}, "
+                f"equiv_factor={equiv_factor:.2f})"
+            )
 
-        _save_candidate(source, metrics)
+        _save_candidate(source, metrics, iteration=iteration)
         return EvaluationResult(metrics=metrics, artifacts=artifacts)
 
 
@@ -1094,6 +1183,12 @@ if __name__ == "__main__":
 
     if len(sys.argv) != 2:
         raise SystemExit("usage: python evaluator.py <candidate.bpf.c>")
+
+    # Standalone invocation (see README's "Smoke-test the evaluator
+    # directly"): OpenEvolve's own logging setup never runs in this path, so
+    # without a handler here _log()'s records would be silently dropped
+    # (logging's handler-of-last-resort only surfaces WARNING+).
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     evaluation = evaluate(sys.argv[1])
     print(json.dumps({"metrics": evaluation.metrics, "artifacts": evaluation.artifacts}, indent=2))

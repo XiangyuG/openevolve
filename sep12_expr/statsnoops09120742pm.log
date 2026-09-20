@@ -1,0 +1,1736 @@
+2026-09-13 02:42:36,502 - INFO - Logging to openevolve_output/bpf_statsnoop_verify_autoapprove/logs/openevolve_20260913_024236.log
+2026-09-13 02:42:36,502 - INFO - Interactive review mode enabled. Queue dir: /users/xiang95/learn_heimdall/heimdall/openevolve/openevolve_output/bpf_statsnoop_verify_autoapprove/review_queue
+2026-09-13 02:42:36,510 - INFO - Set random seed to 42 for reproducibility
+2026-09-13 02:42:36,545 - INFO - Initialized OpenAI LLM with model: gpt-5-mini
+2026-09-13 02:42:36,555 - INFO - Initialized OpenAI LLM with model: gpt-5-nano
+2026-09-13 02:42:36,555 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 02:42:36,575 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 02:42:36,577 - INFO - Initialized prompt sampler
+2026-09-13 02:42:36,578 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 02:42:36,579 - INFO - Initialized program database with 0 programs
+2026-09-13 02:42:36,581 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 02:42:36,581 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 02:42:36,581 - INFO - Initialized OpenEvolve with /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/statsnoop.bpf.c
+2026-09-13 02:42:36,581 - INFO - Adding initial program to database
+[bpf_eval] === evaluate tmpc07s0c21.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (38680 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=no
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_0wul8ngy/tmpc07s0c21.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 891.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_statfs_return: 1321.5 ns/run (run_cnt 2)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 840.96 ns/run (run_cnt 4303)
+[bpf_eval]   handle_statx_return: 1219.6 ns/run (run_cnt 4303)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1926.73 ns/run (run_cnt 6843)
+[bpf_eval]   handle_newfstatat_return: 2594.21 ns/run (run_cnt 6842)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6391  (runtime_success=1.0, runtime_score=0.2782, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 02:45:25,668 - INFO - Evaluated program 1a528765-71b3-4f64-ba99-e399d180d437 in 169.09s: score=0.6391, combined_score=0.6391, compile_success=1.0000, object_bytes=38680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=891.0000, ns_per_run__handle_statfs_return=1321.5000, ns_per_run__handle_statx_entry=840.9600, ns_per_run__handle_statx_return=1219.6000, ns_per_run__handle_newfstatat_entry=1926.7300, ns_per_run__handle_newfstatat_return=2594.2100, runtime_score=0.2782
+2026-09-13 02:45:25,669 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 2}
+2026-09-13 02:45:25,669 - INFO - Stored artifacts for initial program
+2026-09-13 02:45:25,670 - INFO - Initialized process parallel controller with 1 workers
+2026-09-13 02:45:25,670 - INFO - Set max None tasks per child
+2026-09-13 02:45:25,671 - INFO - Started process pool with 1 processes
+2026-09-13 02:45:25,671 - INFO - Using island-based evolution with 2 islands
+2026-09-13 02:45:25,671 - INFO - Island Status:
+2026-09-13 02:45:25,671 - INFO -  * Island 0: 1 programs, best=0.6391, avg=0.6391, diversity=0.00, gen=0 (best: 1a528765-71b3-4f64-ba99-e399d180d437)
+2026-09-13 02:45:25,671 - INFO -    Island 1: 0 programs, best=0.0000, avg=0.0000, diversity=0.00, gen=0
+2026-09-13 02:45:25,671 - INFO - Starting interactive (human-reviewed) evolution from iteration 1 for 30 iterations (total: 31)
+2026-09-13 02:45:25,700 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 02:45:25,723 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 02:45:25,725 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 02:45:25,727 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 02:45:25,727 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 02:45:25,731 - INFO - Sampled model: gpt-5-nano
+2026-09-13 02:46:36,860 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 02:46:36,937 - INFO - Iteration 1: 1 witness(es) approved by developer; implementing
+2026-09-13 02:46:36,942 - INFO - Sampled model: gpt-5-nano
+2026-09-13 02:46:49,345 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp25vrmjrh.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37912 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=no
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 02:48:34,935 - INFO - Evaluated program f9f88822-aced-4052-8473-fec042a157b8 in 105.58s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=37912.0000, semantic_equivalent=0.0000
+2026-09-13 02:48:34,937 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 0}
+2026-09-13 02:48:34,938 - INFO - Iteration 1: Program f9f88822-aced-4052-8473-fec042a157b8 (parent: 1a528765-71b3-4f64-ba99-e399d180d437) completed in 117.99s
+2026-09-13 02:48:34,938 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=37912.0000, semantic_equivalent=0.0000
+2026-09-13 02:48:34,940 - INFO - Sampled model: gpt-5-mini
+2026-09-13 02:48:57,006 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 02:48:57,014 - INFO - Iteration 2: 2 witness(es) approved by developer; implementing
+2026-09-13 02:48:57,018 - INFO - Sampled model: gpt-5-nano
+2026-09-13 02:49:18,146 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 02:49:18,234 - INFO - Iteration 2: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmph_08if6d.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37592 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_nerqol47/tmph_08if6d.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 851.5 ns/run (run_cnt 2)
+[bpf_eval]   handle_statfs_return: 1213.5 ns/run (run_cnt 2)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 841.55 ns/run (run_cnt 4323)
+[bpf_eval]   handle_statx_return: 1219.16 ns/run (run_cnt 4323)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1901.69 ns/run (run_cnt 6739)
+[bpf_eval]   handle_newfstatat_return: 2554.0 ns/run (run_cnt 6738)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6407  (runtime_success=1.0, runtime_score=0.2814, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 02:52:12,620 - INFO - Evaluated program 12931489-8e51-465c-b48b-82e37514d528 in 174.39s: score=0.6407, combined_score=0.6407, compile_success=1.0000, object_bytes=37592.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=851.5000, ns_per_run__handle_statfs_return=1213.5000, ns_per_run__handle_statx_entry=841.5500, ns_per_run__handle_statx_return=1219.1600, ns_per_run__handle_newfstatat_entry=1901.6900, ns_per_run__handle_newfstatat_return=2554.0000, runtime_score=0.2814
+2026-09-13 02:52:12,624 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 2, 'semantic_equivalent': 4}
+2026-09-13 02:52:12,625 - INFO - Iteration 2: Program 12931489-8e51-465c-b48b-82e37514d528 (parent: f9f88822-aced-4052-8473-fec042a157b8) completed in 195.60s
+2026-09-13 02:52:12,625 - INFO - Metrics: score=0.6407, combined_score=0.6407, compile_success=1.0000, object_bytes=37592.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=851.5000, ns_per_run__handle_statfs_return=1213.5000, ns_per_run__handle_statx_entry=841.5500, ns_per_run__handle_statx_return=1219.1600, ns_per_run__handle_newfstatat_entry=1901.6900, ns_per_run__handle_newfstatat_return=2554.0000, runtime_score=0.2814
+2026-09-13 02:52:12,630 - INFO - Sampled model: gpt-5-mini
+2026-09-13 02:52:40,897 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 02:52:40,903 - INFO - Iteration 3: 2 witness(es) approved by developer; implementing
+2026-09-13 02:52:40,908 - INFO - Sampled model: gpt-5-mini
+2026-09-13 02:52:57,395 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 02:52:57,481 - INFO - Iteration 3: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmps528pbc5.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37552 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_31ztir4w/tmps528pbc5.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 886.75 ns/run (run_cnt 4)
+[bpf_eval]   handle_statfs_return: 1164.0 ns/run (run_cnt 4)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 856.42 ns/run (run_cnt 4305)
+[bpf_eval]   handle_statx_return: 1202.15 ns/run (run_cnt 4305)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1862.59 ns/run (run_cnt 6983)
+[bpf_eval]   handle_newfstatat_return: 2541.37 ns/run (run_cnt 6982)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6412  (runtime_success=1.0, runtime_score=0.2824, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 02:55:46,176 - INFO - Evaluated program 17b22a7e-54ab-4dcb-9df6-b645e752ab6a in 168.69s: score=0.6412, combined_score=0.6412, compile_success=1.0000, object_bytes=37552.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=886.7500, ns_per_run__handle_statfs_return=1164.0000, ns_per_run__handle_statx_entry=856.4200, ns_per_run__handle_statx_return=1202.1500, ns_per_run__handle_newfstatat_entry=1862.5900, ns_per_run__handle_newfstatat_return=2541.3700, runtime_score=0.2824
+2026-09-13 02:55:46,181 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 4}
+2026-09-13 02:55:46,181 - INFO - Iteration 3: Program 17b22a7e-54ab-4dcb-9df6-b645e752ab6a (parent: f9f88822-aced-4052-8473-fec042a157b8) completed in 185.27s
+2026-09-13 02:55:46,181 - INFO - Metrics: score=0.6412, combined_score=0.6412, compile_success=1.0000, object_bytes=37552.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=886.7500, ns_per_run__handle_statfs_return=1164.0000, ns_per_run__handle_statx_entry=856.4200, ns_per_run__handle_statx_return=1202.1500, ns_per_run__handle_newfstatat_entry=1862.5900, ns_per_run__handle_newfstatat_return=2541.3700, runtime_score=0.2824
+2026-09-13 02:55:46,188 - INFO - Sampled model: gpt-5-mini
+2026-09-13 02:56:02,677 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 02:56:02,683 - INFO - Iteration 4: 2 witness(es) approved by developer; implementing
+2026-09-13 02:56:02,689 - INFO - Sampled model: gpt-5-nano
+2026-09-13 02:56:16,014 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 02:56:16,101 - INFO - Iteration 4: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp96f1irnn.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37592 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_fhpqyjin/tmp96f1irnn.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 1062.5 ns/run (run_cnt 4)
+[bpf_eval]   handle_statfs_return: 1434.5 ns/run (run_cnt 4)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 849.87 ns/run (run_cnt 4304)
+[bpf_eval]   handle_statx_return: 1232.88 ns/run (run_cnt 4304)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1899.24 ns/run (run_cnt 6846)
+[bpf_eval]   handle_newfstatat_return: 2539.4 ns/run (run_cnt 6845)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6413  (runtime_success=1.0, runtime_score=0.2825, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 02:59:04,309 - INFO - Evaluated program be7cb7fe-181c-4999-bcba-78a7e95c166c in 168.21s: score=0.6413, combined_score=0.6413, compile_success=1.0000, object_bytes=37592.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=1062.5000, ns_per_run__handle_statfs_return=1434.5000, ns_per_run__handle_statx_entry=849.8700, ns_per_run__handle_statx_return=1232.8800, ns_per_run__handle_newfstatat_entry=1899.2400, ns_per_run__handle_newfstatat_return=2539.4000, runtime_score=0.2825
+2026-09-13 02:59:04,313 - INFO - Iteration 4: Program be7cb7fe-181c-4999-bcba-78a7e95c166c (parent: 12931489-8e51-465c-b48b-82e37514d528) completed in 181.62s
+2026-09-13 02:59:04,313 - INFO - Metrics: score=0.6413, combined_score=0.6413, compile_success=1.0000, object_bytes=37592.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=1062.5000, ns_per_run__handle_statfs_return=1434.5000, ns_per_run__handle_statx_entry=849.8700, ns_per_run__handle_statx_return=1232.8800, ns_per_run__handle_newfstatat_entry=1899.2400, ns_per_run__handle_newfstatat_return=2539.4000, runtime_score=0.2825
+2026-09-13 02:59:04,318 - INFO - Sampled model: gpt-5-mini
+2026-09-13 02:59:21,868 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 02:59:21,875 - INFO - Iteration 5: 1 witness(es) approved by developer; implementing
+2026-09-13 02:59:21,882 - INFO - Sampled model: gpt-5-mini
+2026-09-13 02:59:36,590 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 02:59:36,682 - INFO - Iteration 5: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp2prxw2t7.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (38344 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_2n8uc5uq/tmp2prxw2t7.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 974.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_statfs_return: 1297.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 852.74 ns/run (run_cnt 4297)
+[bpf_eval]   handle_statx_return: 1246.9 ns/run (run_cnt 4297)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1954.82 ns/run (run_cnt 6701)
+[bpf_eval]   handle_newfstatat_return: 2541.18 ns/run (run_cnt 6700)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6412  (runtime_success=1.0, runtime_score=0.2824, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:02:25,912 - INFO - Evaluated program c81b0ba3-058d-423d-859e-b89fc0a6f637 in 169.23s: score=0.6412, combined_score=0.6412, compile_success=1.0000, object_bytes=38344.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=974.0000, ns_per_run__handle_statfs_return=1297.0000, ns_per_run__handle_statx_entry=852.7400, ns_per_run__handle_statx_return=1246.9000, ns_per_run__handle_newfstatat_entry=1954.8200, ns_per_run__handle_newfstatat_return=2541.1800, runtime_score=0.2824
+2026-09-13 03:02:25,917 - INFO - Iteration 5: Program c81b0ba3-058d-423d-859e-b89fc0a6f637 (parent: 1a528765-71b3-4f64-ba99-e399d180d437) completed in 184.03s
+2026-09-13 03:02:25,918 - INFO - Metrics: score=0.6412, combined_score=0.6412, compile_success=1.0000, object_bytes=38344.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=974.0000, ns_per_run__handle_statfs_return=1297.0000, ns_per_run__handle_statx_entry=852.7400, ns_per_run__handle_statx_return=1246.9000, ns_per_run__handle_newfstatat_entry=1954.8200, ns_per_run__handle_newfstatat_return=2541.1800, runtime_score=0.2824
+2026-09-13 03:02:25,925 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:02:53,668 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:02:53,675 - INFO - Iteration 6: 2 witness(es) approved by developer; implementing
+2026-09-13 03:02:53,682 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:03:14,436 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:03:14,525 - INFO - Iteration 6: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpzfsm6y7z.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (36656 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_8kcmjhfa/tmpzfsm6y7z.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval] benchmark: FAILED (0/0 function(s) measured, runner rc=1)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:05:03,999 - INFO - Evaluated program 69ee922d-97f2-4091-bca5-768bf758c381 in 109.47s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=36656.0000, semantic_equivalent=1.0000, runtime_success=0.0000, runtime_score=0.0000
+2026-09-13 03:05:04,003 - INFO - Iteration 6: Program 69ee922d-97f2-4091-bca5-768bf758c381 (parent: be7cb7fe-181c-4999-bcba-78a7e95c166c) completed in 130.32s
+2026-09-13 03:05:04,003 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=36656.0000, semantic_equivalent=1.0000, runtime_success=0.0000, runtime_score=0.0000
+2026-09-13 03:05:04,009 - INFO - Sampled model: gpt-5-nano
+2026-09-13 03:05:53,086 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:05:53,092 - INFO - Iteration 7: 1 witness(es) approved by developer; implementing
+2026-09-13 03:05:53,099 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:06:08,059 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:06:08,146 - INFO - Iteration 7: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp1xww0bid.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37160 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_r0tqiuzj/tmp1xww0bid.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statfs_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 835.87 ns/run (run_cnt 4320)
+[bpf_eval]   handle_statx_return: 1072.55 ns/run (run_cnt 4320)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1957.21 ns/run (run_cnt 6574)
+[bpf_eval]   handle_newfstatat_return: 2291.62 ns/run (run_cnt 6573)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6519  (runtime_success=1.0, runtime_score=0.3038, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:08:56,069 - INFO - Evaluated program 1a6ea829-072b-484a-bc2f-433e6e7f1ee6 in 167.92s: score=0.6519, combined_score=0.6519, compile_success=1.0000, object_bytes=37160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=835.8700, ns_per_run__handle_statx_return=1072.5500, ns_per_run__handle_newfstatat_entry=1957.2100, ns_per_run__handle_newfstatat_return=2291.6200, runtime_score=0.3038
+2026-09-13 03:08:56,073 - INFO - Island 0 MAP-Elites cell improved: {'compile_success': 2, 'semantic_equivalent': 4} (fitness: 0.641 -> 0.652)
+2026-09-13 03:08:56,074 - INFO - New best program 1a6ea829-072b-484a-bc2f-433e6e7f1ee6 replaces 1a528765-71b3-4f64-ba99-e399d180d437 (combined_score: 0.6391 → 0.6519, +0.0128)
+2026-09-13 03:08:56,074 - INFO - Iteration 7: Program 1a6ea829-072b-484a-bc2f-433e6e7f1ee6 (parent: f9f88822-aced-4052-8473-fec042a157b8) completed in 182.97s
+2026-09-13 03:08:56,075 - INFO - Metrics: score=0.6519, combined_score=0.6519, compile_success=1.0000, object_bytes=37160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=835.8700, ns_per_run__handle_statx_return=1072.5500, ns_per_run__handle_newfstatat_entry=1957.2100, ns_per_run__handle_newfstatat_return=2291.6200, runtime_score=0.3038
+2026-09-13 03:08:56,075 - INFO - 🌟 New best solution found at iteration 7: 1a6ea829-072b-484a-bc2f-433e6e7f1ee6
+2026-09-13 03:08:56,083 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:09:16,731 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:09:16,739 - INFO - Iteration 8: 1 witness(es) approved by developer; implementing
+2026-09-13 03:09:16,747 - INFO - Sampled model: gpt-5-nano
+2026-09-13 03:09:33,810 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:09:33,897 - INFO - Iteration 8: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp3ciosoam.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37304 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_02u39h72/tmp3ciosoam.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 890.25 ns/run (run_cnt 4)
+[bpf_eval]   handle_statfs_return: 1233.75 ns/run (run_cnt 4)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 843.41 ns/run (run_cnt 4285)
+[bpf_eval]   handle_statx_return: 1223.53 ns/run (run_cnt 4285)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1848.85 ns/run (run_cnt 6887)
+[bpf_eval]   handle_newfstatat_return: 2544.18 ns/run (run_cnt 6886)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6411  (runtime_success=1.0, runtime_score=0.2822, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:12:19,626 - INFO - Evaluated program aff7142e-1f1e-4867-8753-188a2f1062fe in 165.73s: score=0.6411, combined_score=0.6411, compile_success=1.0000, object_bytes=37304.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=890.2500, ns_per_run__handle_statfs_return=1233.7500, ns_per_run__handle_statx_entry=843.4100, ns_per_run__handle_statx_return=1223.5300, ns_per_run__handle_newfstatat_entry=1848.8500, ns_per_run__handle_newfstatat_return=2544.1800, runtime_score=0.2822
+2026-09-13 03:12:19,631 - INFO - Iteration 8: Program aff7142e-1f1e-4867-8753-188a2f1062fe (parent: 12931489-8e51-465c-b48b-82e37514d528) completed in 182.88s
+2026-09-13 03:12:19,631 - INFO - Metrics: score=0.6411, combined_score=0.6411, compile_success=1.0000, object_bytes=37304.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=890.2500, ns_per_run__handle_statfs_return=1233.7500, ns_per_run__handle_statx_entry=843.4100, ns_per_run__handle_statx_return=1223.5300, ns_per_run__handle_newfstatat_entry=1848.8500, ns_per_run__handle_newfstatat_return=2544.1800, runtime_score=0.2822
+2026-09-13 03:12:19,639 - INFO - Sampled model: gpt-5-nano
+2026-09-13 03:13:02,313 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:13:02,320 - INFO - Iteration 9: 1 witness(es) approved by developer; implementing
+2026-09-13 03:13:02,328 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:13:22,071 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp18zo0hgi.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (38464 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=no
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_zpvnjipe/tmp18zo0hgi.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 992.75 ns/run (run_cnt 8)
+[bpf_eval]   handle_statfs_return: 1532.75 ns/run (run_cnt 8)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 824.08 ns/run (run_cnt 4780)
+[bpf_eval]   handle_statx_return: 1219.78 ns/run (run_cnt 4780)
+[bpf_eval]   handle_newfstat_entry: 810.33 ns/run (run_cnt 3)
+[bpf_eval]   handle_newfstat_return: 964.0 ns/run (run_cnt 3)
+[bpf_eval]   handle_newfstatat_entry: 1829.4 ns/run (run_cnt 7455)
+[bpf_eval]   handle_newfstatat_return: 2480.28 ns/run (run_cnt 7454)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (8/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6437  (runtime_success=1.0, runtime_score=0.2873, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:16:06,310 - INFO - Evaluated program 0638efdf-d6a9-494d-9386-b7dcb91c8e27 in 164.23s: score=0.6437, combined_score=0.6437, compile_success=1.0000, object_bytes=38464.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=992.7500, ns_per_run__handle_statfs_return=1532.7500, ns_per_run__handle_statx_entry=824.0800, ns_per_run__handle_statx_return=1219.7800, ns_per_run__handle_newfstat_entry=810.3300, ns_per_run__handle_newfstat_return=964.0000, ns_per_run__handle_newfstatat_entry=1829.4000, ns_per_run__handle_newfstatat_return=2480.2800, runtime_score=0.2873
+2026-09-13 03:16:06,315 - INFO - Iteration 9: Program 0638efdf-d6a9-494d-9386-b7dcb91c8e27 (parent: c81b0ba3-058d-423d-859e-b89fc0a6f637) completed in 183.98s
+2026-09-13 03:16:06,315 - INFO - Metrics: score=0.6437, combined_score=0.6437, compile_success=1.0000, object_bytes=38464.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=992.7500, ns_per_run__handle_statfs_return=1532.7500, ns_per_run__handle_statx_entry=824.0800, ns_per_run__handle_statx_return=1219.7800, ns_per_run__handle_newfstat_entry=810.3300, ns_per_run__handle_newfstat_return=964.0000, ns_per_run__handle_newfstatat_entry=1829.4000, ns_per_run__handle_newfstatat_return=2480.2800, runtime_score=0.2873
+2026-09-13 03:16:06,325 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:16:27,079 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:16:27,086 - INFO - Iteration 10: 2 witness(es) approved by developer; implementing
+2026-09-13 03:16:27,095 - INFO - Sampled model: gpt-5-nano
+2026-09-13 03:16:44,318 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:16:44,405 - INFO - Iteration 10: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpr3fbsy79.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37328 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_8_v_51vd/tmpr3fbsy79.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 822.5 ns/run (run_cnt 2)
+[bpf_eval]   handle_statfs_return: 1179.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 907.59 ns/run (run_cnt 4299)
+[bpf_eval]   handle_statx_return: 1254.72 ns/run (run_cnt 4299)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 2053.94 ns/run (run_cnt 6708)
+[bpf_eval]   handle_newfstatat_return: 2659.19 ns/run (run_cnt 6707)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6366  (runtime_success=1.0, runtime_score=0.2733, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:19:35,433 - INFO - Evaluated program 965d337a-c49c-4990-98e6-b653935ecbf2 in 171.03s: score=0.6366, combined_score=0.6366, compile_success=1.0000, object_bytes=37328.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=822.5000, ns_per_run__handle_statfs_return=1179.0000, ns_per_run__handle_statx_entry=907.5900, ns_per_run__handle_statx_return=1254.7200, ns_per_run__handle_newfstatat_entry=2053.9400, ns_per_run__handle_newfstatat_return=2659.1900, runtime_score=0.2733
+2026-09-13 03:19:35,438 - INFO - Iteration 10: Program 965d337a-c49c-4990-98e6-b653935ecbf2 (parent: be7cb7fe-181c-4999-bcba-78a7e95c166c) completed in 188.34s
+2026-09-13 03:19:35,438 - INFO - Metrics: score=0.6366, combined_score=0.6366, compile_success=1.0000, object_bytes=37328.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=822.5000, ns_per_run__handle_statfs_return=1179.0000, ns_per_run__handle_statx_entry=907.5900, ns_per_run__handle_statx_return=1254.7200, ns_per_run__handle_newfstatat_entry=2053.9400, ns_per_run__handle_newfstatat_return=2659.1900, runtime_score=0.2733
+2026-09-13 03:19:35,438 - INFO - Checkpoint interval reached at iteration 10
+2026-09-13 03:19:35,442 - INFO - Island Status:
+2026-09-13 03:19:35,442 - INFO -  * Island 0: 5 programs, best=0.6519, avg=0.5152, diversity=13.50, gen=5 (best: 1a6ea829-072b-484a-bc2f-433e6e7f1ee6)
+2026-09-13 03:19:35,442 - INFO -    Island 1: 5 programs, best=0.6413, avg=0.5119, diversity=28.23, gen=5 (best: 12931489-8e51-465c-b48b-82e37514d528)
+2026-09-13 03:19:35,467 - INFO - Saved database with 10 programs to openevolve_output/bpf_statsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_031935_10
+2026-09-13 03:19:35,468 - INFO - Saved best program at checkpoint 10 with metrics: score=0.6519, combined_score=0.6519, compile_success=1.0000, object_bytes=37160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=835.8700, ns_per_run__handle_statx_return=1072.5500, ns_per_run__handle_newfstatat_entry=1957.2100, ns_per_run__handle_newfstatat_return=2291.6200, runtime_score=0.3038
+2026-09-13 03:19:35,468 - INFO - Saved checkpoint at iteration 10 to openevolve_output/bpf_statsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_031935_10
+2026-09-13 03:19:35,477 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:19:52,900 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:19:52,908 - INFO - Iteration 11: 1 witness(es) approved by developer; implementing
+2026-09-13 03:19:52,919 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:20:07,671 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:20:07,762 - INFO - Iteration 11: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpkjvy6jga.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37680 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_cf19kd3_/tmpkjvy6jga.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 894.07 ns/run (run_cnt 14)
+[bpf_eval]   handle_statfs_return: 1162.36 ns/run (run_cnt 14)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 856.17 ns/run (run_cnt 4302)
+[bpf_eval]   handle_statx_return: 1171.03 ns/run (run_cnt 4302)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1810.92 ns/run (run_cnt 7433)
+[bpf_eval]   handle_newfstatat_return: 2379.2 ns/run (run_cnt 7432)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6480  (runtime_success=1.0, runtime_score=0.2959, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:23:00,222 - INFO - Evaluated program b7c063d2-11bd-4658-be17-43d696f02937 in 172.46s: score=0.6480, combined_score=0.6480, compile_success=1.0000, object_bytes=37680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=894.0700, ns_per_run__handle_statfs_return=1162.3600, ns_per_run__handle_statx_entry=856.1700, ns_per_run__handle_statx_return=1171.0300, ns_per_run__handle_newfstatat_entry=1810.9200, ns_per_run__handle_newfstatat_return=2379.2000, runtime_score=0.2959
+2026-09-13 03:23:00,226 - INFO - Iteration 11: Program b7c063d2-11bd-4658-be17-43d696f02937 (parent: 0638efdf-d6a9-494d-9386-b7dcb91c8e27) completed in 187.30s
+2026-09-13 03:23:00,227 - INFO - Metrics: score=0.6480, combined_score=0.6480, compile_success=1.0000, object_bytes=37680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=894.0700, ns_per_run__handle_statfs_return=1162.3600, ns_per_run__handle_statx_entry=856.1700, ns_per_run__handle_statx_return=1171.0300, ns_per_run__handle_newfstatat_entry=1810.9200, ns_per_run__handle_newfstatat_return=2379.2000, runtime_score=0.2959
+2026-09-13 03:23:00,237 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:23:25,303 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:23:25,310 - INFO - Iteration 12: 2 witness(es) approved by developer; implementing
+2026-09-13 03:23:25,317 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:23:46,555 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:23:46,646 - INFO - Iteration 12: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpve2qevjy.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (38224 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_c3bm_71v/tmpve2qevjy.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 891.8 ns/run (run_cnt 20)
+[bpf_eval]   handle_statfs_return: 1188.25 ns/run (run_cnt 20)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 849.02 ns/run (run_cnt 4310)
+[bpf_eval]   handle_statx_return: 1206.25 ns/run (run_cnt 4310)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1766.61 ns/run (run_cnt 7585)
+[bpf_eval]   handle_newfstatat_return: 2396.02 ns/run (run_cnt 7584)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6472  (runtime_success=1.0, runtime_score=0.2945, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:26:37,421 - INFO - Evaluated program dbb5cc15-b682-451f-939e-a75eb1a714e0 in 170.77s: score=0.6472, combined_score=0.6472, compile_success=1.0000, object_bytes=38224.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=891.8000, ns_per_run__handle_statfs_return=1188.2500, ns_per_run__handle_statx_entry=849.0200, ns_per_run__handle_statx_return=1206.2500, ns_per_run__handle_newfstatat_entry=1766.6100, ns_per_run__handle_newfstatat_return=2396.0200, runtime_score=0.2945
+2026-09-13 03:26:37,426 - INFO - Iteration 12: Program dbb5cc15-b682-451f-939e-a75eb1a714e0 (parent: 965d337a-c49c-4990-98e6-b653935ecbf2) completed in 192.11s
+2026-09-13 03:26:37,426 - INFO - Metrics: score=0.6472, combined_score=0.6472, compile_success=1.0000, object_bytes=38224.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=891.8000, ns_per_run__handle_statfs_return=1188.2500, ns_per_run__handle_statx_entry=849.0200, ns_per_run__handle_statx_return=1206.2500, ns_per_run__handle_newfstatat_entry=1766.6100, ns_per_run__handle_newfstatat_return=2396.0200, runtime_score=0.2945
+2026-09-13 03:26:37,431 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:26:54,844 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:26:54,851 - INFO - Iteration 13: 2 witness(es) approved by developer; implementing
+2026-09-13 03:26:54,859 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:27:10,961 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:27:11,050 - INFO - Iteration 13: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpdrycbx9o.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37552 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_q82mfzv6/tmpdrycbx9o.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 947.07 ns/run (run_cnt 14)
+[bpf_eval]   handle_statfs_return: 1172.21 ns/run (run_cnt 14)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 838.67 ns/run (run_cnt 4315)
+[bpf_eval]   handle_statx_return: 1195.54 ns/run (run_cnt 4315)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1793.67 ns/run (run_cnt 7463)
+[bpf_eval]   handle_newfstatat_return: 2387.41 ns/run (run_cnt 7462)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6476  (runtime_success=1.0, runtime_score=0.2952, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:29:59,193 - INFO - Evaluated program 39f74bd5-eba5-430e-ad74-be75478559a0 in 168.14s: score=0.6476, combined_score=0.6476, compile_success=1.0000, object_bytes=37552.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=947.0700, ns_per_run__handle_statfs_return=1172.2100, ns_per_run__handle_statx_entry=838.6700, ns_per_run__handle_statx_return=1195.5400, ns_per_run__handle_newfstatat_entry=1793.6700, ns_per_run__handle_newfstatat_return=2387.4100, runtime_score=0.2952
+2026-09-13 03:29:59,198 - INFO - Iteration 13: Program 39f74bd5-eba5-430e-ad74-be75478559a0 (parent: f9f88822-aced-4052-8473-fec042a157b8) completed in 184.34s
+2026-09-13 03:29:59,199 - INFO - Metrics: score=0.6476, combined_score=0.6476, compile_success=1.0000, object_bytes=37552.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=947.0700, ns_per_run__handle_statfs_return=1172.2100, ns_per_run__handle_statx_entry=838.6700, ns_per_run__handle_statx_return=1195.5400, ns_per_run__handle_newfstatat_entry=1793.6700, ns_per_run__handle_newfstatat_return=2387.4100, runtime_score=0.2952
+2026-09-13 03:29:59,210 - INFO - Sampled model: gpt-5-nano
+2026-09-13 03:30:47,882 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:30:47,893 - INFO - Iteration 14: no transformation witnesses found in proposal; retrying with feedback
+2026-09-13 03:30:47,904 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:31:10,699 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:31:10,706 - INFO - Iteration 15: 2 witness(es) approved by developer; implementing
+2026-09-13 03:31:10,717 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:31:29,315 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:31:29,402 - INFO - Iteration 15: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp20wxqa66.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (38448 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_wpm75bte/tmp20wxqa66.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 888.75 ns/run (run_cnt 12)
+[bpf_eval]   handle_statfs_return: 1242.17 ns/run (run_cnt 12)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 849.56 ns/run (run_cnt 4309)
+[bpf_eval]   handle_statx_return: 1190.1 ns/run (run_cnt 4309)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1808.13 ns/run (run_cnt 7358)
+[bpf_eval]   handle_newfstatat_return: 2366.21 ns/run (run_cnt 7357)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6485  (runtime_success=1.0, runtime_score=0.2971, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:34:16,322 - INFO - Evaluated program c2737185-4ef9-4262-95ce-bc4529b78760 in 166.92s: score=0.6485, combined_score=0.6485, compile_success=1.0000, object_bytes=38448.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=888.7500, ns_per_run__handle_statfs_return=1242.1700, ns_per_run__handle_statx_entry=849.5600, ns_per_run__handle_statx_return=1190.1000, ns_per_run__handle_newfstatat_entry=1808.1300, ns_per_run__handle_newfstatat_return=2366.2100, runtime_score=0.2971
+2026-09-13 03:34:16,327 - INFO - Iteration 15: Program c2737185-4ef9-4262-95ce-bc4529b78760 (parent: dbb5cc15-b682-451f-939e-a75eb1a714e0) completed in 185.61s
+2026-09-13 03:34:16,327 - INFO - Metrics: score=0.6485, combined_score=0.6485, compile_success=1.0000, object_bytes=38448.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=888.7500, ns_per_run__handle_statfs_return=1242.1700, ns_per_run__handle_statx_entry=849.5600, ns_per_run__handle_statx_return=1190.1000, ns_per_run__handle_newfstatat_entry=1808.1300, ns_per_run__handle_newfstatat_return=2366.2100, runtime_score=0.2971
+2026-09-13 03:34:16,338 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:34:36,647 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:34:36,656 - INFO - Iteration 16: 1 witness(es) approved by developer; implementing
+2026-09-13 03:34:36,666 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:34:54,140 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:34:54,235 - INFO - Iteration 16: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpd26nta4o.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (36016 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_juu4wg8t/tmpd26nta4o.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval] benchmark: FAILED (0/0 function(s) measured, runner rc=1)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:36:45,885 - INFO - Evaluated program ede0884f-0e6e-4928-97d2-1140254b7ecb in 111.65s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=36016.0000, semantic_equivalent=1.0000, runtime_success=0.0000, runtime_score=0.0000
+2026-09-13 03:36:45,890 - INFO - Iteration 16: Program ede0884f-0e6e-4928-97d2-1140254b7ecb (parent: 69ee922d-97f2-4091-bca5-768bf758c381) completed in 129.22s
+2026-09-13 03:36:45,891 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=36016.0000, semantic_equivalent=1.0000, runtime_success=0.0000, runtime_score=0.0000
+2026-09-13 03:36:45,900 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:37:01,911 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:37:01,919 - INFO - Iteration 17: 2 witness(es) approved by developer; implementing
+2026-09-13 03:37:01,931 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:37:18,320 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:37:18,408 - INFO - Iteration 17: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp83hyx4u1.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37680 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_fd70va7t/tmp83hyx4u1.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statfs_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 847.64 ns/run (run_cnt 4301)
+[bpf_eval]   handle_statx_return: 1203.9 ns/run (run_cnt 4301)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1908.81 ns/run (run_cnt 6766)
+[bpf_eval]   handle_newfstatat_return: 2530.91 ns/run (run_cnt 6765)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6416  (runtime_success=1.0, runtime_score=0.2832, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:40:07,385 - INFO - Evaluated program 6706371c-1409-4591-b00f-63fb8131544f in 168.98s: score=0.6416, combined_score=0.6416, compile_success=1.0000, object_bytes=37680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=847.6400, ns_per_run__handle_statx_return=1203.9000, ns_per_run__handle_newfstatat_entry=1908.8100, ns_per_run__handle_newfstatat_return=2530.9100, runtime_score=0.2832
+2026-09-13 03:40:07,390 - INFO - Iteration 17: Program 6706371c-1409-4591-b00f-63fb8131544f (parent: b7c063d2-11bd-4658-be17-43d696f02937) completed in 185.46s
+2026-09-13 03:40:07,390 - INFO - Metrics: score=0.6416, combined_score=0.6416, compile_success=1.0000, object_bytes=37680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=847.6400, ns_per_run__handle_statx_return=1203.9000, ns_per_run__handle_newfstatat_entry=1908.8100, ns_per_run__handle_newfstatat_return=2530.9100, runtime_score=0.2832
+2026-09-13 03:40:07,402 - INFO - Sampled model: gpt-5-nano
+2026-09-13 03:41:17,904 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:41:17,913 - INFO - Iteration 18: 2 witness(es) approved by developer; implementing
+2026-09-13 03:41:17,924 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:41:41,066 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpy_9zbp27.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37840 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=no
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 03:43:27,912 - INFO - Evaluated program 46b73908-ce2d-4ee9-8a54-3ef3703aa2cb in 106.84s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=37840.0000, semantic_equivalent=0.0000
+2026-09-13 03:43:27,914 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 2, 'semantic_equivalent': 0}
+2026-09-13 03:43:27,915 - INFO - Iteration 18: Program 46b73908-ce2d-4ee9-8a54-3ef3703aa2cb (parent: aff7142e-1f1e-4867-8753-188a2f1062fe) completed in 129.99s
+2026-09-13 03:43:27,915 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=37840.0000, semantic_equivalent=0.0000
+2026-09-13 03:43:27,920 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:43:49,912 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:43:49,921 - INFO - Iteration 19: 3 witness(es) approved by developer; implementing
+2026-09-13 03:43:49,933 - INFO - Sampled model: gpt-5-nano
+2026-09-13 03:44:05,221 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:44:05,313 - INFO - Iteration 19: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpxfqn2sf6.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37480 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_6jl72fu_/tmpxfqn2sf6.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 875.5 ns/run (run_cnt 2)
+[bpf_eval]   handle_statfs_return: 1244.5 ns/run (run_cnt 2)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 827.96 ns/run (run_cnt 4314)
+[bpf_eval]   handle_statx_return: 1193.52 ns/run (run_cnt 4314)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1893.33 ns/run (run_cnt 6741)
+[bpf_eval]   handle_newfstatat_return: 2565.97 ns/run (run_cnt 6740)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6402  (runtime_success=1.0, runtime_score=0.2804, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:46:55,872 - INFO - Evaluated program a948378f-f29e-4cab-9b3f-2a53b379e793 in 170.56s: score=0.6402, combined_score=0.6402, compile_success=1.0000, object_bytes=37480.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=875.5000, ns_per_run__handle_statfs_return=1244.5000, ns_per_run__handle_statx_entry=827.9600, ns_per_run__handle_statx_return=1193.5200, ns_per_run__handle_newfstatat_entry=1893.3300, ns_per_run__handle_newfstatat_return=2565.9700, runtime_score=0.2804
+2026-09-13 03:46:55,877 - INFO - Iteration 19: Program a948378f-f29e-4cab-9b3f-2a53b379e793 (parent: c81b0ba3-058d-423d-859e-b89fc0a6f637) completed in 185.94s
+2026-09-13 03:46:55,878 - INFO - Metrics: score=0.6402, combined_score=0.6402, compile_success=1.0000, object_bytes=37480.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=875.5000, ns_per_run__handle_statfs_return=1244.5000, ns_per_run__handle_statx_entry=827.9600, ns_per_run__handle_statx_return=1193.5200, ns_per_run__handle_newfstatat_entry=1893.3300, ns_per_run__handle_newfstatat_return=2565.9700, runtime_score=0.2804
+2026-09-13 03:46:55,890 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:47:18,302 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:47:18,309 - INFO - Iteration 20: 2 witness(es) approved by developer; implementing
+2026-09-13 03:47:18,319 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:47:32,375 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:47:32,460 - INFO - Iteration 20: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpb7tspq3e.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37328 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_y_5bfec6/tmpb7tspq3e.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statfs_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 845.39 ns/run (run_cnt 4317)
+[bpf_eval]   handle_statx_return: 1207.96 ns/run (run_cnt 4317)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1904.11 ns/run (run_cnt 6664)
+[bpf_eval]   handle_newfstatat_return: 2569.91 ns/run (run_cnt 6663)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6401  (runtime_success=1.0, runtime_score=0.2801, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:50:24,061 - INFO - Evaluated program af8439bf-478d-482a-9a70-3ddf78ce136a in 171.60s: score=0.6401, combined_score=0.6401, compile_success=1.0000, object_bytes=37328.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=845.3900, ns_per_run__handle_statx_return=1207.9600, ns_per_run__handle_newfstatat_entry=1904.1100, ns_per_run__handle_newfstatat_return=2569.9100, runtime_score=0.2801
+2026-09-13 03:50:24,066 - INFO - Iteration 20: Program af8439bf-478d-482a-9a70-3ddf78ce136a (parent: ede0884f-0e6e-4928-97d2-1140254b7ecb) completed in 185.74s
+2026-09-13 03:50:24,066 - INFO - Metrics: score=0.6401, combined_score=0.6401, compile_success=1.0000, object_bytes=37328.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=845.3900, ns_per_run__handle_statx_return=1207.9600, ns_per_run__handle_newfstatat_entry=1904.1100, ns_per_run__handle_newfstatat_return=2569.9100, runtime_score=0.2801
+2026-09-13 03:50:24,066 - INFO - Checkpoint interval reached at iteration 20
+2026-09-13 03:50:24,070 - INFO - Island Status:
+2026-09-13 03:50:24,070 - INFO -  * Island 0: 10 programs, best=0.6519, avg=0.5802, diversity=12.40, gen=10 (best: 1a6ea829-072b-484a-bc2f-433e6e7f1ee6)
+2026-09-13 03:50:24,070 - INFO -    Island 1: 9 programs, best=0.6472, avg=0.4274, diversity=17.10, gen=9 (best: 12931489-8e51-465c-b48b-82e37514d528)
+2026-09-13 03:50:24,119 - INFO - Saved database with 19 programs to openevolve_output/bpf_statsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_035024_20
+2026-09-13 03:50:24,120 - INFO - Saved best program at checkpoint 20 with metrics: score=0.6519, combined_score=0.6519, compile_success=1.0000, object_bytes=37160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=835.8700, ns_per_run__handle_statx_return=1072.5500, ns_per_run__handle_newfstatat_entry=1957.2100, ns_per_run__handle_newfstatat_return=2291.6200, runtime_score=0.3038
+2026-09-13 03:50:24,120 - INFO - Saved checkpoint at iteration 20 to openevolve_output/bpf_statsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_035024_20
+2026-09-13 03:50:24,129 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:50:37,111 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:50:37,118 - INFO - Iteration 21: 2 witness(es) approved by developer; implementing
+2026-09-13 03:50:37,130 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:50:51,390 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:50:51,479 - INFO - Iteration 21: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpjq8nzsbq.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37680 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_rp5qgr5x/tmpjq8nzsbq.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 793.25 ns/run (run_cnt 4)
+[bpf_eval]   handle_statfs_return: 1137.0 ns/run (run_cnt 4)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 845.43 ns/run (run_cnt 4303)
+[bpf_eval]   handle_statx_return: 1202.26 ns/run (run_cnt 4303)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1924.73 ns/run (run_cnt 6795)
+[bpf_eval]   handle_newfstatat_return: 2540.99 ns/run (run_cnt 6794)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6412  (runtime_success=1.0, runtime_score=0.2824, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:53:39,146 - INFO - Evaluated program b8e26b4f-c639-472d-8640-3d34031cb91c in 167.67s: score=0.6412, combined_score=0.6412, compile_success=1.0000, object_bytes=37680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=793.2500, ns_per_run__handle_statfs_return=1137.0000, ns_per_run__handle_statx_entry=845.4300, ns_per_run__handle_statx_return=1202.2600, ns_per_run__handle_newfstatat_entry=1924.7300, ns_per_run__handle_newfstatat_return=2540.9900, runtime_score=0.2824
+2026-09-13 03:53:39,150 - INFO - Iteration 21: Program b8e26b4f-c639-472d-8640-3d34031cb91c (parent: b7c063d2-11bd-4658-be17-43d696f02937) completed in 182.02s
+2026-09-13 03:53:39,150 - INFO - Metrics: score=0.6412, combined_score=0.6412, compile_success=1.0000, object_bytes=37680.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=793.2500, ns_per_run__handle_statfs_return=1137.0000, ns_per_run__handle_statx_entry=845.4300, ns_per_run__handle_statx_return=1202.2600, ns_per_run__handle_newfstatat_entry=1924.7300, ns_per_run__handle_newfstatat_return=2540.9900, runtime_score=0.2824
+2026-09-13 03:53:39,158 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:53:54,494 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:53:54,503 - INFO - Iteration 22: 2 witness(es) approved by developer; implementing
+2026-09-13 03:53:54,513 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:54:10,119 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:54:10,230 - INFO - Iteration 22: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpxwsah3eb.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37936 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_6ewxy011/tmpxwsah3eb.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statfs_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 858.29 ns/run (run_cnt 4318)
+[bpf_eval]   handle_statx_return: 1219.14 ns/run (run_cnt 4318)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1911.76 ns/run (run_cnt 6626)
+[bpf_eval]   handle_newfstatat_return: 2587.83 ns/run (run_cnt 6625)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (4/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6394  (runtime_success=1.0, runtime_score=0.2787, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 03:56:59,799 - INFO - Evaluated program 6acc8364-2d7d-4d9d-8a3a-cc41c61b5d25 in 169.57s: score=0.6394, combined_score=0.6394, compile_success=1.0000, object_bytes=37936.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=858.2900, ns_per_run__handle_statx_return=1219.1400, ns_per_run__handle_newfstatat_entry=1911.7600, ns_per_run__handle_newfstatat_return=2587.8300, runtime_score=0.2787
+2026-09-13 03:56:59,805 - INFO - Iteration 22: Program 6acc8364-2d7d-4d9d-8a3a-cc41c61b5d25 (parent: 46b73908-ce2d-4ee9-8a54-3ef3703aa2cb) completed in 185.29s
+2026-09-13 03:56:59,805 - INFO - Metrics: score=0.6394, combined_score=0.6394, compile_success=1.0000, object_bytes=37936.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=858.2900, ns_per_run__handle_statx_return=1219.1400, ns_per_run__handle_newfstatat_entry=1911.7600, ns_per_run__handle_newfstatat_return=2587.8300, runtime_score=0.2787
+2026-09-13 03:56:59,819 - INFO - Sampled model: gpt-5-mini
+2026-09-13 03:57:14,814 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:57:14,822 - INFO - Iteration 23: 1 witness(es) approved by developer; implementing
+2026-09-13 03:57:14,835 - INFO - Sampled model: gpt-5-nano
+2026-09-13 03:57:28,196 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 03:57:28,284 - INFO - Iteration 23: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmplkdrcvqq.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37160 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_9kkv780a/tmplkdrcvqq.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 890.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_statfs_return: 1129.5 ns/run (run_cnt 2)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 846.88 ns/run (run_cnt 4314)
+[bpf_eval]   handle_statx_return: 1103.59 ns/run (run_cnt 4314)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1891.52 ns/run (run_cnt 6766)
+[bpf_eval]   handle_newfstatat_return: 2293.0 ns/run (run_cnt 6765)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6518  (runtime_success=1.0, runtime_score=0.3037, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:00:13,425 - INFO - Evaluated program 26351a95-ba75-4fef-b20a-b2542dd6e1e7 in 165.14s: score=0.6518, combined_score=0.6518, compile_success=1.0000, object_bytes=37160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=890.0000, ns_per_run__handle_statfs_return=1129.5000, ns_per_run__handle_statx_entry=846.8800, ns_per_run__handle_statx_return=1103.5900, ns_per_run__handle_newfstatat_entry=1891.5200, ns_per_run__handle_newfstatat_return=2293.0000, runtime_score=0.3037
+2026-09-13 04:00:13,430 - INFO - Iteration 23: Program 26351a95-ba75-4fef-b20a-b2542dd6e1e7 (parent: 1a6ea829-072b-484a-bc2f-433e6e7f1ee6) completed in 178.59s
+2026-09-13 04:00:13,430 - INFO - Metrics: score=0.6518, combined_score=0.6518, compile_success=1.0000, object_bytes=37160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=890.0000, ns_per_run__handle_statfs_return=1129.5000, ns_per_run__handle_statx_entry=846.8800, ns_per_run__handle_statx_return=1103.5900, ns_per_run__handle_newfstatat_entry=1891.5200, ns_per_run__handle_newfstatat_return=2293.0000, runtime_score=0.3037
+2026-09-13 04:00:13,443 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:00:32,235 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:00:32,243 - INFO - Iteration 24: 2 witness(es) approved by developer; implementing
+2026-09-13 04:00:32,256 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:00:48,314 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:00:48,403 - INFO - Iteration 24: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpxzed7oln.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (38880 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_bl20arkb/tmpxzed7oln.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 900.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_statfs_return: 1193.5 ns/run (run_cnt 2)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 859.06 ns/run (run_cnt 4297)
+[bpf_eval]   handle_statx_return: 1231.27 ns/run (run_cnt 4297)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1920.13 ns/run (run_cnt 6734)
+[bpf_eval]   handle_newfstatat_return: 2577.63 ns/run (run_cnt 6733)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6398  (runtime_success=1.0, runtime_score=0.2795, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:03:39,673 - INFO - Evaluated program af5b4d4e-61fe-44b4-930d-94d0c041a9d9 in 171.27s: score=0.6398, combined_score=0.6398, compile_success=1.0000, object_bytes=38880.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=900.0000, ns_per_run__handle_statfs_return=1193.5000, ns_per_run__handle_statx_entry=859.0600, ns_per_run__handle_statx_return=1231.2700, ns_per_run__handle_newfstatat_entry=1920.1300, ns_per_run__handle_newfstatat_return=2577.6300, runtime_score=0.2795
+2026-09-13 04:03:39,678 - INFO - Iteration 24: Program af5b4d4e-61fe-44b4-930d-94d0c041a9d9 (parent: 6acc8364-2d7d-4d9d-8a3a-cc41c61b5d25) completed in 187.42s
+2026-09-13 04:03:39,678 - INFO - Metrics: score=0.6398, combined_score=0.6398, compile_success=1.0000, object_bytes=38880.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=900.0000, ns_per_run__handle_statfs_return=1193.5000, ns_per_run__handle_statx_entry=859.0600, ns_per_run__handle_statx_return=1231.2700, ns_per_run__handle_newfstatat_entry=1920.1300, ns_per_run__handle_newfstatat_return=2577.6300, runtime_score=0.2795
+2026-09-13 04:03:39,693 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:04:05,764 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:04:05,772 - INFO - Iteration 25: 2 witness(es) approved by developer; implementing
+2026-09-13 04:04:05,786 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:04:26,012 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:04:26,096 - INFO - Iteration 25: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpiy2rslif.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (36728 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_qiwe_kem/tmpiy2rslif.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 932.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_statfs_return: 1085.5 ns/run (run_cnt 2)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 841.2 ns/run (run_cnt 4304)
+[bpf_eval]   handle_statx_return: 1106.98 ns/run (run_cnt 4304)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1883.42 ns/run (run_cnt 6695)
+[bpf_eval]   handle_newfstatat_return: 2294.09 ns/run (run_cnt 6694)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6518  (runtime_success=1.0, runtime_score=0.3036, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:07:13,861 - INFO - Evaluated program ee464180-2686-4e85-9950-8e15c44d064a in 167.76s: score=0.6518, combined_score=0.6518, compile_success=1.0000, object_bytes=36728.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=932.0000, ns_per_run__handle_statfs_return=1085.5000, ns_per_run__handle_statx_entry=841.2000, ns_per_run__handle_statx_return=1106.9800, ns_per_run__handle_newfstatat_entry=1883.4200, ns_per_run__handle_newfstatat_return=2294.0900, runtime_score=0.3036
+2026-09-13 04:07:13,866 - INFO - Iteration 25: Program ee464180-2686-4e85-9950-8e15c44d064a (parent: 6706371c-1409-4591-b00f-63fb8131544f) completed in 188.08s
+2026-09-13 04:07:13,866 - INFO - Metrics: score=0.6518, combined_score=0.6518, compile_success=1.0000, object_bytes=36728.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=932.0000, ns_per_run__handle_statfs_return=1085.5000, ns_per_run__handle_statx_entry=841.2000, ns_per_run__handle_statx_return=1106.9800, ns_per_run__handle_newfstatat_entry=1883.4200, ns_per_run__handle_newfstatat_return=2294.0900, runtime_score=0.3036
+2026-09-13 04:07:13,877 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:07:48,611 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:07:48,628 - INFO - Iteration 26: 1 witness(es) approved by developer; implementing
+2026-09-13 04:07:48,643 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:08:09,325 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmph0jzozju.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37688 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=no
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (1408, 'Rust metadata'), (2432, 'C snapshots'), (1408, 'Rust snapshots')].
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:09:56,718 - INFO - Evaluated program 51406402-e668-4da6-871b-d452d787603a in 107.39s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=37688.0000, semantic_equivalent=0.0000
+2026-09-13 04:09:56,720 - INFO - Iteration 26: Program 51406402-e668-4da6-871b-d452d787603a (parent: be7cb7fe-181c-4999-bcba-78a7e95c166c) completed in 128.08s
+2026-09-13 04:09:56,720 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=37688.0000, semantic_equivalent=0.0000
+2026-09-13 04:09:56,727 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:10:27,190 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:10:27,196 - INFO - Iteration 27: 2 witness(es) approved by developer; implementing
+2026-09-13 04:10:27,202 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:10:49,831 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:10:49,914 - INFO - Iteration 27: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpyqt2bhg_.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (38424 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_w52hx1ab/tmpyqt2bhg_.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 812.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_statfs_return: 1166.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 837.99 ns/run (run_cnt 4304)
+[bpf_eval]   handle_statx_return: 1199.69 ns/run (run_cnt 4304)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1935.91 ns/run (run_cnt 6686)
+[bpf_eval]   handle_newfstatat_return: 2542.82 ns/run (run_cnt 6685)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6411  (runtime_success=1.0, runtime_score=0.2823, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:13:37,816 - INFO - Evaluated program 41dccd6e-718f-431f-9dc5-ab5aa27b17b6 in 167.90s: score=0.6411, combined_score=0.6411, compile_success=1.0000, object_bytes=38424.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=812.0000, ns_per_run__handle_statfs_return=1166.0000, ns_per_run__handle_statx_entry=837.9900, ns_per_run__handle_statx_return=1199.6900, ns_per_run__handle_newfstatat_entry=1935.9100, ns_per_run__handle_newfstatat_return=2542.8200, runtime_score=0.2823
+2026-09-13 04:13:37,820 - INFO - Iteration 27: Program 41dccd6e-718f-431f-9dc5-ab5aa27b17b6 (parent: b8e26b4f-c639-472d-8640-3d34031cb91c) completed in 190.61s
+2026-09-13 04:13:37,820 - INFO - Metrics: score=0.6411, combined_score=0.6411, compile_success=1.0000, object_bytes=38424.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=812.0000, ns_per_run__handle_statfs_return=1166.0000, ns_per_run__handle_statx_entry=837.9900, ns_per_run__handle_statx_return=1199.6900, ns_per_run__handle_newfstatat_entry=1935.9100, ns_per_run__handle_newfstatat_return=2542.8200, runtime_score=0.2823
+2026-09-13 04:13:37,828 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:14:00,343 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:14:00,352 - INFO - Iteration 28: 2 witness(es) approved by developer; implementing
+2026-09-13 04:14:00,367 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:14:16,316 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:14:16,402 - INFO - Iteration 28: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp4k_e5zhi.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37760 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_lrfn416y/tmp4k_e5zhi.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 922.17 ns/run (run_cnt 6)
+[bpf_eval]   handle_statfs_return: 1170.33 ns/run (run_cnt 6)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 837.46 ns/run (run_cnt 4317)
+[bpf_eval]   handle_statx_return: 1190.33 ns/run (run_cnt 4317)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1878.53 ns/run (run_cnt 6919)
+[bpf_eval]   handle_newfstatat_return: 2536.05 ns/run (run_cnt 6918)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6414  (runtime_success=1.0, runtime_score=0.2828, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:17:04,065 - INFO - Evaluated program d6cd9b61-f131-4298-8f5d-417378706319 in 167.66s: score=0.6414, combined_score=0.6414, compile_success=1.0000, object_bytes=37760.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=922.1700, ns_per_run__handle_statfs_return=1170.3300, ns_per_run__handle_statx_entry=837.4600, ns_per_run__handle_statx_return=1190.3300, ns_per_run__handle_newfstatat_entry=1878.5300, ns_per_run__handle_newfstatat_return=2536.0500, runtime_score=0.2828
+2026-09-13 04:17:04,070 - INFO - Iteration 28: Program d6cd9b61-f131-4298-8f5d-417378706319 (parent: aff7142e-1f1e-4867-8753-188a2f1062fe) completed in 183.70s
+2026-09-13 04:17:04,070 - INFO - Metrics: score=0.6414, combined_score=0.6414, compile_success=1.0000, object_bytes=37760.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=922.1700, ns_per_run__handle_statfs_return=1170.3300, ns_per_run__handle_statx_entry=837.4600, ns_per_run__handle_statx_return=1190.3300, ns_per_run__handle_newfstatat_entry=1878.5300, ns_per_run__handle_newfstatat_return=2536.0500, runtime_score=0.2828
+2026-09-13 04:17:04,086 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:17:42,993 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:17:43,002 - INFO - Iteration 29: 2 witness(es) approved by developer; implementing
+2026-09-13 04:17:43,014 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:18:05,124 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:18:05,237 - INFO - Iteration 29: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpb7x6veyg.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (37344 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=.wit
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: EQUIVALENT
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: EQUIVALENT
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: EQUIVALENT
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: EQUIVALENT
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: EQUIVALENT
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/generic_runner /tmp/openevolve_bpf_nmzl9c9k/tmpb7x6veyg.bpf.o 60 handle_statfs_entry handle_statfs_return handle_newstat_entry handle_newstat_return handle_statx_entry handle_statx_return handle_newfstat_entry handle_newfstat_return handle_newfstatat_entry handle_newfstatat_return handle_newlstat_entry handle_newlstat_return
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   handle_statfs_entry: 1024.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_statfs_return: 1101.0 ns/run (run_cnt 2)
+[bpf_eval]   handle_newstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_statx_entry: 836.4 ns/run (run_cnt 4312)
+[bpf_eval]   handle_statx_return: 1075.59 ns/run (run_cnt 4312)
+[bpf_eval]   handle_newfstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstat_return: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newfstatat_entry: 1923.77 ns/run (run_cnt 6701)
+[bpf_eval]   handle_newfstatat_return: 2385.84 ns/run (run_cnt 6700)
+[bpf_eval]   handle_newlstat_entry: None ns/run (run_cnt 0)
+[bpf_eval]   handle_newlstat_return: None ns/run (run_cnt 0)
+[bpf_eval] benchmark: OK (6/12 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.6477  (runtime_success=1.0, runtime_score=0.2953, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:20:52,589 - INFO - Evaluated program 4f3269be-cb4d-40a9-bdce-ae54d41430c0 in 167.35s: score=0.6477, combined_score=0.6477, compile_success=1.0000, object_bytes=37344.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=1024.0000, ns_per_run__handle_statfs_return=1101.0000, ns_per_run__handle_statx_entry=836.4000, ns_per_run__handle_statx_return=1075.5900, ns_per_run__handle_newfstatat_entry=1923.7700, ns_per_run__handle_newfstatat_return=2385.8400, runtime_score=0.2953
+2026-09-13 04:20:52,595 - INFO - Iteration 29: Program 4f3269be-cb4d-40a9-bdce-ae54d41430c0 (parent: ee464180-2686-4e85-9950-8e15c44d064a) completed in 189.58s
+2026-09-13 04:20:52,595 - INFO - Metrics: score=0.6477, combined_score=0.6477, compile_success=1.0000, object_bytes=37344.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statfs_entry=1024.0000, ns_per_run__handle_statfs_return=1101.0000, ns_per_run__handle_statx_entry=836.4000, ns_per_run__handle_statx_return=1075.5900, ns_per_run__handle_newfstatat_entry=1923.7700, ns_per_run__handle_newfstatat_return=2385.8400, runtime_score=0.2953
+2026-09-13 04:20:52,608 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:21:57,291 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:21:57,299 - INFO - Iteration 30: 2 witness(es) approved by developer; implementing
+2026-09-13 04:21:57,310 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:22:15,650 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmprptffgzk.bpf.c (tool=statsnoop) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (36984 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 12 entrypoint(s) vs baseline, maps=['values:hash'], witness=no
+[bpf_eval]   handle_statfs_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_entry: EQUIVALENT
+[bpf_eval]   handle_statfs_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statfs_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (896, 'Rust metadata'), (2432, 'C snapshots'), (896, 'Rust snapshots')].
+[bpf_eval]   handle_newstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_entry: EQUIVALENT
+[bpf_eval]   handle_newstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (896, 'Rust metadata'), (2432, 'C snapshots'), (896, 'Rust snapshots')].
+[bpf_eval]   handle_statx_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_entry: EQUIVALENT
+[bpf_eval]   handle_statx_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_statx_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (896, 'Rust metadata'), (2432, 'C snapshots'), (896, 'Rust snapshots')].
+[bpf_eval]   handle_newfstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (896, 'Rust metadata'), (2432, 'C snapshots'), (896, 'Rust snapshots')].
+[bpf_eval]   handle_newfstatat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_entry: EQUIVALENT
+[bpf_eval]   handle_newfstatat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newfstatat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (896, 'Rust metadata'), (2432, 'C snapshots'), (896, 'Rust snapshots')].
+[bpf_eval]   handle_newlstat_entry: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_entry: EQUIVALENT
+[bpf_eval]   handle_newlstat_return: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle_newlstat_return: NOT equivalent [error]  Map '__perf_output' width mismatch across sources: keys=[(32, 'C metadata'), (32, 'Rust metadata'), (32, 'C snapshots'), (32, 'Rust snapshots')], values=[(2432, 'C metadata'), (896, 'Rust metadata'), (2432, 'C snapshots'), (896, 'Rust snapshots')].
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:24:02,728 - INFO - Evaluated program 83f9d8d4-f918-46e9-8838-29ae556c742c in 107.07s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=36984.0000, semantic_equivalent=0.0000
+2026-09-13 04:24:02,730 - INFO - Iteration 30: Program 83f9d8d4-f918-46e9-8838-29ae556c742c (parent: d6cd9b61-f131-4298-8f5d-417378706319) completed in 125.42s
+2026-09-13 04:24:02,731 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=36984.0000, semantic_equivalent=0.0000
+2026-09-13 04:24:02,731 - INFO - Checkpoint interval reached at iteration 30
+2026-09-13 04:24:02,732 - INFO - Island Status:
+2026-09-13 04:24:02,732 - INFO -  * Island 0: 15 programs, best=0.6519, avg=0.6024, diversity=10.13, gen=15 (best: 1a6ea829-072b-484a-bc2f-433e6e7f1ee6)
+2026-09-13 04:24:02,732 - INFO -    Island 1: 14 programs, best=0.6472, avg=0.4120, diversity=20.02, gen=14 (best: 12931489-8e51-465c-b48b-82e37514d528)
+2026-09-13 04:24:02,768 - INFO - Saved database with 29 programs to openevolve_output/bpf_statsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_042402_30
+2026-09-13 04:24:02,769 - INFO - Saved best program at checkpoint 30 with metrics: score=0.6519, combined_score=0.6519, compile_success=1.0000, object_bytes=37160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=835.8700, ns_per_run__handle_statx_return=1072.5500, ns_per_run__handle_newfstatat_entry=1957.2100, ns_per_run__handle_newfstatat_return=2291.6200, runtime_score=0.3038
+2026-09-13 04:24:02,769 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_statsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_042402_30
+2026-09-13 04:24:02,769 - INFO - ✅ Evolution completed - Maximum iterations reached
+2026-09-13 04:24:02,803 - INFO - Saved database with 29 programs to openevolve_output/bpf_statsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_042402_30
+2026-09-13 04:24:02,804 - INFO - Saved best program at checkpoint 30 with metrics: score=0.6519, combined_score=0.6519, compile_success=1.0000, object_bytes=37160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=835.8700, ns_per_run__handle_statx_return=1072.5500, ns_per_run__handle_newfstatat_entry=1957.2100, ns_per_run__handle_newfstatat_return=2291.6200, runtime_score=0.3038
+2026-09-13 04:24:02,804 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_statsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_042402_30
+2026-09-13 04:24:02,804 - INFO - Received signal 15, initiating graceful shutdown...
+2026-09-13 04:24:02,805 - INFO - Graceful shutdown requested...
+2026-09-13 04:24:02,813 - INFO - Stopped process pool
+2026-09-13 04:24:02,813 - INFO - Using tracked best program: 1a6ea829-072b-484a-bc2f-433e6e7f1ee6
+2026-09-13 04:24:02,813 - INFO - Evolution complete. Best program has metrics: score=0.6519, combined_score=0.6519, compile_success=1.0000, object_bytes=37160.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__handle_statx_entry=835.8700, ns_per_run__handle_statx_return=1072.5500, ns_per_run__handle_newfstatat_entry=1957.2100, ns_per_run__handle_newfstatat_return=2291.6200, runtime_score=0.3038
+2026-09-13 04:24:02,814 - INFO - Saved best program to openevolve_output/bpf_statsnoop_verify_autoapprove/best/best_program.c with program info to openevolve_output/bpf_statsnoop_verify_autoapprove/best/best_program_info.json
+
+Evolution complete!
+Best program metrics:
+  score: 0.6519
+  combined_score: 0.6519
+  compile_success: 1.0000
+  object_bytes: 37160.0000
+  semantic_equivalent: 1.0000
+  runtime_success: 1.0000
+  ns_per_run__handle_statx_entry: 835.8700
+  ns_per_run__handle_statx_return: 1072.5500
+  ns_per_run__handle_newfstatat_entry: 1957.2100
+  ns_per_run__handle_newfstatat_return: 2291.6200
+  runtime_score: 0.3038
+
+Per-iteration ns/run:
+  iter   0 (original): handle_newfstatat_entry=1926.73  handle_newfstatat_return=2594.21  handle_statfs_entry=891.00  handle_statfs_return=1321.50  handle_statx_entry=840.96  handle_statx_return=1219.60
+  iter   1: N/A (not equivalent)
+  iter   2: handle_newfstatat_entry=1901.69  handle_newfstatat_return=2554.00  handle_statfs_entry=851.50  handle_statfs_return=1213.50  handle_statx_entry=841.55  handle_statx_return=1219.16
+  iter   4: handle_newfstatat_entry=1899.24  handle_newfstatat_return=2539.40  handle_statfs_entry=1062.50  handle_statfs_return=1434.50  handle_statx_entry=849.87  handle_statx_return=1232.88
+  iter   5: handle_newfstatat_entry=1954.82  handle_newfstatat_return=2541.18  handle_statfs_entry=974.00  handle_statfs_return=1297.00  handle_statx_entry=852.74  handle_statx_return=1246.90
+  iter   6: N/A (benchmark failed)
+  iter   7: handle_newfstatat_entry=1957.21  handle_newfstatat_return=2291.62  handle_statx_entry=835.87  handle_statx_return=1072.55
+  iter   8: handle_newfstatat_entry=1848.85  handle_newfstatat_return=2544.18  handle_statfs_entry=890.25  handle_statfs_return=1233.75  handle_statx_entry=843.41  handle_statx_return=1223.53
+  iter   9: handle_newfstat_entry=810.33  handle_newfstat_return=964.00  handle_newfstatat_entry=1829.40  handle_newfstatat_return=2480.28  handle_statfs_entry=992.75  handle_statfs_return=1532.75  handle_statx_entry=824.08  handle_statx_return=1219.78
+  iter  10: handle_newfstatat_entry=2053.94  handle_newfstatat_return=2659.19  handle_statfs_entry=822.50  handle_statfs_return=1179.00  handle_statx_entry=907.59  handle_statx_return=1254.72
+  iter  11: handle_newfstatat_entry=1810.92  handle_newfstatat_return=2379.20  handle_statfs_entry=894.07  handle_statfs_return=1162.36  handle_statx_entry=856.17  handle_statx_return=1171.03
+  iter  12: handle_newfstatat_entry=1766.61  handle_newfstatat_return=2396.02  handle_statfs_entry=891.80  handle_statfs_return=1188.25  handle_statx_entry=849.02  handle_statx_return=1206.25
+  iter  13: handle_newfstatat_entry=1793.67  handle_newfstatat_return=2387.41  handle_statfs_entry=947.07  handle_statfs_return=1172.21  handle_statx_entry=838.67  handle_statx_return=1195.54
+  iter  15: handle_newfstatat_entry=1808.13  handle_newfstatat_return=2366.21  handle_statfs_entry=888.75  handle_statfs_return=1242.17  handle_statx_entry=849.56  handle_statx_return=1190.10
+  iter  16: N/A (benchmark failed)
+  iter  17: handle_newfstatat_entry=1908.81  handle_newfstatat_return=2530.91  handle_statx_entry=847.64  handle_statx_return=1203.90
+  iter  18: N/A (not equivalent)
+  iter  19: handle_newfstatat_entry=1893.33  handle_newfstatat_return=2565.97  handle_statfs_entry=875.50  handle_statfs_return=1244.50  handle_statx_entry=827.96  handle_statx_return=1193.52
+  iter  20: handle_newfstatat_entry=1904.11  handle_newfstatat_return=2569.91  handle_statx_entry=845.39  handle_statx_return=1207.96
+  iter  21: handle_newfstatat_entry=1924.73  handle_newfstatat_return=2540.99  handle_statfs_entry=793.25  handle_statfs_return=1137.00  handle_statx_entry=845.43  handle_statx_return=1202.26
+  iter  22: handle_newfstatat_entry=1911.76  handle_newfstatat_return=2587.83  handle_statx_entry=858.29  handle_statx_return=1219.14
+  iter  23: handle_newfstatat_entry=1891.52  handle_newfstatat_return=2293.00  handle_statfs_entry=890.00  handle_statfs_return=1129.50  handle_statx_entry=846.88  handle_statx_return=1103.59
+  iter  24: handle_newfstatat_entry=1920.13  handle_newfstatat_return=2577.63  handle_statfs_entry=900.00  handle_statfs_return=1193.50  handle_statx_entry=859.06  handle_statx_return=1231.27
+  iter  25: handle_newfstatat_entry=1883.42  handle_newfstatat_return=2294.09  handle_statfs_entry=932.00  handle_statfs_return=1085.50  handle_statx_entry=841.20  handle_statx_return=1106.98
+  iter  26: N/A (not equivalent)
+  iter  27: handle_newfstatat_entry=1935.91  handle_newfstatat_return=2542.82  handle_statfs_entry=812.00  handle_statfs_return=1166.00  handle_statx_entry=837.99  handle_statx_return=1199.69
+  iter  28: handle_newfstatat_entry=1878.53  handle_newfstatat_return=2536.05  handle_statfs_entry=922.17  handle_statfs_return=1170.33  handle_statx_entry=837.46  handle_statx_return=1190.33
+  iter  29: handle_newfstatat_entry=1923.77  handle_newfstatat_return=2385.84  handle_statfs_entry=1024.00  handle_statfs_return=1101.00  handle_statx_entry=836.40  handle_statx_return=1075.59
+  iter  30: N/A (not equivalent)
+
+Best program's optimization path (2 step(s) from its earliest known ancestor):
+  iter 1: Lower the per-event pathname buffer size from 255 to 128 to reduce memory traffic and stack usage without changing final map state or return value.
+  iter 7: Remove the per-event comm string fetch (bpf_get_current_comm) in probe_return to save cycle time
+
+LLM token usage (this run):
+  prompt:     781,718
+  completion: 160,017
+  total:      941,735
+
+Latest checkpoint saved at: openevolve_output/bpf_statsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_042402_30
+To resume, use: --checkpoint openevolve_output/bpf_statsnoop_verify_autoapprove/checkpoints/checkpoint_20260913_042402_30

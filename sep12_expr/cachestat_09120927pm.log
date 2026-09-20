@@ -1,0 +1,982 @@
+2026-09-13 04:27:27,208 - INFO - Logging to openevolve_output/bpf_cachestat_verify_autoapprove/logs/openevolve_20260913_042727.log
+2026-09-13 04:27:27,209 - INFO - Interactive review mode enabled. Queue dir: /users/xiang95/learn_heimdall/heimdall/openevolve/openevolve_output/bpf_cachestat_verify_autoapprove/review_queue
+2026-09-13 04:27:27,216 - INFO - Set random seed to 42 for reproducibility
+2026-09-13 04:27:27,252 - INFO - Initialized OpenAI LLM with model: gpt-5-mini
+2026-09-13 04:27:27,262 - INFO - Initialized OpenAI LLM with model: gpt-5-nano
+2026-09-13 04:27:27,262 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 04:27:27,282 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 04:27:27,284 - INFO - Initialized prompt sampler
+2026-09-13 04:27:27,286 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 04:27:27,286 - INFO - Initialized program database with 0 programs
+2026-09-13 04:27:27,288 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 04:27:27,288 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 04:27:27,289 - INFO - Initialized OpenEvolve with /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat.bpf.c
+2026-09-13 04:27:27,289 - INFO - Adding initial program to database
+[bpf_eval] === evaluate tmp0wtohsh8.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (16000 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=no
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_si24nh3_/tmp0wtohsh8.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 236.64 ns/run (run_cnt 13717)
+[bpf_eval]   fentry_mark_page_accessed: 217.66 ns/run (run_cnt 21797)
+[bpf_eval]   fentry_account_page_dirtied: 156.03 ns/run (run_cnt 7113)
+[bpf_eval]   fentry_mark_buffer_dirty: 165.91 ns/run (run_cnt 7106)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9043  (runtime_success=1.0, runtime_score=0.8086, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:28:55,058 - INFO - Evaluated program 609bb4dd-f86f-48cc-ac0f-08209ebab620 in 87.77s: score=0.9043, combined_score=0.9043, compile_success=1.0000, object_bytes=16000.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=236.6400, ns_per_run__fentry_mark_page_accessed=217.6600, ns_per_run__fentry_account_page_dirtied=156.0300, ns_per_run__fentry_mark_buffer_dirty=165.9100, runtime_score=0.8086
+2026-09-13 04:28:55,058 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 2}
+2026-09-13 04:28:55,058 - INFO - Stored artifacts for initial program
+2026-09-13 04:28:55,059 - INFO - Initialized process parallel controller with 1 workers
+2026-09-13 04:28:55,060 - INFO - Set max None tasks per child
+2026-09-13 04:28:55,060 - INFO - Started process pool with 1 processes
+2026-09-13 04:28:55,060 - INFO - Using island-based evolution with 2 islands
+2026-09-13 04:28:55,061 - INFO - Island Status:
+2026-09-13 04:28:55,061 - INFO -  * Island 0: 1 programs, best=0.9043, avg=0.9043, diversity=0.00, gen=0 (best: 609bb4dd-f86f-48cc-ac0f-08209ebab620)
+2026-09-13 04:28:55,061 - INFO -    Island 1: 0 programs, best=0.0000, avg=0.0000, diversity=0.00, gen=0
+2026-09-13 04:28:55,061 - INFO - Starting interactive (human-reviewed) evolution from iteration 1 for 30 iterations (total: 31)
+2026-09-13 04:28:55,088 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 04:28:55,111 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 04:28:55,112 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 04:28:55,114 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 04:28:55,114 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 04:28:55,118 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:29:39,418 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:29:39,484 - INFO - Iteration 1: 1 witness(es) approved by developer; implementing
+2026-09-13 04:29:39,488 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:29:49,540 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:29:49,627 - INFO - Iteration 1: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpdly2h4gm.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: /tmp/tmpdly2h4gm.bpf.c:7:71: error: use of undeclared identifier 'total'
+2026-09-13 04:29:50,599 - INFO - Evaluated program 93b8d145-efac-49d0-9cc4-bbdbed3373b5 in 0.97s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 04:29:50,601 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 0, 'semantic_equivalent': 0}
+2026-09-13 04:29:50,602 - INFO - Iteration 1: Program 93b8d145-efac-49d0-9cc4-bbdbed3373b5 (parent: 609bb4dd-f86f-48cc-ac0f-08209ebab620) completed in 11.11s
+2026-09-13 04:29:50,602 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 04:29:50,604 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:30:35,899 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:30:35,909 - INFO - Iteration 2: 5 witness(es) approved by developer; implementing
+2026-09-13 04:30:35,913 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:30:53,140 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:30:53,267 - INFO - Iteration 2: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmphems1rs2.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:31:26,052 - INFO - Evaluated program 6c35a083-4991-44c2-8fec-534b75996d60 in 32.78s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 04:31:26,054 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 4, 'semantic_equivalent': 0}
+2026-09-13 04:31:26,055 - INFO - Iteration 2: Program 6c35a083-4991-44c2-8fec-534b75996d60 (parent: 609bb4dd-f86f-48cc-ac0f-08209ebab620) completed in 50.14s
+2026-09-13 04:31:26,055 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 04:31:26,057 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:31:37,918 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:31:37,925 - INFO - Iteration 3: 1 witness(es) approved by developer; implementing
+2026-09-13 04:31:37,929 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:31:48,706 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:31:48,790 - INFO - Iteration 3: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmphl4zp_dm.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (16704 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_otxzxbse/tmphl4zp_dm.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 213.8 ns/run (run_cnt 15285)
+[bpf_eval]   fentry_mark_page_accessed: 247.55 ns/run (run_cnt 18634)
+[bpf_eval]   fentry_account_page_dirtied: 179.94 ns/run (run_cnt 7566)
+[bpf_eval]   fentry_mark_buffer_dirty: 169.19 ns/run (run_cnt 7558)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9008  (runtime_success=1.0, runtime_score=0.8016, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:33:15,532 - INFO - Evaluated program 8dacd396-2a52-4495-a768-a7d88eb4b9ac in 86.74s: score=0.9008, combined_score=0.9008, compile_success=1.0000, object_bytes=16704.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=213.8000, ns_per_run__fentry_mark_page_accessed=247.5500, ns_per_run__fentry_account_page_dirtied=179.9400, ns_per_run__fentry_mark_buffer_dirty=169.1900, runtime_score=0.8016
+2026-09-13 04:33:15,536 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 4, 'semantic_equivalent': 4}
+2026-09-13 04:33:15,537 - INFO - Iteration 3: Program 8dacd396-2a52-4495-a768-a7d88eb4b9ac (parent: 93b8d145-efac-49d0-9cc4-bbdbed3373b5) completed in 97.61s
+2026-09-13 04:33:15,537 - INFO - Metrics: score=0.9008, combined_score=0.9008, compile_success=1.0000, object_bytes=16704.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=213.8000, ns_per_run__fentry_mark_page_accessed=247.5500, ns_per_run__fentry_account_page_dirtied=179.9400, ns_per_run__fentry_mark_buffer_dirty=169.1900, runtime_score=0.8016
+2026-09-13 04:33:15,543 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:33:34,502 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:33:34,508 - INFO - Iteration 4: 1 witness(es) approved by developer; implementing
+2026-09-13 04:33:34,514 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:33:41,759 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:33:41,843 - INFO - Iteration 4: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp8sxjap0t.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9888 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:34:06,130 - INFO - Evaluated program f0707cb8-8179-462b-8342-236a6d7169d7 in 24.29s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:34:06,133 - INFO - Iteration 4: Program f0707cb8-8179-462b-8342-236a6d7169d7 (parent: 6c35a083-4991-44c2-8fec-534b75996d60) completed in 31.62s
+2026-09-13 04:34:06,133 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:34:06,139 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:34:40,233 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:34:40,239 - INFO - Iteration 5: 1 witness(es) approved by developer; implementing
+2026-09-13 04:34:40,245 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:34:51,540 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:34:51,624 - INFO - Iteration 5: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpqumm88ok.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (15928 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_ja8bltpd/tmpqumm88ok.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 218.84 ns/run (run_cnt 14286)
+[bpf_eval]   fentry_mark_page_accessed: 144.11 ns/run (run_cnt 51363)
+[bpf_eval]   fentry_account_page_dirtied: 161.99 ns/run (run_cnt 7500)
+[bpf_eval]   fentry_mark_buffer_dirty: 192.53 ns/run (run_cnt 7452)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9102  (runtime_success=1.0, runtime_score=0.8205, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:36:17,473 - INFO - Evaluated program d811dd58-6cbe-4085-a3a5-f8b015704d72 in 85.85s: score=0.9102, combined_score=0.9102, compile_success=1.0000, object_bytes=15928.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=218.8400, ns_per_run__fentry_mark_page_accessed=144.1100, ns_per_run__fentry_account_page_dirtied=161.9900, ns_per_run__fentry_mark_buffer_dirty=192.5300, runtime_score=0.8205
+2026-09-13 04:36:17,477 - INFO - Iteration 5: Program d811dd58-6cbe-4085-a3a5-f8b015704d72 (parent: 8dacd396-2a52-4495-a768-a7d88eb4b9ac) completed in 97.23s
+2026-09-13 04:36:17,478 - INFO - Metrics: score=0.9102, combined_score=0.9102, compile_success=1.0000, object_bytes=15928.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=218.8400, ns_per_run__fentry_mark_page_accessed=144.1100, ns_per_run__fentry_account_page_dirtied=161.9900, ns_per_run__fentry_mark_buffer_dirty=192.5300, runtime_score=0.8205
+2026-09-13 04:36:17,484 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:36:44,229 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:36:44,236 - INFO - Iteration 6: 1 witness(es) approved by developer; implementing
+2026-09-13 04:36:44,241 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:36:51,744 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:36:51,829 - INFO - Iteration 6: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp8n2zmo_u.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9888 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:37:15,094 - INFO - Evaluated program 7525a869-ff91-45dd-a354-54dc40cd0b9f in 23.26s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:37:15,096 - INFO - Iteration 6: Program 7525a869-ff91-45dd-a354-54dc40cd0b9f (parent: f0707cb8-8179-462b-8342-236a6d7169d7) completed in 30.85s
+2026-09-13 04:37:15,097 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:37:15,100 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:37:42,659 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:37:42,665 - INFO - Iteration 7: 1 witness(es) approved by developer; implementing
+2026-09-13 04:37:42,672 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:37:56,018 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpni581bkz.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (16600 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=no
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_v17_pk_r/tmpni581bkz.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 218.72 ns/run (run_cnt 14433)
+[bpf_eval]   fentry_mark_page_accessed: 197.81 ns/run (run_cnt 24970)
+[bpf_eval]   fentry_account_page_dirtied: 173.71 ns/run (run_cnt 7468)
+[bpf_eval]   fentry_mark_buffer_dirty: 167.69 ns/run (run_cnt 7457)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9103  (runtime_success=1.0, runtime_score=0.8205, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:39:23,677 - INFO - Evaluated program 131bbd70-4d6b-46ca-997f-260e3b129525 in 87.65s: score=0.9103, combined_score=0.9103, compile_success=1.0000, object_bytes=16600.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=218.7200, ns_per_run__fentry_mark_page_accessed=197.8100, ns_per_run__fentry_account_page_dirtied=173.7100, ns_per_run__fentry_mark_buffer_dirty=167.6900, runtime_score=0.8205
+2026-09-13 04:39:23,681 - INFO - Iteration 7: Program 131bbd70-4d6b-46ca-997f-260e3b129525 (parent: 609bb4dd-f86f-48cc-ac0f-08209ebab620) completed in 101.01s
+2026-09-13 04:39:23,681 - INFO - Metrics: score=0.9103, combined_score=0.9103, compile_success=1.0000, object_bytes=16600.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=218.7200, ns_per_run__fentry_mark_page_accessed=197.8100, ns_per_run__fentry_account_page_dirtied=173.7100, ns_per_run__fentry_mark_buffer_dirty=167.6900, runtime_score=0.8205
+2026-09-13 04:39:23,689 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:39:47,204 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:39:47,211 - INFO - Iteration 8: 2 witness(es) approved by developer; implementing
+2026-09-13 04:39:47,219 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:39:57,935 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:39:58,019 - INFO - Iteration 8: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpagyohree.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9888 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:40:22,809 - INFO - Evaluated program cd4d2cb8-9446-483c-8b3e-125e3b5853d9 in 24.79s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:40:22,811 - INFO - Iteration 8: Program cd4d2cb8-9446-483c-8b3e-125e3b5853d9 (parent: 6c35a083-4991-44c2-8fec-534b75996d60) completed in 35.59s
+2026-09-13 04:40:22,811 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:40:22,814 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:40:46,099 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:40:46,105 - INFO - Iteration 9: 1 witness(es) approved by developer; implementing
+2026-09-13 04:40:46,112 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:41:05,134 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpk7sioivw.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (16624 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=no
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_t_reerfm/tmpk7sioivw.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 204.79 ns/run (run_cnt 14692)
+[bpf_eval]   fentry_mark_page_accessed: 246.36 ns/run (run_cnt 18783)
+[bpf_eval]   fentry_account_page_dirtied: 188.8 ns/run (run_cnt 7581)
+[bpf_eval]   fentry_mark_buffer_dirty: 195.17 ns/run (run_cnt 7593)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9012  (runtime_success=1.0, runtime_score=0.8023, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:42:32,205 - INFO - Evaluated program e625b94f-b640-4a7a-9ad1-c9d7a802f5cd in 87.07s: score=0.9012, combined_score=0.9012, compile_success=1.0000, object_bytes=16624.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=204.7900, ns_per_run__fentry_mark_page_accessed=246.3600, ns_per_run__fentry_account_page_dirtied=188.8000, ns_per_run__fentry_mark_buffer_dirty=195.1700, runtime_score=0.8023
+2026-09-13 04:42:32,209 - INFO - Iteration 9: Program e625b94f-b640-4a7a-9ad1-c9d7a802f5cd (parent: 609bb4dd-f86f-48cc-ac0f-08209ebab620) completed in 106.10s
+2026-09-13 04:42:32,210 - INFO - Metrics: score=0.9012, combined_score=0.9012, compile_success=1.0000, object_bytes=16624.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=204.7900, ns_per_run__fentry_mark_page_accessed=246.3600, ns_per_run__fentry_account_page_dirtied=188.8000, ns_per_run__fentry_mark_buffer_dirty=195.1700, runtime_score=0.8023
+2026-09-13 04:42:32,218 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:42:53,991 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:42:53,997 - INFO - Iteration 10: 1 witness(es) approved by developer; implementing
+2026-09-13 04:42:54,005 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:43:00,862 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:43:00,949 - INFO - Iteration 10: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpfhordz5y.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9888 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:43:25,667 - INFO - Evaluated program 18426cc4-a055-41f8-8f5b-5e0f78a91542 in 24.72s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:43:25,669 - INFO - Iteration 10: Program 18426cc4-a055-41f8-8f5b-5e0f78a91542 (parent: 7525a869-ff91-45dd-a354-54dc40cd0b9f) completed in 31.66s
+2026-09-13 04:43:25,669 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:43:25,669 - INFO - Checkpoint interval reached at iteration 10
+2026-09-13 04:43:25,670 - INFO - Island Status:
+2026-09-13 04:43:25,670 - INFO -  * Island 0: 6 programs, best=0.9103, avg=0.7545, diversity=50.03, gen=5 (best: 609bb4dd-f86f-48cc-ac0f-08209ebab620)
+2026-09-13 04:43:25,670 - INFO -    Island 1: 5 programs, best=0.0000, avg=0.0000, diversity=0.15, gen=5 (best: 6c35a083-4991-44c2-8fec-534b75996d60)
+2026-09-13 04:43:25,680 - INFO - Saved database with 11 programs to openevolve_output/bpf_cachestat_verify_autoapprove/checkpoints/checkpoint_20260913_044325_10
+2026-09-13 04:43:25,680 - INFO - Saved best program at checkpoint 10 with metrics: score=0.9043, combined_score=0.9043, compile_success=1.0000, object_bytes=16000.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=236.6400, ns_per_run__fentry_mark_page_accessed=217.6600, ns_per_run__fentry_account_page_dirtied=156.0300, ns_per_run__fentry_mark_buffer_dirty=165.9100, runtime_score=0.8086
+2026-09-13 04:43:25,680 - INFO - Saved checkpoint at iteration 10 to openevolve_output/bpf_cachestat_verify_autoapprove/checkpoints/checkpoint_20260913_044325_10
+2026-09-13 04:43:25,684 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:43:52,266 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:43:52,272 - INFO - Iteration 11: 1 witness(es) approved by developer; implementing
+2026-09-13 04:43:52,281 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:44:04,880 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:44:04,966 - INFO - Iteration 11: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpwahx9v58.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (15928 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_o1svqp8_/tmpwahx9v58.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 207.53 ns/run (run_cnt 14006)
+[bpf_eval]   fentry_mark_page_accessed: 217.69 ns/run (run_cnt 21963)
+[bpf_eval]   fentry_account_page_dirtied: 157.82 ns/run (run_cnt 7260)
+[bpf_eval]   fentry_mark_buffer_dirty: 168.0 ns/run (run_cnt 7253)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9106  (runtime_success=1.0, runtime_score=0.8212, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:45:31,525 - INFO - Evaluated program 741c6c66-1ea3-472b-9dcd-19ee52738d1d in 86.56s: score=0.9106, combined_score=0.9106, compile_success=1.0000, object_bytes=15928.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=207.5300, ns_per_run__fentry_mark_page_accessed=217.6900, ns_per_run__fentry_account_page_dirtied=157.8200, ns_per_run__fentry_mark_buffer_dirty=168.0000, runtime_score=0.8212
+2026-09-13 04:45:31,529 - INFO - Island 0 MAP-Elites cell improved: {'compile_success': 4, 'semantic_equivalent': 4} (fitness: 0.901 -> 0.911)
+2026-09-13 04:45:31,529 - INFO - Iteration 11: Program 741c6c66-1ea3-472b-9dcd-19ee52738d1d (parent: 8dacd396-2a52-4495-a768-a7d88eb4b9ac) completed in 99.25s
+2026-09-13 04:45:31,530 - INFO - Metrics: score=0.9106, combined_score=0.9106, compile_success=1.0000, object_bytes=15928.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=207.5300, ns_per_run__fentry_mark_page_accessed=217.6900, ns_per_run__fentry_account_page_dirtied=157.8200, ns_per_run__fentry_mark_buffer_dirty=168.0000, runtime_score=0.8212
+2026-09-13 04:45:31,538 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:46:01,768 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:46:01,776 - INFO - Iteration 12: 3 witness(es) approved by developer; implementing
+2026-09-13 04:46:01,784 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:46:08,801 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:46:08,887 - INFO - Iteration 12: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpg845l1it.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:46:33,218 - INFO - Evaluated program e2dccec4-845e-451f-baa3-6294a2bff673 in 24.33s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 04:46:33,221 - INFO - Iteration 12: Program e2dccec4-845e-451f-baa3-6294a2bff673 (parent: 7525a869-ff91-45dd-a354-54dc40cd0b9f) completed in 31.44s
+2026-09-13 04:46:33,221 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 04:46:33,225 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:46:52,588 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:46:52,595 - INFO - Iteration 13: 1 witness(es) approved by developer; implementing
+2026-09-13 04:46:52,603 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:47:03,157 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:47:03,247 - INFO - Iteration 13: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmplks3oa_p.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (16016 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_pv63zyc2/tmplks3oa_p.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 216.2 ns/run (run_cnt 14748)
+[bpf_eval]   fentry_mark_page_accessed: 221.38 ns/run (run_cnt 22661)
+[bpf_eval]   fentry_account_page_dirtied: 180.19 ns/run (run_cnt 7574)
+[bpf_eval]   fentry_mark_buffer_dirty: 212.23 ns/run (run_cnt 7584)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9094  (runtime_success=1.0, runtime_score=0.8187, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:48:30,125 - INFO - Evaluated program 2de3faaa-c708-45f1-b520-2769fb67f3ad in 86.88s: score=0.9094, combined_score=0.9094, compile_success=1.0000, object_bytes=16016.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=216.2000, ns_per_run__fentry_mark_page_accessed=221.3800, ns_per_run__fentry_account_page_dirtied=180.1900, ns_per_run__fentry_mark_buffer_dirty=212.2300, runtime_score=0.8187
+2026-09-13 04:48:30,130 - INFO - Iteration 13: Program 2de3faaa-c708-45f1-b520-2769fb67f3ad (parent: 131bbd70-4d6b-46ca-997f-260e3b129525) completed in 97.52s
+2026-09-13 04:48:30,130 - INFO - Metrics: score=0.9094, combined_score=0.9094, compile_success=1.0000, object_bytes=16016.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=216.2000, ns_per_run__fentry_mark_page_accessed=221.3800, ns_per_run__fentry_account_page_dirtied=180.1900, ns_per_run__fentry_mark_buffer_dirty=212.2300, runtime_score=0.8187
+2026-09-13 04:48:30,139 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:49:18,803 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:49:18,809 - INFO - Iteration 14: 3 witness(es) approved by developer; implementing
+2026-09-13 04:49:18,818 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:49:26,729 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:49:26,813 - INFO - Iteration 14: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp70crhuwx.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9888 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:49:50,481 - INFO - Evaluated program 4e435d8c-81db-4e28-81fc-44b97e428829 in 23.67s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:49:50,484 - INFO - Iteration 14: Program 4e435d8c-81db-4e28-81fc-44b97e428829 (parent: f0707cb8-8179-462b-8342-236a6d7169d7) completed in 31.66s
+2026-09-13 04:49:50,484 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:49:50,487 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:50:13,271 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:50:13,278 - INFO - Iteration 15: 2 witness(es) approved by developer; implementing
+2026-09-13 04:50:13,285 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:50:23,959 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:50:24,045 - INFO - Iteration 15: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpwf9g_sz3.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (15928 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_x_ghmy1b/tmpwf9g_sz3.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 224.18 ns/run (run_cnt 14491)
+[bpf_eval]   fentry_mark_page_accessed: 212.53 ns/run (run_cnt 23494)
+[bpf_eval]   fentry_account_page_dirtied: 164.57 ns/run (run_cnt 7456)
+[bpf_eval]   fentry_mark_buffer_dirty: 171.39 ns/run (run_cnt 7502)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9084  (runtime_success=1.0, runtime_score=0.8169, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:51:51,633 - INFO - Evaluated program 0b132a60-2bd2-4ce1-ab11-b583f364db68 in 87.59s: score=0.9084, combined_score=0.9084, compile_success=1.0000, object_bytes=15928.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=224.1800, ns_per_run__fentry_mark_page_accessed=212.5300, ns_per_run__fentry_account_page_dirtied=164.5700, ns_per_run__fentry_mark_buffer_dirty=171.3900, runtime_score=0.8169
+2026-09-13 04:51:51,638 - INFO - Iteration 15: Program 0b132a60-2bd2-4ce1-ab11-b583f364db68 (parent: 93b8d145-efac-49d0-9cc4-bbdbed3373b5) completed in 98.35s
+2026-09-13 04:51:51,638 - INFO - Metrics: score=0.9084, combined_score=0.9084, compile_success=1.0000, object_bytes=15928.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=224.1800, ns_per_run__fentry_mark_page_accessed=212.5300, ns_per_run__fentry_account_page_dirtied=164.5700, ns_per_run__fentry_mark_buffer_dirty=171.3900, runtime_score=0.8169
+2026-09-13 04:51:51,649 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:52:13,961 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:52:13,967 - INFO - Iteration 16: 1 witness(es) approved by developer; implementing
+2026-09-13 04:52:13,978 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:52:21,824 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:52:21,910 - INFO - Iteration 16: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmprvauiu9s.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9888 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:52:46,627 - INFO - Evaluated program fa463361-2df9-4873-831b-dc94b5221ac1 in 24.72s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:52:46,630 - INFO - Iteration 16: Program fa463361-2df9-4873-831b-dc94b5221ac1 (parent: f0707cb8-8179-462b-8342-236a6d7169d7) completed in 32.65s
+2026-09-13 04:52:46,630 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:52:46,635 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:53:05,229 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:53:05,235 - INFO - Iteration 17: 1 witness(es) approved by developer; implementing
+2026-09-13 04:53:05,244 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:53:13,846 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:53:13,934 - INFO - Iteration 17: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpak0zh_te.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (15928 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_b6pd7i1n/tmpak0zh_te.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 213.07 ns/run (run_cnt 14430)
+[bpf_eval]   fentry_mark_page_accessed: 233.87 ns/run (run_cnt 17691)
+[bpf_eval]   fentry_account_page_dirtied: 174.26 ns/run (run_cnt 7487)
+[bpf_eval]   fentry_mark_buffer_dirty: 172.42 ns/run (run_cnt 7472)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9052  (runtime_success=1.0, runtime_score=0.8105, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:54:40,060 - INFO - Evaluated program cd021102-b0a4-45dc-83b4-830e3024e2d3 in 86.13s: score=0.9052, combined_score=0.9052, compile_success=1.0000, object_bytes=15928.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=213.0700, ns_per_run__fentry_mark_page_accessed=233.8700, ns_per_run__fentry_account_page_dirtied=174.2600, ns_per_run__fentry_mark_buffer_dirty=172.4200, runtime_score=0.8105
+2026-09-13 04:54:40,064 - INFO - Iteration 17: Program cd021102-b0a4-45dc-83b4-830e3024e2d3 (parent: 609bb4dd-f86f-48cc-ac0f-08209ebab620) completed in 94.82s
+2026-09-13 04:54:40,064 - INFO - Metrics: score=0.9052, combined_score=0.9052, compile_success=1.0000, object_bytes=15928.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=213.0700, ns_per_run__fentry_mark_page_accessed=233.8700, ns_per_run__fentry_account_page_dirtied=174.2600, ns_per_run__fentry_mark_buffer_dirty=172.4200, runtime_score=0.8105
+2026-09-13 04:54:40,070 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:55:04,163 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:55:04,170 - INFO - Iteration 18: 1 witness(es) approved by developer; implementing
+2026-09-13 04:55:04,181 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:55:12,358 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:55:12,441 - INFO - Iteration 18: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpxqzd4x1f.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9888 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:55:36,347 - INFO - Evaluated program 1bf7fa44-477d-4624-9498-cdeb2c38a3e2 in 23.91s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:55:36,349 - INFO - Iteration 18: Program 1bf7fa44-477d-4624-9498-cdeb2c38a3e2 (parent: f0707cb8-8179-462b-8342-236a6d7169d7) completed in 32.17s
+2026-09-13 04:55:36,349 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 04:55:36,354 - INFO - Sampled model: gpt-5-nano
+2026-09-13 04:56:14,226 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:56:14,234 - INFO - Iteration 19: 2 witness(es) approved by developer; implementing
+2026-09-13 04:56:14,244 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:56:29,486 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmprwy7dx1a.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (16600 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=no
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_psb5yn5u/tmprwy7dx1a.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 215.9 ns/run (run_cnt 14215)
+[bpf_eval]   fentry_mark_page_accessed: 208.11 ns/run (run_cnt 23116)
+[bpf_eval]   fentry_account_page_dirtied: 184.6 ns/run (run_cnt 7321)
+[bpf_eval]   fentry_mark_buffer_dirty: 166.71 ns/run (run_cnt 7334)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9112  (runtime_success=1.0, runtime_score=0.8224, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 04:57:56,924 - INFO - Evaluated program 1e521b33-fc07-4677-80b9-54be3f67b68d in 87.43s: score=0.9112, combined_score=0.9112, compile_success=1.0000, object_bytes=16600.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=215.9000, ns_per_run__fentry_mark_page_accessed=208.1100, ns_per_run__fentry_account_page_dirtied=184.6000, ns_per_run__fentry_mark_buffer_dirty=166.7100, runtime_score=0.8224
+2026-09-13 04:57:56,929 - INFO - Iteration 19: Program 1e521b33-fc07-4677-80b9-54be3f67b68d (parent: 741c6c66-1ea3-472b-9dcd-19ee52738d1d) completed in 102.68s
+2026-09-13 04:57:56,929 - INFO - Metrics: score=0.9112, combined_score=0.9112, compile_success=1.0000, object_bytes=16600.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=215.9000, ns_per_run__fentry_mark_page_accessed=208.1100, ns_per_run__fentry_account_page_dirtied=184.6000, ns_per_run__fentry_mark_buffer_dirty=166.7100, runtime_score=0.8224
+2026-09-13 04:57:56,937 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:58:15,037 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:58:15,043 - INFO - Iteration 20: 1 witness(es) approved by developer; implementing
+2026-09-13 04:58:15,054 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:58:24,777 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:58:24,861 - INFO - Iteration 20: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmps8qic4hr.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 04:58:49,033 - INFO - Evaluated program 0df439c9-63f3-4fb0-989f-2241cf0ef1cd in 24.17s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 04:58:49,035 - INFO - Iteration 20: Program 0df439c9-63f3-4fb0-989f-2241cf0ef1cd (parent: 7525a869-ff91-45dd-a354-54dc40cd0b9f) completed in 33.98s
+2026-09-13 04:58:49,035 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 04:58:49,035 - INFO - Checkpoint interval reached at iteration 20
+2026-09-13 04:58:49,036 - INFO - Island Status:
+2026-09-13 04:58:49,036 - INFO -  * Island 0: 10 programs, best=0.9112, avg=0.8171, diversity=46.53, gen=10 (best: 609bb4dd-f86f-48cc-ac0f-08209ebab620)
+2026-09-13 04:58:49,036 - INFO -    Island 1: 10 programs, best=0.0000, avg=0.0000, diversity=0.15, gen=10 (best: 6c35a083-4991-44c2-8fec-534b75996d60)
+2026-09-13 04:58:49,054 - INFO - Saved database with 20 programs to openevolve_output/bpf_cachestat_verify_autoapprove/checkpoints/checkpoint_20260913_045849_20
+2026-09-13 04:58:49,055 - INFO - Saved best program at checkpoint 20 with metrics: score=0.9043, combined_score=0.9043, compile_success=1.0000, object_bytes=16000.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=236.6400, ns_per_run__fentry_mark_page_accessed=217.6600, ns_per_run__fentry_account_page_dirtied=156.0300, ns_per_run__fentry_mark_buffer_dirty=165.9100, runtime_score=0.8086
+2026-09-13 04:58:49,055 - INFO - Saved checkpoint at iteration 20 to openevolve_output/bpf_cachestat_verify_autoapprove/checkpoints/checkpoint_20260913_045849_20
+2026-09-13 04:58:49,060 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:59:33,933 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:59:33,941 - INFO - Iteration 21: 4 witness(es) approved by developer; implementing
+2026-09-13 04:59:33,952 - INFO - Sampled model: gpt-5-mini
+2026-09-13 04:59:49,542 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 04:59:49,627 - INFO - Iteration 21: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp0h_w99ns.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (7528 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 05:00:13,003 - INFO - Evaluated program 1f8c3ad1-b8fd-4381-88e4-6a02010bc78e in 23.38s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=7528.0000, semantic_equivalent=0.0000
+2026-09-13 05:00:13,005 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 4, 'semantic_equivalent': 0}
+2026-09-13 05:00:13,006 - INFO - Iteration 21: Program 1f8c3ad1-b8fd-4381-88e4-6a02010bc78e (parent: cd021102-b0a4-45dc-83b4-830e3024e2d3) completed in 39.05s
+2026-09-13 05:00:13,006 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=7528.0000, semantic_equivalent=0.0000
+2026-09-13 05:00:13,011 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:00:43,696 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:00:43,703 - INFO - Iteration 22: 1 witness(es) approved by developer; implementing
+2026-09-13 05:00:43,715 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:00:54,591 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:00:54,675 - INFO - Iteration 22: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpbavco6s0.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 05:01:18,495 - INFO - Evaluated program eb5ecf95-e4ed-4dbc-9840-b8de764266e7 in 23.82s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 05:01:18,498 - INFO - Iteration 22: Program eb5ecf95-e4ed-4dbc-9840-b8de764266e7 (parent: fa463361-2df9-4873-831b-dc94b5221ac1) completed in 34.78s
+2026-09-13 05:01:18,498 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 05:01:18,503 - INFO - Sampled model: gpt-5-nano
+2026-09-13 05:02:00,971 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:02:00,978 - INFO - Iteration 23: 1 witness(es) approved by developer; implementing
+2026-09-13 05:02:00,987 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:02:21,313 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:02:21,398 - INFO - Iteration 23: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpes2qf8ik.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (16616 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_lugskme9/tmpes2qf8ik.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 215.12 ns/run (run_cnt 14637)
+[bpf_eval]   fentry_mark_page_accessed: 231.07 ns/run (run_cnt 19456)
+[bpf_eval]   fentry_account_page_dirtied: 175.32 ns/run (run_cnt 7556)
+[bpf_eval]   fentry_mark_buffer_dirty: 173.14 ns/run (run_cnt 7575)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9062  (runtime_success=1.0, runtime_score=0.8123, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 05:03:48,721 - INFO - Evaluated program d48e39dc-500d-428a-94f7-a55711be2433 in 87.32s: score=0.9062, combined_score=0.9062, compile_success=1.0000, object_bytes=16616.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=215.1200, ns_per_run__fentry_mark_page_accessed=231.0700, ns_per_run__fentry_account_page_dirtied=175.3200, ns_per_run__fentry_mark_buffer_dirty=173.1400, runtime_score=0.8123
+2026-09-13 05:03:48,726 - INFO - Iteration 23: Program d48e39dc-500d-428a-94f7-a55711be2433 (parent: 0b132a60-2bd2-4ce1-ab11-b583f364db68) completed in 107.74s
+2026-09-13 05:03:48,726 - INFO - Metrics: score=0.9062, combined_score=0.9062, compile_success=1.0000, object_bytes=16616.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=215.1200, ns_per_run__fentry_mark_page_accessed=231.0700, ns_per_run__fentry_account_page_dirtied=175.3200, ns_per_run__fentry_mark_buffer_dirty=173.1400, runtime_score=0.8123
+2026-09-13 05:03:48,739 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:04:09,324 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:04:09,331 - INFO - Iteration 24: 3 witness(es) approved by developer; implementing
+2026-09-13 05:04:09,343 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:04:15,675 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:04:15,767 - INFO - Iteration 24: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp9cnk_g1w.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9888 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 05:04:39,596 - INFO - Evaluated program be78c775-62d0-431d-afd6-43d719ff7a67 in 23.83s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 05:04:39,598 - INFO - Iteration 24: Program be78c775-62d0-431d-afd6-43d719ff7a67 (parent: e2dccec4-845e-451f-baa3-6294a2bff673) completed in 30.25s
+2026-09-13 05:04:39,598 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9888.0000, semantic_equivalent=0.0000
+2026-09-13 05:04:39,604 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:04:54,388 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:04:54,395 - INFO - Iteration 25: 1 witness(es) approved by developer; implementing
+2026-09-13 05:04:54,407 - INFO - Sampled model: gpt-5-nano
+2026-09-13 05:05:05,287 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:05:05,374 - INFO - Iteration 25: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp9pvm858r.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (15960 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_4aks7btq/tmp9pvm858r.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 208.31 ns/run (run_cnt 14206)
+[bpf_eval]   fentry_mark_page_accessed: 218.9 ns/run (run_cnt 22186)
+[bpf_eval]   fentry_account_page_dirtied: 166.68 ns/run (run_cnt 7367)
+[bpf_eval]   fentry_mark_buffer_dirty: 197.62 ns/run (run_cnt 7357)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9102  (runtime_success=1.0, runtime_score=0.8204, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 05:06:33,944 - INFO - Evaluated program 072e6ad1-8d46-41a1-85c6-afe2eec5b11e in 88.57s: score=0.9102, combined_score=0.9102, compile_success=1.0000, object_bytes=15960.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=208.3100, ns_per_run__fentry_mark_page_accessed=218.9000, ns_per_run__fentry_account_page_dirtied=166.6800, ns_per_run__fentry_mark_buffer_dirty=197.6200, runtime_score=0.8204
+2026-09-13 05:06:33,947 - INFO - Iteration 25: Program 072e6ad1-8d46-41a1-85c6-afe2eec5b11e (parent: 609bb4dd-f86f-48cc-ac0f-08209ebab620) completed in 99.54s
+2026-09-13 05:06:33,947 - INFO - Metrics: score=0.9102, combined_score=0.9102, compile_success=1.0000, object_bytes=15960.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=208.3100, ns_per_run__fentry_mark_page_accessed=218.9000, ns_per_run__fentry_account_page_dirtied=166.6800, ns_per_run__fentry_mark_buffer_dirty=197.6200, runtime_score=0.8204
+2026-09-13 05:06:33,960 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:06:55,387 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:06:55,394 - INFO - Iteration 26: 1 witness(es) approved by developer; implementing
+2026-09-13 05:06:55,406 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:07:06,067 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:07:06,150 - INFO - Iteration 26: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpx38onb4g.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 05:07:29,442 - INFO - Evaluated program a9a5d4f0-f810-4289-86a8-6424d3d9faa8 in 23.29s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 05:07:29,445 - INFO - Iteration 26: Program a9a5d4f0-f810-4289-86a8-6424d3d9faa8 (parent: 1bf7fa44-477d-4624-9498-cdeb2c38a3e2) completed in 34.04s
+2026-09-13 05:07:29,445 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 05:07:29,450 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:07:41,821 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:07:41,828 - INFO - Iteration 27: 1 witness(es) approved by developer; implementing
+2026-09-13 05:07:41,840 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:07:57,717 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:07:57,802 - INFO - Iteration 27: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp6c3j9xpl.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (16024 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_0ecyk6yp/tmp6c3j9xpl.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 211.38 ns/run (run_cnt 13769)
+[bpf_eval]   fentry_mark_page_accessed: 214.54 ns/run (run_cnt 21862)
+[bpf_eval]   fentry_account_page_dirtied: 177.08 ns/run (run_cnt 7119)
+[bpf_eval]   fentry_mark_buffer_dirty: 166.58 ns/run (run_cnt 7133)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.9117  (runtime_success=1.0, runtime_score=0.8234, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 05:09:25,129 - INFO - Evaluated program 8bbc86db-7a35-4ab8-8484-64df18fb349d in 87.33s: score=0.9117, combined_score=0.9117, compile_success=1.0000, object_bytes=16024.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=211.3800, ns_per_run__fentry_mark_page_accessed=214.5400, ns_per_run__fentry_account_page_dirtied=177.0800, ns_per_run__fentry_mark_buffer_dirty=166.5800, runtime_score=0.8234
+2026-09-13 05:09:25,134 - INFO - Iteration 27: Program 8bbc86db-7a35-4ab8-8484-64df18fb349d (parent: 131bbd70-4d6b-46ca-997f-260e3b129525) completed in 103.29s
+2026-09-13 05:09:25,134 - INFO - Metrics: score=0.9117, combined_score=0.9117, compile_success=1.0000, object_bytes=16024.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=211.3800, ns_per_run__fentry_mark_page_accessed=214.5400, ns_per_run__fentry_account_page_dirtied=177.0800, ns_per_run__fentry_mark_buffer_dirty=166.5800, runtime_score=0.8234
+2026-09-13 05:09:25,147 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:09:53,640 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:09:53,648 - INFO - Iteration 28: 5 witness(es) approved by developer; implementing
+2026-09-13 05:09:53,661 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:10:02,876 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:10:02,961 - INFO - Iteration 28: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpw9gb_77q.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 05:10:26,512 - INFO - Evaluated program 7788f94b-8ae8-4884-94b1-6375b857e951 in 23.55s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 05:10:26,515 - INFO - Iteration 28: Program 7788f94b-8ae8-4884-94b1-6375b857e951 (parent: be78c775-62d0-431d-afd6-43d719ff7a67) completed in 32.85s
+2026-09-13 05:10:26,515 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 05:10:26,520 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:11:05,332 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:11:05,340 - INFO - Iteration 29: 2 witness(es) approved by developer; implementing
+2026-09-13 05:11:05,353 - INFO - Sampled model: gpt-5-nano
+2026-09-13 05:11:24,228 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:11:24,314 - INFO - Iteration 29: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp4rdc8qjz.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (14200 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: EQUIVALENT
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: EQUIVALENT
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: EQUIVALENT
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/cachestat_runner /tmp/openevolve_bpf_hw_aunbi/tmp4rdc8qjz.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   fentry_add_to_page_cache_lru: 213.94 ns/run (run_cnt 13974)
+[bpf_eval]   fentry_mark_page_accessed: 265.7 ns/run (run_cnt 14640)
+[bpf_eval]   fentry_account_page_dirtied: 165.73 ns/run (run_cnt 7199)
+[bpf_eval]   fentry_mark_buffer_dirty: 175.4 ns/run (run_cnt 7221)
+[bpf_eval] benchmark: OK (4/4 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.8950  (runtime_success=1.0, runtime_score=0.7901, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 05:12:50,644 - INFO - Evaluated program 13bc2da8-b374-4c80-a247-526206c4044c in 86.33s: score=0.8950, combined_score=0.8950, compile_success=1.0000, object_bytes=14200.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=213.9400, ns_per_run__fentry_mark_page_accessed=265.7000, ns_per_run__fentry_account_page_dirtied=165.7300, ns_per_run__fentry_mark_buffer_dirty=175.4000, runtime_score=0.7901
+2026-09-13 05:12:50,649 - INFO - Iteration 29: Program 13bc2da8-b374-4c80-a247-526206c4044c (parent: 741c6c66-1ea3-472b-9dcd-19ee52738d1d) completed in 105.29s
+2026-09-13 05:12:50,649 - INFO - Metrics: score=0.8950, combined_score=0.8950, compile_success=1.0000, object_bytes=14200.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=213.9400, ns_per_run__fentry_mark_page_accessed=265.7000, ns_per_run__fentry_account_page_dirtied=165.7300, ns_per_run__fentry_mark_buffer_dirty=175.4000, runtime_score=0.7901
+2026-09-13 05:12:50,662 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:13:13,424 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:13:13,430 - INFO - Iteration 30: 1 witness(es) approved by developer; implementing
+2026-09-13 05:13:13,442 - INFO - Sampled model: gpt-5-mini
+2026-09-13 05:13:24,117 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 05:13:24,201 - INFO - Iteration 30: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmprs5neydf.bpf.c (tool=cachestat) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (9864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 4 entrypoint(s) vs baseline, maps=['stats:array'], witness=.wit
+[bpf_eval]   fentry_add_to_page_cache_lru: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_add_to_page_cache_lru: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_page_accessed: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_page_accessed: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_account_page_dirtied: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_account_page_dirtied: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval]   fentry_mark_buffer_dirty: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   fentry_mark_buffer_dirty: NOT equivalent [error]  Formula generation failed for Rust program.
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 05:13:47,563 - INFO - Evaluated program b4b11584-cfe5-4532-b64b-a98cd487ef70 in 23.36s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 05:13:47,566 - INFO - Iteration 30: Program b4b11584-cfe5-4532-b64b-a98cd487ef70 (parent: 1bf7fa44-477d-4624-9498-cdeb2c38a3e2) completed in 34.12s
+2026-09-13 05:13:47,566 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=9864.0000, semantic_equivalent=0.0000
+2026-09-13 05:13:47,566 - INFO - Checkpoint interval reached at iteration 30
+2026-09-13 05:13:47,567 - INFO - Island Status:
+2026-09-13 05:13:47,567 - INFO -  * Island 0: 15 programs, best=0.9117, avg=0.7863, diversity=78.20, gen=15 (best: 609bb4dd-f86f-48cc-ac0f-08209ebab620)
+2026-09-13 05:13:47,567 - INFO -    Island 1: 15 programs, best=0.0000, avg=0.0000, diversity=0.15, gen=15 (best: 6c35a083-4991-44c2-8fec-534b75996d60)
+2026-09-13 05:13:47,591 - INFO - Saved database with 30 programs to openevolve_output/bpf_cachestat_verify_autoapprove/checkpoints/checkpoint_20260913_051347_30
+2026-09-13 05:13:47,592 - INFO - Saved best program at checkpoint 30 with metrics: score=0.9043, combined_score=0.9043, compile_success=1.0000, object_bytes=16000.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=236.6400, ns_per_run__fentry_mark_page_accessed=217.6600, ns_per_run__fentry_account_page_dirtied=156.0300, ns_per_run__fentry_mark_buffer_dirty=165.9100, runtime_score=0.8086
+2026-09-13 05:13:47,592 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_cachestat_verify_autoapprove/checkpoints/checkpoint_20260913_051347_30
+2026-09-13 05:13:47,592 - INFO - ✅ Evolution completed - Maximum iterations reached
+2026-09-13 05:13:47,617 - INFO - Saved database with 30 programs to openevolve_output/bpf_cachestat_verify_autoapprove/checkpoints/checkpoint_20260913_051347_30
+2026-09-13 05:13:47,618 - INFO - Saved best program at checkpoint 30 with metrics: score=0.9043, combined_score=0.9043, compile_success=1.0000, object_bytes=16000.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=236.6400, ns_per_run__fentry_mark_page_accessed=217.6600, ns_per_run__fentry_account_page_dirtied=156.0300, ns_per_run__fentry_mark_buffer_dirty=165.9100, runtime_score=0.8086
+2026-09-13 05:13:47,618 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_cachestat_verify_autoapprove/checkpoints/checkpoint_20260913_051347_30
+2026-09-13 05:13:47,618 - INFO - Received signal 15, initiating graceful shutdown...
+2026-09-13 05:13:47,618 - INFO - Graceful shutdown requested...
+2026-09-13 05:13:47,628 - INFO - Stopped process pool
+2026-09-13 05:13:47,628 - INFO - Using tracked best program: 609bb4dd-f86f-48cc-ac0f-08209ebab620
+2026-09-13 05:13:47,628 - INFO - Evolution complete. Best program has metrics: score=0.9043, combined_score=0.9043, compile_success=1.0000, object_bytes=16000.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__fentry_add_to_page_cache_lru=236.6400, ns_per_run__fentry_mark_page_accessed=217.6600, ns_per_run__fentry_account_page_dirtied=156.0300, ns_per_run__fentry_mark_buffer_dirty=165.9100, runtime_score=0.8086
+2026-09-13 05:13:47,629 - INFO - Saved best program to openevolve_output/bpf_cachestat_verify_autoapprove/best/best_program.c with program info to openevolve_output/bpf_cachestat_verify_autoapprove/best/best_program_info.json
+
+Evolution complete!
+Best program metrics:
+  score: 0.9043
+  combined_score: 0.9043
+  compile_success: 1.0000
+  object_bytes: 16000.0000
+  semantic_equivalent: 1.0000
+  runtime_success: 1.0000
+  ns_per_run__fentry_add_to_page_cache_lru: 236.6400
+  ns_per_run__fentry_mark_page_accessed: 217.6600
+  ns_per_run__fentry_account_page_dirtied: 156.0300
+  ns_per_run__fentry_mark_buffer_dirty: 165.9100
+  runtime_score: 0.8086
+
+Per-iteration ns/run:
+  iter   0 (original): fentry_account_page_dirtied=156.03  fentry_add_to_page_cache_lru=236.64  fentry_mark_buffer_dirty=165.91  fentry_mark_page_accessed=217.66
+  iter   1: N/A (compile failed)
+  iter   2: N/A (not equivalent)
+  iter   4: N/A (not equivalent)
+  iter   5: fentry_account_page_dirtied=161.99  fentry_add_to_page_cache_lru=218.84  fentry_mark_buffer_dirty=192.53  fentry_mark_page_accessed=144.11
+  iter   6: N/A (not equivalent)
+  iter   7: fentry_account_page_dirtied=173.71  fentry_add_to_page_cache_lru=218.72  fentry_mark_buffer_dirty=167.69  fentry_mark_page_accessed=197.81
+  iter   8: N/A (not equivalent)
+  iter   9: fentry_account_page_dirtied=188.80  fentry_add_to_page_cache_lru=204.79  fentry_mark_buffer_dirty=195.17  fentry_mark_page_accessed=246.36
+  iter  10: N/A (not equivalent)
+  iter  11: fentry_account_page_dirtied=157.82  fentry_add_to_page_cache_lru=207.53  fentry_mark_buffer_dirty=168.00  fentry_mark_page_accessed=217.69
+  iter  12: N/A (not equivalent)
+  iter  13: fentry_account_page_dirtied=180.19  fentry_add_to_page_cache_lru=216.20  fentry_mark_buffer_dirty=212.23  fentry_mark_page_accessed=221.38
+  iter  14: N/A (not equivalent)
+  iter  15: fentry_account_page_dirtied=164.57  fentry_add_to_page_cache_lru=224.18  fentry_mark_buffer_dirty=171.39  fentry_mark_page_accessed=212.53
+  iter  16: N/A (not equivalent)
+  iter  17: fentry_account_page_dirtied=174.26  fentry_add_to_page_cache_lru=213.07  fentry_mark_buffer_dirty=172.42  fentry_mark_page_accessed=233.87
+  iter  18: N/A (not equivalent)
+  iter  19: fentry_account_page_dirtied=184.60  fentry_add_to_page_cache_lru=215.90  fentry_mark_buffer_dirty=166.71  fentry_mark_page_accessed=208.11
+  iter  20: N/A (not equivalent)
+  iter  21: N/A (not equivalent)
+  iter  22: N/A (not equivalent)
+  iter  23: fentry_account_page_dirtied=175.32  fentry_add_to_page_cache_lru=215.12  fentry_mark_buffer_dirty=173.14  fentry_mark_page_accessed=231.07
+  iter  24: N/A (not equivalent)
+  iter  25: fentry_account_page_dirtied=166.68  fentry_add_to_page_cache_lru=208.31  fentry_mark_buffer_dirty=197.62  fentry_mark_page_accessed=218.90
+  iter  26: N/A (not equivalent)
+  iter  27: fentry_account_page_dirtied=177.08  fentry_add_to_page_cache_lru=211.38  fentry_mark_buffer_dirty=166.58  fentry_mark_page_accessed=214.54
+  iter  28: N/A (not equivalent)
+  iter  29: fentry_account_page_dirtied=165.73  fentry_add_to_page_cache_lru=213.94  fentry_mark_buffer_dirty=175.40  fentry_mark_page_accessed=265.70
+  iter  30: N/A (not equivalent)
+
+LLM token usage (this run):
+  prompt:     448,106
+  completion: 122,451
+  total:      570,557
+
+Latest checkpoint saved at: openevolve_output/bpf_cachestat_verify_autoapprove/checkpoints/checkpoint_20260913_051347_30
+To resume, use: --checkpoint openevolve_output/bpf_cachestat_verify_autoapprove/checkpoints/checkpoint_20260913_051347_30

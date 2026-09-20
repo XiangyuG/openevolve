@@ -92,6 +92,16 @@ def extract_diffs(
     return [(match[0].rstrip(), match[1].rstrip()) for match in diff_blocks]
 
 
+# Fence language tags that are never the program itself -- e.g. the
+# transformation-witness DSL's ```witness/```wit block that some prompts
+# (see examples/bpf_compile) require alongside every proposed change. If the
+# model forgets to tag its actual code fence with `language`, the naive
+# "any fence" fallback below would otherwise grab this one instead (it's
+# often the ONLY other fence in the response), silently trying to compile
+# witness DSL text as the program.
+_NON_CODE_FENCE_TAGS = {"witness", "wit"}
+
+
 def parse_full_rewrite(llm_response: str, language: str = "python") -> Optional[str]:
     """
     Extract a full rewrite from an LLM response
@@ -109,12 +119,16 @@ def parse_full_rewrite(llm_response: str, language: str = "python") -> Optional[
     if matches:
         return matches[0].strip()
 
-    # Fallback to any code block
-    code_block_pattern = r"```(.*?)```"
-    matches = re.findall(code_block_pattern, llm_response, re.DOTALL)
-
-    if matches:
-        return matches[0].strip()
+    # Fallback to any code block, but skip ones opened with a known non-code
+    # tag (see _NON_CODE_FENCE_TAGS) -- picking the FIRST *remaining* fence
+    # keeps the historical "any fence" behavior for the common case (a bare
+    # ``` ... ``` block, or one tagged with some other language) while no
+    # longer mistaking a ```witness block for the program.
+    fallback_pattern = re.compile(r"```([ \t]*\S*)[ \t]*\r?\n(.*?)```", re.DOTALL)
+    for m in fallback_pattern.finditer(llm_response):
+        if m.group(1).strip().lower() in _NON_CODE_FENCE_TAGS:
+            continue
+        return m.group(2).strip()
 
     # No closed code block found. If the response never used a fence at all,
     # treat the whole response as code -- some models return bare code with
@@ -171,6 +185,7 @@ _WITNESS_BLOCK_PATTERN = re.compile(
     r"\s*Formula \(pre-transformation\):\s*(?P<pre_formula>.*?)\s*\n"
     r"\s*Formula \(post-transformation\):\s*(?P<post_formula>.*?)"
     r"(?=\s*\n\s*Map value width change:"
+    r"|\s*\n\s*Map key width change:"
     r"|\s*\n\s*Variable width change:"
     r"|\s*\n\s*Map fusion:"
     r"|" + _ITEM_OR_END + r")"
@@ -180,12 +195,46 @@ _WITNESS_BLOCK_PATTERN = re.compile(
 )
 
 _MAP_WIDTH_CHANGE_TAG_PATTERN = re.compile(r"Map value width change:\s*([^\n]*)")
+_MAP_KEY_WIDTH_CHANGE_TAG_PATTERN = re.compile(r"Map key width change:\s*([^\n]*)")
 _VARIABLE_WIDTH_CHANGE_TAG_PATTERN = re.compile(r"Variable width change:\s*([^\n]*)")
 _MAP_FUSION_TAG_PATTERN = re.compile(r"Map fusion:\s*([^\n]*)")
 
 _TRAILING_ELLIPSIS_PATTERN = re.compile(r"\n?\.\.\.\s*$")
 
 _EXAMPLE_SNIPPET_PATTERN = re.compile(r"`[^`\n]+`")
+
+# The transformation-witness DSL block a change carries: a fenced ```witness
+# (or ```wit) block. Grammar: heimdall/c2rust_translation/witness_dsl/GRAMMAR.bnf.
+# It can land in any of _WITNESS_BLOCK_PATTERN's text groups depending on where
+# the model put it, so extract_transformation_witnesses searches the whole item.
+_WIT_FENCE_PATTERN = re.compile(
+    r"```[ \t]*(?:witness|wit)[ \t]*\r?\n(?P<body>.*?)\r?\n?```",
+    re.DOTALL | re.IGNORECASE,
+)
+# One `<keyword> { ... }` section of a .wit program (brace-flat by grammar).
+# Only assumption/binding are real sections -- the DSL has no `observation`
+# block (heimdall always compares every output), so a model that still
+# writes one (stale habit / stale examples) has its content silently
+# dropped here rather than merged into invalid output.
+_WIT_SECTION_PATTERN = re.compile(
+    r"\b(assumption|binding)\b\s*\{(?P<body>.*?)\}", re.DOTALL
+)
+_WIT_COMMENT_PATTERN = re.compile(r"/\*.*?\*/|//[^\n]*", re.DOTALL)
+
+
+def _extract_wit_fence(*texts: str) -> str:
+    """Body of the first ```witness / ```wit fenced block across `texts`,
+    stripped; "" if none."""
+    for t in texts:
+        if t:
+            m = _WIT_FENCE_PATTERN.search(t)
+            if m:
+                return m.group("body").strip()
+    return ""
+
+
+def _strip_wit_fence(text: str) -> str:
+    return _WIT_FENCE_PATTERN.sub("", text or "").strip()
 
 
 def _has_example_snippet(detail: str) -> bool:
@@ -200,6 +249,15 @@ def _has_example_snippet(detail: str) -> bool:
     return bool(_EXAMPLE_SNIPPET_PATTERN.search(detail))
 
 _MAP_WIDTH_CHANGE_PATTERN = re.compile(r"^(?P<map>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)\s*$")
+
+# "Map key width change: <map>: <old> -> <new> key <ctx_field> < <bound>".
+# The "key <field> < <bound>" clause is what makes the narrowing sound (the
+# program never produces a key >= bound); without it heimdall has no reason
+# the smaller key type is lossless and the check will fail.
+_MAP_KEY_WIDTH_CHANGE_PATTERN = re.compile(
+    r"^(?P<map>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)"
+    r"(?:\s+key\s+(?P<field>[A-Za-z_][\w.]*)\s*<\s*(?P<bound>\d+))?\s*$"
+)
 
 _VARIABLE_WIDTH_CHANGE_PATTERN = re.compile(r"^(?P<var>[^:]+):\s*(?P<old>\d+)\s*->\s*(?P<new>\d+)\s*$")
 
@@ -221,6 +279,33 @@ def _parse_map_width_change(raw: Optional[str]) -> Optional[Dict[str, Any]]:
         "map": match.group("map").strip(),
         "old_bytes": int(match.group("old")),
         "new_bytes": int(match.group("new")),
+    }
+
+
+def _parse_map_key_width_change(raw: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Parse a "Map key width change: <map>: <old_bytes> -> <new_bytes>
+    key <ctx_field> < <bound>" tag into
+    {"map", "old_bytes", "new_bytes", "ctx_field", "bound"} (ctx_field/bound
+    None when the optional clause is absent).
+
+    build_heimdall_witness_file turns this into a map_correspondence whose
+    optimized_key truncates to the new width, plus -- when ctx_field/bound are
+    given -- a top-level assumption `original.ctx.<ctx_field> < <bound>` so
+    heimdall knows the program never produces a key the smaller type can't
+    hold. Same "this is only a hint, cross-check downstream" caveat as
+    _parse_map_width_change."""
+    if not raw:
+        return None
+    match = _MAP_KEY_WIDTH_CHANGE_PATTERN.match(raw.strip())
+    if not match:
+        return None
+    bound = match.group("bound")
+    return {
+        "map": match.group("map").strip(),
+        "old_bytes": int(match.group("old")),
+        "new_bytes": int(match.group("new")),
+        "ctx_field": (match.group("field") or "").strip() or None,
+        "bound": int(bound) if bound is not None else None,
     }
 
 
@@ -301,14 +386,21 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
     simply not matched -- this is best-effort, not enforced.
 
     Args:
-        explanation_text: Explanation text, e.g. from extract_change_explanation()
+        explanation_text: The RAW LLM response (or any text that still contains the
+            ```witness/```wit fences) -- NOT the output of extract_change_explanation(),
+            which strips every ``` ... ``` fenced block indiscriminately and would take
+            the required ```witness DSL block down with it, silently zeroing out every
+            witness's "wit" field. Call this first, on the raw response, then pass the
+            same raw response to extract_change_explanation() separately for display.
 
     Returns:
         List of {"summary", "detail", "witness", "pre_formula", "post_formula",
-        "map_width_change", "variable_width_change", "map_fusion",
-        "example_missing"} dicts, in order.
+        "map_width_change", "map_key_width_change", "variable_width_change",
+        "map_fusion", "example_missing"} dicts, in order.
         "map_width_change" is {"map", "old_bytes", "new_bytes"} or None when
         the LLM didn't tag this witness as a map value-width change.
+        "map_key_width_change" is {"map", "old_bytes", "new_bytes"} or None
+        when the LLM didn't tag this witness as a hash-map key-width change.
         "variable_width_change" is {"var", "old_bits", "new_bits"} or None
         when the LLM didn't tag this witness as a range-justified variable
         narrowing.
@@ -319,6 +411,10 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
         backtick-quoted code fragment -- i.e. the LLM skipped quoting the
         actual before/after code the prompt asks for (see
         _has_example_snippet).
+        "wit" is the change's transformation-witness DSL block (fenced
+        ```witness; grammar in
+        heimdall/c2rust_translation/witness_dsl/GRAMMAR.bnf), or "" if absent.
+        Merge several with combine_witness_dsl_blocks().
     """
     witnesses = []
     for match in _WITNESS_BLOCK_PATTERN.finditer(explanation_text):
@@ -328,11 +424,20 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
         post_formula = _TRAILING_ELLIPSIS_PATTERN.sub("", match.group("post_formula").strip())
         detail = match.group("detail").strip()
 
+        # The change's transformation-witness DSL block (fenced ```witness). The
+        # prompt asks for it right after "Witness:", but be liberal about where
+        # it actually landed; then keep it out of the prose fields.
+        wit = _extract_wit_fence(
+            detail, match.group("witness"), post_formula, match.group("tail") or ""
+        )
+        detail = _strip_wit_fence(detail)
+
         # Search the tail (everything after post_formula, up to the next
         # numbered change/end) independently for each tag -- see
         # _WITNESS_BLOCK_PATTERN's comment on why this isn't done positionally.
         tail = match.group("tail") or ""
         map_width_change_match = _MAP_WIDTH_CHANGE_TAG_PATTERN.search(tail)
+        map_key_width_change_match = _MAP_KEY_WIDTH_CHANGE_TAG_PATTERN.search(tail)
         variable_width_change_match = _VARIABLE_WIDTH_CHANGE_TAG_PATTERN.search(tail)
         map_fusion_match = _MAP_FUSION_TAG_PATTERN.search(tail)
 
@@ -340,11 +445,15 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
             {
                 "summary": match.group("summary").strip(),
                 "detail": detail,
-                "witness": match.group("witness").strip(),
+                "witness": _strip_wit_fence(match.group("witness")),
+                "wit": wit,
                 "pre_formula": pre_formula.strip(),
                 "post_formula": post_formula.strip(),
                 "map_width_change": _parse_map_width_change(
                     map_width_change_match.group(1) if map_width_change_match else None
+                ),
+                "map_key_width_change": _parse_map_key_width_change(
+                    map_key_width_change_match.group(1) if map_key_width_change_match else None
                 ),
                 "variable_width_change": _parse_variable_width_change(
                     variable_width_change_match.group(1) if variable_width_change_match else None
@@ -356,6 +465,53 @@ def extract_transformation_witnesses(explanation_text: str) -> List[Dict[str, An
             }
         )
     return witnesses
+
+
+def combine_witness_dsl_blocks(
+    witnesses: List[Dict[str, Any]], only_approved: bool = False
+) -> str:
+    """Merge the per-change `wit` blocks (transformation-witness DSL text, see
+    extract_transformation_witnesses) into ONE .wit program: the union of each
+    section's statements, order-preserving and deduped, in canonical
+    assumption / binding order.
+
+    Purely textual -- it does NOT validate the result. Returns "" when no
+    witness carries a `wit` block, or when every block's `assumption`/`binding`
+    sections were empty (there is no `observation` block in the DSL --
+    heimdall always compares every output -- so a witness with nothing in
+    `assumption`/`binding` has nothing left to say and is equivalent to no
+    witness at all). Each section is emitted only when non-empty.
+
+    only_approved: skip witnesses whose `developer_approved` is not exactly True.
+    """
+    sections: Dict[str, List[str]] = {"assumption": [], "binding": []}
+    seen = set()
+    for w in witnesses or []:
+        if only_approved and w.get("developer_approved") is not True:
+            continue
+        body = _WIT_COMMENT_PATTERN.sub("", (w.get("wit") or "").strip())
+        if not body:
+            continue
+        for m in _WIT_SECTION_PATTERN.finditer(body):
+            kind = m.group(1)
+            for raw in m.group("body").split(";"):
+                stmt = " ".join(raw.split())
+                if not stmt or (kind, stmt) in seen:
+                    continue
+                seen.add((kind, stmt))
+                sections[kind].append(stmt + ";")
+
+    if not any(sections.values()):
+        return ""
+    out: List[str] = []
+    for kind in ("assumption", "binding"):
+        stmts = sections[kind]
+        if not stmts:
+            continue
+        out.append(kind + " {")
+        out.extend("    " + s for s in stmts)
+        out.append("}")
+    return "\n".join(out) + "\n"
 
 
 def _find_const_by_name(assertions, name: str):
@@ -494,36 +650,209 @@ def format_witness_decisions_for_prompt(witnesses: List[Dict[str, Any]]) -> str:
     return "\n\n".join(blocks)
 
 
+def _witness_hint_key(w: Dict[str, Any]) -> Optional[tuple]:
+    """Identity of the transform a witness claims, for deduplicating an
+    accumulated (inherited + new) witness list: ("val", map) / ("key", map) /
+    ("fusion", target). None for a witness with no translatable hint."""
+    if isinstance(w.get("map_width_change"), dict) and w["map_width_change"].get("map"):
+        return ("val", w["map_width_change"]["map"])
+    if isinstance(w.get("map_key_width_change"), dict) and w["map_key_width_change"].get("map"):
+        return ("key", w["map_key_width_change"]["map"])
+    if isinstance(w.get("map_fusion"), dict) and w["map_fusion"].get("target"):
+        return ("fusion", w["map_fusion"]["target"])
+    return None
+
+
+def merge_witnesses(
+    inherited: List[Dict[str, Any]], new: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """Combine an ancestry's accumulated witnesses with this iteration's newly
+    approved ones into one list with each transform represented once.
+
+    On collision for the same transform (e.g. an ancestor narrowed a map value
+    8->4 and this iteration narrows it 4->2) the entry describing the DEEPER
+    narrowing wins -- smaller new_bytes, and for a key narrowing also the
+    smaller `bound`. build_heimdall_witness_file re-anchors every byte count to
+    the real baseline<->candidate BTF sizes anyway; this just keeps the carried
+    set small and picks the right `bound` (which BTF can't supply).
+
+    Witnesses without a translatable hint are dropped (they carry nothing
+    forward). The `new` list wins ties so a re-approved witness refreshes any
+    inherited copy.
+    """
+    by_key: Dict[tuple, Dict[str, Any]] = {}
+    order: List[tuple] = []
+    for w in list(inherited) + list(new):
+        k = _witness_hint_key(w)
+        if k is None:
+            continue
+        if k not in by_key:
+            by_key[k] = w
+            order.append(k)
+            continue
+        cur = by_key[k]
+        kind = k[0]
+        if kind in ("val", "key"):
+            hk = "map_width_change" if kind == "val" else "map_key_width_change"
+            try:
+                cur_new = int(cur[hk]["new_bytes"])
+                w_new = int(w[hk]["new_bytes"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if w_new <= cur_new:
+                merged = dict(w)
+                if kind == "key":
+                    bounds = [
+                        b
+                        for b in (cur[hk].get("bound"), w[hk].get("bound"))
+                        if b is not None
+                    ]
+                    if bounds:
+                        merged[hk] = {**w[hk], "bound": min(bounds)}
+                by_key[k] = merged
+        # fusion: keep the first (no natural "deeper" ordering)
+    return [by_key[k] for k in order]
+
+
+def _norm_width_hint(hint: Any) -> Optional[tuple]:
+    """(old_bits, new_bits) for a {map, old_bytes, new_bytes} narrowing hint, or
+    None when it is absent, malformed, or not actually a narrowing."""
+    if not hint:
+        return None
+    try:
+        old_bits = int(hint["old_bytes"]) * 8
+        new_bits = int(hint["new_bytes"]) * 8
+    except (KeyError, TypeError, ValueError):
+        return None
+    if new_bits <= 0 or new_bits >= old_bits:
+        return None
+    return old_bits, new_bits
+
+
 def build_heimdall_witness_file(witnesses: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
-    Combine extracted witnesses (see extract_transformation_witnesses) into
-    heimdall-private's --witness-file JSON schema (c2rust_translation/
-    verify_equivalence.py's load_witnesses/relax_hints_from_witnesses/
-    fusion_hints_from_witnesses): {"witnesses": [{"id", "map_width_change"} or
-    {"id", "map_fusion"}, ...]}.
+    Combine extracted witnesses (see extract_transformation_witnesses) into a
+    single heimdall `--witness` file object:
+    {"witness": {"version", "name", "bindings", "assumptions", "observations"}}
+    (schema: heimdall/c2rust_translation/witness_spec.py).
 
-    Only witnesses carrying a "map_width_change" or "map_fusion" hint are
-    included -- heimdall only ever reads those two keys off each entry, so a
-    purely structural witness (or one with only a "variable_width_change" tag,
-    which heimdall has no map-level model for) would contribute nothing and is
-    left out. "id" is the witness's own "index" (see process_parallel.py's
-    _run_iteration_worker_propose), so ids in the resulting file line up with
-    the witness numbering shown in the review UI.
+    Translated hints:
+      - "map_width_change" (map VALUE struct narrowed) -> a map_correspondence
+        whose value_relation is optimized.value == truncate(original.value,
+        new_bits), i.e. the two maps agree on the low new_bytes*8 bits.
+      - "map_key_width_change" (hash map KEY type narrowed) -> the same
+        binding's optimized_key becomes truncate(k, new_bits) under
+        `assume: k <= 2**new_bits - 1` (the key always fits, which the LLM
+        must have proven in that witness's formulas).
+    Both hints for the same map are merged into one binding.
 
-    Args:
-        witnesses: Witness dicts, each stamped with an "index"
+    NOT translated: "map_fusion" (heimdall has no map-merge binding) and
+    "variable_width_change" (a range-narrowed scalar needs a ctx field name
+    that isn't known here). A witness carrying only those contributes nothing.
 
-    Returns:
-        {"witnesses": [...]} dict, ready to json.dump to a --witness-file path
-        ("witnesses": [] if none qualify)
+    "observations" is left empty on purpose -- that tells heimdall to keep
+    comparing every output strictly, with only the bound map(s) relaxed.
+
+    Returns {"witness": {...}} ready to json.dump to a --witness path
+    (bindings == [] if nothing qualifies).
     """
-    entries = []
+    # map name -> {"val": (old_bits,new_bits)|None, "key": (...)|None,
+    #              "key_field": str|None, "key_bound": int|None}
+    # When several witnesses (e.g. inherited from an ancestry, see
+    # _merge_witnesses) touch the same map, keep the DEEPEST narrowing --
+    # smallest new width -- and the TIGHTEST key bound.
+    per_map: Dict[str, Dict[str, Any]] = {}
+
+    def _slot(name: str) -> Dict[str, Any]:
+        return per_map.setdefault(
+            name, {"val": None, "key": None, "key_field": None, "key_bound": None}
+        )
+
+    def _deeper(cur, new):
+        return new if cur is None else min((cur, new), key=lambda w: w[1])
+
     for w in witnesses:
-        if w.get("map_width_change"):
-            entries.append({"id": w.get("index"), "map_width_change": w["map_width_change"]})
-        elif w.get("map_fusion"):
-            entries.append({"id": w.get("index"), "map_fusion": w["map_fusion"]})
-    return {"witnesses": entries}
+        vwidths = _norm_width_hint(w.get("map_width_change"))
+        if vwidths is not None and (w["map_width_change"] or {}).get("map"):
+            s = _slot(w["map_width_change"]["map"])
+            s["val"] = _deeper(s["val"], vwidths)
+
+        kh = w.get("map_key_width_change")
+        kwidths = _norm_width_hint(kh)
+        if kwidths is not None and (kh or {}).get("map"):
+            s = _slot(kh["map"])
+            s["key"] = _deeper(s["key"], kwidths)
+            if kh.get("ctx_field") and not s["key_field"]:
+                s["key_field"] = kh["ctx_field"]
+            b = kh.get("bound")
+            if b is not None:
+                s["key_bound"] = b if s["key_bound"] is None else min(s["key_bound"], b)
+
+    bindings = []
+    assumptions = []
+    for name, hints in per_map.items():
+        val, key = hints["val"], hints["key"]
+        mc: Dict[str, Any] = {"original_key": "k"}
+        if key is not None:
+            key_old, key_new = key
+            mc["assume"] = {
+                "unsigned_le": {
+                    "left": "k",
+                    "right": {"value": (1 << key_new) - 1, "type": f"u{key_old}"},
+                }
+            }
+            mc["optimized_key"] = {"truncate": {"value": "k", "width": key_new}}
+            # the key narrowing is only sound if the program's own key input
+            # stays below `bound` -- surface that as a top-level assumption
+            field, bound = hints["key_field"], hints["key_bound"]
+            if field and bound is not None:
+                assumptions.append(
+                    {
+                        "id": f"key_{name}",
+                        "expression": {
+                            "unsigned_lt": {
+                                "left": f"original.ctx.{field}",
+                                "right": {"value": int(bound), "type": f"u{key_old}"},
+                            }
+                        },
+                        "provenance": {"kind": "llm_claimed"},
+                        "description": f"{field} < {bound} makes the {name} key narrowing lossless",
+                    }
+                )
+        else:
+            mc["optimized_key"] = "k"
+        if val is not None:
+            mc["value_relation"] = {
+                "equal": {
+                    "left": "optimized.value",
+                    "right": {"truncate": {"value": "original.value", "width": val[1]}},
+                }
+            }
+        else:
+            mc["value_relation"] = {"equal": True}
+
+        okey = f"u{key[0]}" if key else "_"
+        nkey = f"u{key[1]}" if key else "_"
+        oval = f"u{val[0]}" if val else "_"
+        nval = f"u{val[1]}" if val else "_"
+        bindings.append(
+            {
+                "name": name,
+                "original": {"object": name, "type": f"map<{okey}, {oval}>"},
+                "optimized": {"object": name, "type": f"map<{nkey}, {nval}>"},
+                "relation": {"map_correspondence": mc},
+            }
+        )
+
+    return {
+        "witness": {
+            "version": "0.1",
+            "name": "openevolve_transform",
+            "bindings": bindings,
+            "assumptions": assumptions,
+            "observations": [],
+        }
+    }
 
 
 def _format_block_lines(lines: List[str], max_line_len: int = 100, max_lines: int = 30) -> str:

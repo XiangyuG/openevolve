@@ -40,8 +40,10 @@ ENV/
 # Output files
 examples/*/output/
 openevolve_output*/
+generated_programs/
 *.log
 demo_output*/
+artifacts/
 pr_sanity*/
 
 # Test cache

@@ -82,7 +82,7 @@ explicit-map-write divergence found", not as a real equivalence proof --
 exactly why it's a signal for the developer, not an automatic pass.
 
 Disable with `BPF_EQUIV_CHECK=0`. Other overrides: `BPF_EQUIV_CONDA_ENV`
-(default `c2rust`), `BPF_EQUIV_TIMEOUT` (per entry point, default `90`).
+(default `c2rust`), `BPF_EQUIV_TIMEOUT` (per entry point, default `180`).
 
 ## Transformation witnesses
 
@@ -238,5 +238,5 @@ export BPF_SAVE_PROGRAMS=1                            # save every candidate to 
 export BPF_SAVE_DIR=./generated_programs/$BPF_TOOL
 export BPF_EQUIV_CHECK=1                              # symbolic equivalence check vs TOOL["source"]
 export BPF_EQUIV_CONDA_ENV=c2rust
-export BPF_EQUIV_TIMEOUT=90                           # per entry point
+export BPF_EQUIV_TIMEOUT=180                          # per entry point
 ```

@@ -1,5 +1,9 @@
-# OpenEvolve config for libbpf-tools BPF C compile optimization, with every
-# iteration gated on developer approval via the /review web UI (see README.md).
+# OpenEvolve config for libbpf-tools BPF C compile optimization. Runs the full
+# propose/witness/relaxed-check pipeline unattended -- every witness is
+# auto-approved (interactive.auto_approve, default true), no developer needs to
+# be at the /review web UI (see README.md). For a real human-reviewed run where
+# every iteration blocks on an actual decision, use config_interactive_babysit.yaml
+# instead (identical except auto_approve: false).
 max_iterations: 50
 checkpoint_interval: 10
 log_level: "INFO"
@@ -17,18 +21,15 @@ llm:
   max_tokens: 16000
   timeout: 120
   system_message: |
-    You are an expert eBPF/libbpf C programmer working under a narrow optimization
-    mandate. Every change you make must be one of these two kinds -- you may apply
-    either kind, both kinds together, and multiple instances of each in the same
-    rewrite, but nothing outside these two:
-    (1) Narrow the byte width of a BPF hash/array map's VALUE type when the real
-        value range actually used by the program never needs the current width.
-    (2) Merge two or more separate BPF maps that are looked up with the same key in
-        the same code path into a single map, to reduce the number of map lookups.
-    Do not make any other kind of change, even if you believe it would help. Keep
-    required includes, SEC annotations, map definitions you are not merging, helper
-    usage constraints, license declarations, and verifier-friendly bounded control
-    flow intact. Do not replace the program with a trivial stub just to compile.
+    You are an expert eBPF/libbpf C programmer optimizing a program for execution
+    time (nanoseconds per program run). Make any change you can justify as
+    preserving the program's observable behavior -- its return value and its final
+    map state for every input -- while making it run faster or emit fewer
+    instructions. Keep the code verifier-safe: bounded loops, no new unbounded or
+    disallowed helpers, valid SEC() annotations, the required includes, and the
+    license declaration all intact. Do not change which probes / SEC sections
+    exist or what kernel events they attach to, and do not replace the program
+    with a trivial stub just to compile.
 
 prompt:
   template_dir: prompt_templates
@@ -37,17 +38,13 @@ prompt:
   include_artifacts: true
   max_artifact_bytes: 8192
   system_message: |
-    Optimize a libbpf-tools BPF C source file. Every change you make must be one of
-    these two kinds -- you may apply either kind, both kinds together, and multiple
-    instances of each in the same rewrite, but nothing else, even if you think of a
-    better idea:
-    (1) Narrow a BPF hash/array map's VALUE type width (fewer bytes) when its real
-        value range never needs the current width.
-    (2) Merge two or more separate BPF maps that are looked up with the same key in
-        the same code path into a single map, to cut the number of map lookups.
-    The evaluator compiles the complete file with clang -g -O2 -target bpf
-    -D__TARGET_ARCH_x86 and reports compiler diagnostics. Return a complete valid C
-    source file.
+    Optimize a libbpf-tools BPF C source file for execution time. Make any change
+    that preserves the program's observable behavior (its return value and its
+    final map state for every input). Each iteration is two phases: you first
+    PROPOSE changes (with a witness per change, no code), a developer approves or
+    rejects each, then you IMPLEMENT only the approved ones. The evaluator
+    compiles with clang -g -O2 -target bpf -D__TARGET_ARCH_x86 and symbolically
+    checks the result against the original.
 
 database:
   population_size: 40
@@ -57,17 +54,22 @@ database:
     - "compile_success"
     - "semantic_equivalent"
   feature_bins: 4
+  pareto_metric_prefixes:
+    - "ns_per_run__"
 
 evaluator:
-  timeout: 120
+  timeout: 240
   parallel_evaluations: 1
   cascade_evaluation: false
 
 diff_based_evolution: false
 max_code_length: 60000
 
-# Human-in-the-loop review: every iteration blocks until approved/rejected at /review
+# Unattended by default: auto_approve means no developer has to be at /review.
+# Set auto_approve: false (or use config_interactive_babysit.yaml) to require a
+# real decision on every iteration instead.
 interactive:
   enabled: true
-  timeout: null # wait indefinitely for a developer decision
+  auto_approve: true
+  timeout: null # wait indefinitely for a developer decision (only matters if auto_approve: false)
   max_rejections_per_parent: 3

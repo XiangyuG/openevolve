@@ -347,6 +347,14 @@ class DatabaseConfig:
     feature_bins: Union[int, Dict[str, int]] = 10  # Can be int (all dims) or dict (per-dim)
     diversity_reference_size: int = 20  # Size of reference set for diversity calculation
 
+    # Metric-name prefixes to treat as independent, lower-is-better objectives (Pareto
+    # dominance) instead of collapsing everything into combined_score. A program only
+    # replaces another as MAP-Elites cell owner / archive member / best program if it's
+    # <= on every matching metric and strictly < on at least one; a mixed result (better
+    # on some, worse on others) replaces neither - both survive as regular population
+    # members. Empty (default) = today's combined_score-only behavior.
+    pareto_metric_prefixes: List[str] = field(default_factory=list)
+
     # Migration parameters for island-based evolution
     migration_interval: int = 50  # Migrate every N generations
     migration_rate: float = 0.1  # Fraction of population to migrate
@@ -429,6 +437,17 @@ class InteractiveConfig:
     # If the same parent gets rejected this many times in a row, give up on that
     # lineage and fall back to normal island sampling instead of retrying forever.
     max_rejections_per_parent: int = 3
+
+    # When True (default), every proposed witness is approved automatically and
+    # evolution runs unattended - no developer has to be at the browser. The full
+    # two-phase propose/witness/relaxed-check pipeline still runs exactly as with a
+    # human reviewer; only the wait for a human decision is skipped, so the
+    # developer-approval trust gate (see the propose prompt's "What these blocks
+    # mean to the checker" section) is a no-op in this mode - the LLM's own
+    # assumption/binding claims are trusted without a human ever reading them. Set
+    # to False to require a real developer decision for every iteration, same as
+    # before this setting existed.
+    auto_approve: bool = True
 
     # Runtime-only: injected by the controller, points at <output_dir>/review_queue
     _review_queue_dir: Optional[str] = None

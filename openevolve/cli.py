@@ -16,6 +16,167 @@ from openevolve.config import Config, load_config
 logger = logging.getLogger(__name__)
 
 
+def _print_per_iteration_ns_summary(openevolve: "OpenEvolve") -> None:
+    """After a run, list every program's per-function ns/run (metrics keyed
+    `ns_per_run__<fn>`, set by examples/bpf_compile/evaluator.py). A program
+    that did not pass -- compile failure, or the symbolic equivalence check
+    failed, or the benchmark itself failed -- is shown as N/A with the reason.
+    No-op for runs whose evaluator never emits `ns_per_run__*` metrics.
+    """
+    try:
+        programs = list(openevolve.database.programs.values())
+    except Exception:
+        return
+    fn_keys = sorted(
+        {k for p in programs for k in p.metrics if str(k).startswith("ns_per_run__")}
+    )
+    if not fn_keys:
+        return
+
+    def _row(label: str, m: dict) -> str:
+        reason = None
+        if m.get("compile_success", 0.0) != 1.0:
+            reason = "compile failed"
+        elif m.get("semantic_equivalent", 0.0) != 1.0:
+            reason = "not equivalent"
+        elif m.get("runtime_success", 0.0) != 1.0:
+            reason = "benchmark failed"
+        if reason is not None:
+            return f"  {label}: N/A ({reason})"
+        cells = "  ".join(
+            f"{k[len('ns_per_run__'):]}={m[k]:.2f}" for k in fn_keys if k in m
+        )
+        return f"  {label}: {cells or 'N/A (no measurement)'}"
+
+    print("\nPer-iteration ns/run:")
+    # iter 0 = the original program. The database tracks its id directly
+    # (openevolve.database.initial_program_id) so it's found even if it has
+    # since been displaced from every MAP-Elites cell/island; fall back to the
+    # old parent-id-is-None heuristic for checkpoints saved before that field
+    # existed.
+    seen = set()
+    initial_id = getattr(openevolve.database, "initial_program_id", None)
+    root = openevolve.database.programs.get(initial_id) if initial_id else None
+    if root is None:
+        roots = [p for p in programs if not getattr(p, "parent_id", None)]
+        root = min(roots, key=lambda p: p.timestamp) if roots else None
+    if root:
+        seen.add(root.id)
+        print(_row("iter   0 (original)", root.metrics))
+    else:
+        print("  iter   0 (original): unavailable (initial program not retained)")
+    for p in sorted(
+        (p for p in programs if p.id not in seen),
+        key=lambda p: (getattr(p, "iteration_found", 0), p.timestamp),
+    ):
+        print(_row(f"iter {getattr(p, 'iteration_found', 0):>3}", p.metrics))
+
+
+def _summarize_step(program) -> List[str]:
+    """One or more human-readable "what changed" lines for a single program,
+    best-effort across however this run was configured:
+      1. Approved witnesses (interactive mode) - each one's own summary, since
+         that's the most precise record of what was actually implemented (a
+         proposal can include changes that were NOT approved).
+      2. A diff-based changes_summary, when it's not the no-op "Full rewrite"
+         placeholder full-rewrite mode always uses.
+      3. The first line of the LLM's free-text proposal explanation, truncated.
+    Returns an empty list if nothing usable is recorded for this program.
+    """
+    metadata = getattr(program, "metadata", None) or {}
+
+    witnesses = metadata.get("witnesses") or []
+    approved = [w for w in witnesses if w.get("developer_approved") is True]
+    if approved:
+        return [w.get("summary") or "(approved change, no summary recorded)" for w in approved]
+
+    changes = metadata.get("changes")
+    if changes and changes != "Full rewrite":
+        return [changes]
+
+    explanation = (metadata.get("explanation") or "").strip()
+    if explanation:
+        first_line = explanation.splitlines()[0].strip()
+        if first_line:
+            return [first_line[:200]]
+
+    return []
+
+
+def _print_optimization_lineage(openevolve: "OpenEvolve", best_program) -> None:
+    """After a run, print the chain of changes from the earliest still-known
+    ancestor down to the best program found, so the summary answers "what did
+    the best result actually DO" and not just its metrics.
+
+    Best-effort: an ancestor that was pruned from the population before the run
+    ended (database.py protects the initial/best/Pareto-front programs, but not
+    every intermediate ancestor) breaks the chain there - this says so rather
+    than silently presenting a partial history as if it were complete.
+    """
+    try:
+        programs = openevolve.database.programs
+    except Exception:
+        return
+
+    chain = []
+    seen_ids = set()
+    node = best_program
+    truncated = False
+    while node is not None:
+        if node.id in seen_ids:
+            break  # defensive: never loop forever on a corrupt parent chain
+        chain.append(node)
+        seen_ids.add(node.id)
+        parent_id = getattr(node, "parent_id", None)
+        if not parent_id:
+            node = None
+        elif parent_id in programs:
+            node = programs[parent_id]
+        else:
+            truncated = True
+            node = None
+    chain.reverse()  # earliest known ancestor -> best program
+
+    if len(chain) <= 1:
+        return  # best program IS the earliest known ancestor - nothing to narrate
+
+    print(
+        f"\nBest program's optimization path "
+        f"({len(chain) - 1} step(s) from its earliest known ancestor):"
+    )
+    if truncated:
+        print(
+            "  (an earlier ancestor was pruned during the run; history starts "
+            "here, not necessarily from iter 0)"
+        )
+    for program in chain[1:]:
+        label = f"iter {getattr(program, 'iteration_found', '?')}"
+        steps = _summarize_step(program)
+        if not steps:
+            print(f"  {label}: (no recorded description)")
+        elif len(steps) == 1:
+            print(f"  {label}: {steps[0]}")
+        else:
+            print(f"  {label}:")
+            for step in steps:
+                print(f"    - {step}")
+
+
+def _print_token_usage(openevolve: "OpenEvolve") -> None:
+    """Print the run-wide LLM token usage total, accumulated across every
+    iteration's LLM call (see ProcessParallelController.total_token_usage).
+    No-op if nothing was ever recorded (e.g. every model used is manual mode
+    or a provider that doesn't report usage, like ClaudeCodeLLM).
+    """
+    usage = getattr(openevolve, "total_token_usage", None) or {}
+    if not usage.get("total_tokens"):
+        return
+    print("\nLLM token usage (this run):")
+    print(f"  prompt:     {usage.get('prompt_tokens', 0):,}")
+    print(f"  completion: {usage.get('completion_tokens', 0):,}")
+    print(f"  total:      {usage.get('total_tokens', 0):,}")
+
+
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments"""
     parser = argparse.ArgumentParser(description="OpenEvolve - Evolutionary coding agent")
@@ -166,6 +327,10 @@ async def main_async() -> int:
                 print(f"  {name}: {value:.4f}")
             else:
                 print(f"  {name}: {value}")
+
+        _print_per_iteration_ns_summary(openevolve)
+        _print_optimization_lineage(openevolve, best_program)
+        _print_token_usage(openevolve)
 
         if latest_checkpoint:
             print(f"\nLatest checkpoint saved at: {latest_checkpoint}")

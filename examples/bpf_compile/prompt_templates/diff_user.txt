@@ -76,6 +76,26 @@ I made the following changes:
     Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
     Witness: <English argument for why this specific change preserves the program's
       observable behavior -- its return value and final map state -- for every input>
+    Witness (.wit): also give the SAME claim as a Transformation-Witness DSL
+      program in a fenced ```witness block, valid per GRAMMAR.bnf (in
+      c2rust_translation/witness_dsl/). Two blocks, in this order --
+      `assumption` and `binding` are both optional and may be empty; every
+      statement ends with `;`. There is no `observation` block: heimdall
+      always compares every output (return value, every map, every `.data`
+      global), so the DSL only ever adds premises, never narrows what gets
+      compared. A path is a name then any run of `.field` / `[k]` (k a
+      variable) / `[:]` (all map entries). Reserved, never a name: assumption
+      binding in ignore flag of original optimized.
+
+      ```witness
+      assumption {{
+          original.ctx.rx_queue_index in [0, 65535];   // value-range precondition (either side; hex / negative ok)
+          ignore flag of bpf_map_update_elem;          // only if the change needs a helper's flags arg unconstrained
+      }}
+      binding {{
+          original.queue_packets[k] = optimized.queue_packets[k];
+      }}
+      ```
     Formula (pre-transformation): <a self-contained SMT-LIB 2 snippet: one or more
       `(declare-const ...)` lines for every input this change depends on, plus a
       constant named exactly `pre_result`, and an `(assert ...)` defining what
@@ -125,6 +145,7 @@ I made the following changes:
 (2) <what you changed and why, in English>
     Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
     Witness: <...>
+    Witness (.wit): <a ```witness block, as above>
     Formula (pre-transformation): <...>
     Formula (post-transformation): <...>
 ...

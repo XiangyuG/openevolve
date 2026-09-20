@@ -171,6 +171,16 @@ class OpenEvolve:
         # Initialize improved parallel processing components
         self.parallel_controller = None
 
+        # Run-wide LLM token usage total, copied out of parallel_controller in
+        # run()'s finally block since parallel_controller itself is torn down
+        # (set back to None) before run() returns -- see ProcessParallelController
+        # .total_token_usage's docstring for how this is accumulated.
+        self.total_token_usage: Dict[str, int] = {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+        }
+
     def _setup_logging(self) -> None:
         """Set up logging"""
         log_dir = self.config.log_dir or os.path.join(self.output_dir, "logs")
@@ -313,6 +323,7 @@ class OpenEvolve:
             )
 
             self.database.add(initial_program)
+            self.database.initial_program_id = initial_program_id
 
             # Check for and store artifacts from initial program
             initial_artifacts = self.evaluator.get_pending_artifacts(initial_program_id)
@@ -391,6 +402,13 @@ class OpenEvolve:
         finally:
             # Clean up parallel processing resources
             if self.parallel_controller:
+                # isinstance guard (rather than a bare try/except) so a test double
+                # that mocks out ProcessParallelController entirely (e.g.
+                # test_checkpoint_resume.py's Mock()) doesn't trip over a
+                # Mock-typed total_token_usage attribute here.
+                usage = getattr(self.parallel_controller, "total_token_usage", None)
+                if isinstance(usage, dict):
+                    self.total_token_usage = dict(usage)
                 self.parallel_controller.stop()
                 self.parallel_controller = None
 

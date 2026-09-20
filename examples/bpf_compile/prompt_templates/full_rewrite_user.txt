@@ -16,29 +16,23 @@
 ```
 
 # Task
-Rewrite the program to improve its FITNESS SCORE. Every change you make must be
-one of these two optimization types -- you may apply either type, both types
-together, and multiple instances of each in the same rewrite. Do not make any
-other kind of change, even if you believe it would help:
+Rewrite the program to improve its FITNESS SCORE -- lower execution time per
+program run, with the result still provably equivalent to the original. Make any
+change you can justify as preserving the program's observable behavior (its
+return value and its final map state for every input). Useful directions, not a
+closed list:
+  - narrow an over-wide map VALUE type or struct field / drop padding
+  - narrow a hash map's KEY type when the key value provably always fits
+    (e.g. an RX queue index that is always < 65536 -> a u16 key)
+  - merge maps looked up with the SAME key in the SAME code path into one
+  - hoist a repeated map lookup or computation out of a branch or loop
+  - drop a dead store or an unused field
+  - tighten a loop bound the verifier can already prove
 
-(1) Map value width narrowing: shrink the VALUE struct of a BPF hash/array map
-    (fewer bytes) when the real value range actually used by the program never
-    needs the current width -- e.g. an 8-byte counter that provably never exceeds
-    a 4-byte range, or a struct field/padding that can be dropped or packed
-    tighter. You must justify the range/size claim in that change's Witness.
-
-(2) Map merging: if two or more separate maps are looked up with the SAME key in
-    the SAME code path, merge them into a single map whose value struct is the
-    union of the original maps' fields, replacing multiple
-    bpf_map_lookup_elem()/bpf_map_update_elem() calls on that key with one. You
-    must justify in the Witness that every original field stays readable and
-    writable at the same points and that the key sets match.
-
-Do not restructure algorithms, add or remove probes/SEC sections, change helper
-usage, rename or reformat unrelated code, or change map types beyond what a merge
-requires. If this program has no safe opportunity for (1) or (2), make the
-smallest possible change that still qualifies (or none at all) and say so in the
-explanation -- do not invent an unrelated optimization.
+Keep the code verifier-safe (bounded control flow), keep every SEC() section and
+the events it attaches, keep the required includes and the license declaration,
+and do not stub the program out. If there is no safe improvement, make the
+smallest qualifying change (or none at all) and say so in the explanation.
 
 The system maintains diversity across these dimensions: {feature_dimensions}
 Different solutions with similar fitness but different features are valuable.
@@ -55,66 +49,78 @@ After the code block, add a short explanation in English, in exactly this format
 
 I made the following changes:
 (1) <what you changed and why, in English>
-    Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
+    Example: `<short fragment of the old code>` -> `<short fragment of the new code>` (in <function/section name>)
     Witness: <English argument for why this specific change preserves the program's
       observable behavior -- its return value and final map state -- for every input>
-    Formula (pre-transformation): <a self-contained SMT-LIB 2 snippet: one or more
-      `(declare-const ...)` lines for every input this change depends on, plus a
-      constant named exactly `pre_result`, and an `(assert ...)` defining what
-      `pre_result` equals under the OLD code's logic for this specific change>
-    Formula (post-transformation): <a self-contained SMT-LIB 2 snippet re-declaring
-      the SAME input names and sorts as the pre-transformation formula, plus a
-      constant named exactly `post_result`, and an `(assert ...)` defining what
-      `post_result` equals under the NEW code's logic for this same change>
+    Witness (.wit): also give the SAME claim as a Transformation-Witness DSL
+      program in a fenced ```witness block, valid per GRAMMAR.bnf (in
+      c2rust_translation/witness_dsl/). Two blocks, in this order --
+      `assumption` and `binding` are both optional and may be empty; every
+      statement ends with `;`. There is no `observation` block: heimdall
+      always compares every output (return value, every map, every `.data`
+      global), so the DSL only ever adds premises, never narrows what gets
+      compared. A path is a name then any run of `.field` / `[k]` (k a
+      variable) / `[:]` (all map entries). Reserved, never a name: assumption
+      binding in ignore flag of original optimized.
 
-      These two formulas will be checked together by proving
-      `(assert (not (= pre_result post_result)))` is UNSAT against both of them
-      combined -- i.e. pre_result and post_result must be equal for every possible
-      input, not just some input where they happen to match. Model only the values
-      touched by this specific change -- do not try to encode the whole program.
-      Use only Int and Bool sorts. Do NOT declare BitVec constants or use
-      bitvector operators (bvand, bvor, bvxor, ...) -- mixing Int-sorted
-      variables with bitvector operators makes the whole formula unparseable.
-      If you need to model a bitwise-AND-style mask/flag check (e.g. mode &
-      S_IFMT), approximate it with `mod`/arithmetic on Int instead (e.g.
-      `(= (mod mode 8) 0)` for a low-bit check). Do not wrap either formula in a
-      triple-backtick code block, and do not add anything (comments, stray
-      characters) after the final closing parenthesis of either one.
-      If the change is purely structural (renaming, reordering unrelated
-      statements, comments) with nothing to formalize, write exactly:
-      Formula (pre-transformation): (assert true)
-      Formula (post-transformation): (assert true)
-      If, and only if, this specific change narrows the VALUE type of a BPF
-      hash map (e.g. a map's value struct shrinks from 8 bytes to 4 bytes),
-      add one more line directly after the post-transformation formula, in
-      exactly this format (map name, then old and new value size in bytes):
-      Map value width change: <map_name>: <old_bytes> -> <new_bytes>
-      Omit this line entirely for every other kind of change.
-      If, and only if, this specific change narrows a VARIABLE's type based on
-      a value-range invariant you are proving in this same witness (e.g. an
-      8-bit variable narrowed to 4 bits because it is always in [0, 15]), the
-      range invariant MUST appear as an assumption on the shared input
-      constant in the pre-transformation formula (e.g. `(assert (>= v 0))` /
-      `(assert (<= v 15))`), and the post-transformation formula must model
-      the narrowing as truncation under that assumption (e.g.
-      `(assert (= post_result (mod v 16)))` for an unsigned narrowing to 4
-      bits, or the two's-complement equivalent for a signed one). Then add one
-      more line directly after the post-transformation formula (or after the
-      "Map value width change" line if both apply), in exactly this format
-      (variable name, then old and new bit width):
-      Variable width change: <var_name>: <old_bits> -> <new_bits>
-      Omit this line entirely for every other kind of change.
-(2) <what you changed and why, in English>
-    Example: `<short snippet of the old code>` -> `<short snippet of the new code>` (in <function/section name>)
-    Witness: <...>
-    Formula (pre-transformation): <...>
-    Formula (post-transformation): <...>
+      ```witness
+      assumption {{
+          original.ctx.rx_queue_index in [0, 65535];   // value-range precondition (either side; hex / negative ok)
+          ignore flag of bpf_map_update_elem;          // only if the change needs a helper's flags arg unconstrained
+      }}
+      binding {{
+          original.queue_packets[k] = optimized.queue_packets[k];
+      }}
+      ```
+    Formula (pre-transformation): <see below>
+    Formula (post-transformation): <see below>
+(2) <same five lines for the next change>
 ...
 
-Each "Example" line must quote a real, short fragment (a line or part of a line) of
-the actual before/after code, wrapped in single backticks -- not a triple-backtick
-block -- so a reviewer can see exactly where the change happened without re-reading
-the whole diff. This is REQUIRED, not optional: even if you label it "Old:"/"New:"
-instead of "Example:", or the change is a one-line constant/macro edit, you must
-still quote the actual old and new text in backticks. Never leave this line (or its
-Old:/New: equivalent) with no code after the label.
+Every change needs the Example line and the Witness line. The two Formula lines
+are a machine-checkable proof and only carry information for a WIDTH-NARROWING
+change (a map value struct, a hash map key type, or a scalar variable getting
+fewer bytes/bits). For any other change -- hoisting a lookup, dropping a dead
+store, tightening a loop bound, a pure refactor -- write exactly:
+    Formula (pre-transformation): (assert true)
+    Formula (post-transformation): (assert true)
+
+When you DO write real formulas, each is a self-contained SMT-LIB 2 script. The
+pre one has a `(declare-const ...)` for every input the change depends on and a
+constant named exactly `pre_result` asserted equal to what the OLD code computes
+for this change; the post one re-declares the SAME input names and sorts plus
+`post_result` for the NEW code. They are checked by proving
+`(assert (not (= pre_result post_result)))` UNSAT against both combined -- equal
+for EVERY input, not just some. Model only the values this change touches. Use
+only Int and Bool sorts; do NOT use BitVec constants or bitvector operators
+(bvand, bvor, ...) -- approximate a bitwise mask with `mod` (e.g.
+`(= (mod mode 8) 0)` for a low-bit check). No triple-backtick fence around a
+formula, and nothing after its final `)`.
+
+Then add AT MOST ONE of the following tag lines, directly after the
+post-transformation formula, and only when it exactly describes this change --
+omit all three otherwise:
+
+  Map value width change: <map_name>: <old_bytes> -> <new_bytes>
+      -- this change shrank that map's VALUE struct.
+
+  Map key width change: <map_name>: <old_bytes> -> <new_bytes> key <ctx_field> < <bound>
+      -- this change shrank that hash map's KEY type. The "key <ctx_field> <
+      <bound>" clause is REQUIRED: <ctx_field> is the BPF context field the key
+      is derived from (e.g. rx_queue_index, cpu, common_pid) and <bound> is the
+      exclusive limit it never reaches (e.g. 65536 for a narrow to 2 bytes).
+      Your formulas MUST also prove it: assert `(< <ctx_field> <bound>)` on the
+      shared input in the pre-transformation formula and model the post one as
+      truncation (e.g. `(assert (= post_result (mod k 65536)))`).
+
+  Variable width change: <var_name>: <old_bits> -> <new_bits>
+      -- this change narrowed a scalar VARIABLE from a proven range invariant.
+      Assert the range on the shared input in the pre-transformation formula
+      and model the post one as truncation (e.g.
+      `(assert (= post_result (mod v 16)))` for an unsigned narrow to 4 bits).
+
+Each "Example" line must quote a real, short fragment (a line or part of a line)
+of the actual before/after code in single backticks -- not a triple-backtick
+block -- so a reviewer can locate the change. This is REQUIRED even for a
+one-line macro edit; never leave the Example (or an "Old:"/"New:" equivalent)
+with no code after the label.

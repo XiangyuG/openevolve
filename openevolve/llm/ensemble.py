@@ -38,6 +38,7 @@ class LLMEnsemble:
 
     def __init__(self, models_cfg: List[LLMModelConfig]):
         self.models_cfg = models_cfg
+        self.last_usage: Optional[Dict[str, int]] = None
 
         # Initialize models from the configuration
         self.models = [_create_model(model_cfg) for model_cfg in models_cfg]
@@ -81,7 +82,12 @@ class LLMEnsemble:
     ) -> str:
         """Generate text using a system message and conversational context"""
         model = self._sample_model()
-        return await model.generate_with_context(system_message, messages, **kwargs)
+        result = await model.generate_with_context(system_message, messages, **kwargs)
+        # Mirror whatever the sampled model reported for this one call (None if
+        # unavailable, e.g. manual mode or a provider that doesn't report usage
+        # like ClaudeCodeLLM) - see OpenAILLM.last_usage's docstring.
+        self.last_usage = getattr(model, "last_usage", None)
+        return result
 
     def _sample_model(self) -> LLMInterface:
         """Sample a model from the ensemble based on weights"""

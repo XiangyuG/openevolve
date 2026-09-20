@@ -1,0 +1,700 @@
+2026-09-13 17:58:53,396 - INFO - Logging to openevolve_output/bpf_biopattern_verify_autoapprove/logs/openevolve_20260913_175853.log
+2026-09-13 17:58:53,397 - INFO - Interactive review mode enabled. Queue dir: /users/xiang95/learn_heimdall/heimdall/openevolve/openevolve_output/bpf_biopattern_verify_autoapprove/review_queue
+2026-09-13 17:58:53,405 - INFO - Set random seed to 42 for reproducibility
+2026-09-13 17:58:53,441 - INFO - Initialized OpenAI LLM with model: gpt-5-mini
+2026-09-13 17:58:53,451 - INFO - Initialized OpenAI LLM with model: gpt-5-nano
+2026-09-13 17:58:53,451 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 17:58:53,471 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 17:58:53,473 - INFO - Initialized prompt sampler
+2026-09-13 17:58:53,474 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 17:58:53,474 - INFO - Initialized program database with 0 programs
+2026-09-13 17:58:53,477 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 17:58:53,477 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 17:58:53,477 - INFO - Initialized OpenEvolve with /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/biopattern.bpf.c
+2026-09-13 17:58:53,477 - INFO - Adding initial program to database
+[bpf_eval] === evaluate tmpeiy7a7z_.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11688 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=no
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/biopattern_runner /tmp/openevolve_bpf_9nhk5oe3/tmpeiy7a7z_.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   biopattern: 1450.48 ns/run (run_cnt 14335)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7040  (runtime_success=1.0, runtime_score=0.4081, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 18:00:05,987 - INFO - Evaluated program 7e7c60bc-ad87-44e3-9861-e5b589dc8e7e in 72.51s: score=0.7040, combined_score=0.7040, compile_success=1.0000, object_bytes=11688.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__biopattern=1450.4800, runtime_score=0.4081
+2026-09-13 18:00:05,987 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 2}
+2026-09-13 18:00:05,988 - INFO - Stored artifacts for initial program
+2026-09-13 18:00:05,989 - INFO - Initialized process parallel controller with 1 workers
+2026-09-13 18:00:05,989 - INFO - Set max None tasks per child
+2026-09-13 18:00:05,990 - INFO - Started process pool with 1 processes
+2026-09-13 18:00:05,990 - INFO - Using island-based evolution with 2 islands
+2026-09-13 18:00:05,990 - INFO - Island Status:
+2026-09-13 18:00:05,990 - INFO -  * Island 0: 1 programs, best=0.7040, avg=0.7040, diversity=0.00, gen=0 (best: 7e7c60bc-ad87-44e3-9861-e5b589dc8e7e)
+2026-09-13 18:00:05,990 - INFO -    Island 1: 0 programs, best=0.0000, avg=0.0000, diversity=0.00, gen=0
+2026-09-13 18:00:05,990 - INFO - Starting interactive (human-reviewed) evolution from iteration 1 for 30 iterations (total: 31)
+2026-09-13 18:00:06,017 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 18:00:06,040 - INFO - Initialized LLM ensemble with models: gpt-5-mini (weight: 0.80), gpt-5-nano (weight: 0.20)
+2026-09-13 18:00:06,042 - INFO - Set custom templates: system=evaluator_system_message, user=None
+2026-09-13 18:00:06,043 - INFO - Successfully loaded evaluation function from examples/bpf_compile/evaluator.py
+2026-09-13 18:00:06,043 - INFO - Initialized evaluator with examples/bpf_compile/evaluator.py
+2026-09-13 18:00:06,047 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:00:50,114 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+; e.g., line: 7 position: 176
+2026-09-13 18:00:50,165 - INFO - Iteration 1: 2 witness(es) approved by developer; implementing
+2026-09-13 18:00:50,167 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:00:58,308 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp2dxkps9t.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11744 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=no
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:01:08,829 - INFO - Evaluated program d2ab186e-b6fd-486f-8b20-a8e8238f401a in 10.52s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11744.0000, semantic_equivalent=0.0000
+2026-09-13 18:01:08,831 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 2, 'semantic_equivalent': 0}
+2026-09-13 18:01:08,832 - INFO - Iteration 1: Program d2ab186e-b6fd-486f-8b20-a8e8238f401a (parent: 7e7c60bc-ad87-44e3-9861-e5b589dc8e7e) completed in 18.66s
+2026-09-13 18:01:08,832 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11744.0000, semantic_equivalent=0.0000
+2026-09-13 18:01:08,834 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:01:21,372 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:01:21,378 - INFO - Iteration 2: 1 witness(es) approved by developer; implementing
+2026-09-13 18:01:21,382 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:01:26,122 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:01:26,210 - INFO - Iteration 2: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpset91vxo.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11744 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:01:43,915 - INFO - Evaluated program 9af3b731-5b91-4728-ad0f-790d4d8d242c in 17.70s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11744.0000, semantic_equivalent=0.0000
+2026-09-13 18:01:43,917 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 2, 'semantic_equivalent': 0}
+2026-09-13 18:01:43,918 - INFO - Iteration 2: Program 9af3b731-5b91-4728-ad0f-790d4d8d242c (parent: 7e7c60bc-ad87-44e3-9861-e5b589dc8e7e) completed in 22.53s
+2026-09-13 18:01:43,918 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11744.0000, semantic_equivalent=0.0000
+2026-09-13 18:01:43,920 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:01:59,279 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:01:59,284 - INFO - Iteration 3: 1 witness(es) approved by developer; implementing
+2026-09-13 18:01:59,289 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:02:06,445 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:02:06,531 - INFO - Iteration 3: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpiugfr2ra.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11744 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:02:16,293 - INFO - Evaluated program edc140d1-b14b-4182-8379-3fd45391f182 in 9.76s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11744.0000, semantic_equivalent=0.0000
+2026-09-13 18:02:16,296 - INFO - Iteration 3: Program edc140d1-b14b-4182-8379-3fd45391f182 (parent: 7e7c60bc-ad87-44e3-9861-e5b589dc8e7e) completed in 17.01s
+2026-09-13 18:02:16,296 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11744.0000, semantic_equivalent=0.0000
+2026-09-13 18:02:16,298 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:02:30,046 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:02:30,052 - INFO - Iteration 4: 1 witness(es) approved by developer; implementing
+2026-09-13 18:02:30,055 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:02:37,252 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:02:37,337 - INFO - Iteration 4: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpskj2xjnn.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11808 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:02:47,732 - INFO - Evaluated program 27bcf4cd-dcc4-4ce2-b864-b0fafc390414 in 10.39s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:02:47,735 - INFO - Iteration 4: Program 27bcf4cd-dcc4-4ce2-b864-b0fafc390414 (parent: 9af3b731-5b91-4728-ad0f-790d4d8d242c) completed in 17.68s
+2026-09-13 18:02:47,735 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:02:47,738 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:03:07,157 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:03:07,163 - INFO - Iteration 5: 1 witness(es) approved by developer; implementing
+2026-09-13 18:03:07,167 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:03:15,444 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:03:15,529 - INFO - Iteration 5: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpll5of8v_.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:03:25,719 - INFO - Evaluated program 77351ab3-db8f-4d0a-b72a-2b9d90a0f668 in 10.19s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11864.0000, semantic_equivalent=0.0000
+2026-09-13 18:03:25,721 - INFO - Iteration 5: Program 77351ab3-db8f-4d0a-b72a-2b9d90a0f668 (parent: edc140d1-b14b-4182-8379-3fd45391f182) completed in 18.55s
+2026-09-13 18:03:25,721 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11864.0000, semantic_equivalent=0.0000
+2026-09-13 18:03:25,723 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:03:46,559 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:03:46,565 - INFO - Iteration 6: 1 witness(es) approved by developer; implementing
+2026-09-13 18:03:46,569 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:03:52,857 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:03:52,983 - INFO - Iteration 6: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmppxilb0_a.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11808 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:04:02,317 - INFO - Evaluated program a0453a76-f0e2-42c1-b57f-ec13cb116c09 in 9.33s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:04:02,320 - INFO - Iteration 6: Program a0453a76-f0e2-42c1-b57f-ec13cb116c09 (parent: 27bcf4cd-dcc4-4ce2-b864-b0fafc390414) completed in 15.75s
+2026-09-13 18:04:02,321 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:04:02,324 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:04:35,513 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:04:35,521 - INFO - Iteration 7: 2 witness(es) approved by developer; implementing
+2026-09-13 18:04:35,527 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:04:44,396 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmpjieb0icz.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=no
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:04:54,199 - INFO - Evaluated program 29c23947-ba91-4c1b-b481-a12d499395f8 in 9.80s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11864.0000, semantic_equivalent=0.0000
+2026-09-13 18:04:54,201 - INFO - Iteration 7: Program 29c23947-ba91-4c1b-b481-a12d499395f8 (parent: 7e7c60bc-ad87-44e3-9861-e5b589dc8e7e) completed in 18.67s
+2026-09-13 18:04:54,202 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11864.0000, semantic_equivalent=0.0000
+2026-09-13 18:04:54,204 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:05:14,683 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:05:14,690 - INFO - Iteration 8: 2 witness(es) approved by developer; implementing
+2026-09-13 18:05:14,695 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:05:26,267 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:05:26,352 - INFO - Iteration 8: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp0nx7urc7.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (12232 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:05:36,782 - INFO - Evaluated program a9e9d226-6b54-4da9-a63c-d10f6dd21430 in 10.43s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12232.0000, semantic_equivalent=0.0000
+2026-09-13 18:05:36,784 - INFO - Iteration 8: Program a9e9d226-6b54-4da9-a63c-d10f6dd21430 (parent: 9af3b731-5b91-4728-ad0f-790d4d8d242c) completed in 22.09s
+2026-09-13 18:05:36,784 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12232.0000, semantic_equivalent=0.0000
+2026-09-13 18:05:36,787 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:06:28,272 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:06:28,278 - INFO - Iteration 9: no transformation witnesses found in proposal; retrying with feedback
+2026-09-13 18:06:28,284 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:06:42,061 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:06:42,067 - INFO - Iteration 10: 2 witness(es) approved by developer; implementing
+2026-09-13 18:06:42,072 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:06:50,854 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:06:50,973 - INFO - Iteration 10: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpxvruai4u.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (12168 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:07:01,403 - INFO - Evaluated program 96aab5b2-ad7c-4367-ad6d-ce408181809f in 10.43s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12168.0000, semantic_equivalent=0.0000
+2026-09-13 18:07:01,405 - INFO - Iteration 10: Program 96aab5b2-ad7c-4367-ad6d-ce408181809f (parent: d2ab186e-b6fd-486f-8b20-a8e8238f401a) completed in 19.33s
+2026-09-13 18:07:01,405 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12168.0000, semantic_equivalent=0.0000
+2026-09-13 18:07:01,405 - INFO - Checkpoint interval reached at iteration 10
+2026-09-13 18:07:01,406 - INFO - Island Status:
+2026-09-13 18:07:01,406 - INFO -  * Island 0: 5 programs, best=0.7040, avg=0.1408, diversity=11.18, gen=4 (best: 7e7c60bc-ad87-44e3-9861-e5b589dc8e7e)
+2026-09-13 18:07:01,406 - INFO -    Island 1: 5 programs, best=0.0000, avg=0.0000, diversity=13.62, gen=5 (best: 9af3b731-5b91-4728-ad0f-790d4d8d242c)
+2026-09-13 18:07:01,413 - INFO - Saved database with 10 programs to openevolve_output/bpf_biopattern_verify_autoapprove/checkpoints/checkpoint_20260913_180701_10
+2026-09-13 18:07:01,413 - INFO - Saved best program at checkpoint 10 with metrics: score=0.7040, combined_score=0.7040, compile_success=1.0000, object_bytes=11688.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__biopattern=1450.4800, runtime_score=0.4081
+2026-09-13 18:07:01,413 - INFO - Saved checkpoint at iteration 10 to openevolve_output/bpf_biopattern_verify_autoapprove/checkpoints/checkpoint_20260913_180701_10
+2026-09-13 18:07:01,416 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:07:25,679 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:07:25,684 - INFO - Iteration 11: 1 witness(es) approved by developer; implementing
+2026-09-13 18:07:25,690 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:07:32,161 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:07:32,249 - INFO - Iteration 11: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpsb5t_zu7.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile FAILED: /tmp/tmpsb5t_zu7.bpf.c:9:22: error: variable has incomplete type 'const struct counter'
+2026-09-13 18:07:33,225 - INFO - Evaluated program 8476a155-a5dd-4093-9baf-a8f43c295a91 in 0.98s: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 18:07:33,227 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 0, 'semantic_equivalent': 0}
+2026-09-13 18:07:33,227 - INFO - Iteration 11: Program 8476a155-a5dd-4093-9baf-a8f43c295a91 (parent: 29c23947-ba91-4c1b-b481-a12d499395f8) completed in 7.54s
+2026-09-13 18:07:33,227 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=0.0000, object_bytes=0.0000, semantic_equivalent=0.0000
+2026-09-13 18:07:33,230 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:07:50,601 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:07:50,607 - INFO - Iteration 12: 2 witness(es) approved by developer; implementing
+2026-09-13 18:07:50,613 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:07:58,225 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:07:58,310 - INFO - Iteration 12: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp_dxmn5x0.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (12232 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:08:08,414 - INFO - Evaluated program 6fcb7b64-b630-47e4-b353-46f6300a8e3f in 10.10s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12232.0000, semantic_equivalent=0.0000
+2026-09-13 18:08:08,418 - INFO - New MAP-Elites cell occupied in island 1: {'compile_success': 4, 'semantic_equivalent': 0}
+2026-09-13 18:08:08,419 - INFO - Iteration 12: Program 6fcb7b64-b630-47e4-b353-46f6300a8e3f (parent: 29c23947-ba91-4c1b-b481-a12d499395f8) completed in 17.80s
+2026-09-13 18:08:08,419 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12232.0000, semantic_equivalent=0.0000
+2026-09-13 18:08:08,425 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:08:24,905 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:08:24,911 - INFO - Iteration 13: 1 witness(es) approved by developer; implementing
+2026-09-13 18:08:24,917 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:08:33,063 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:08:33,147 - INFO - Iteration 13: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpcm2xtwhp.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11808 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:08:43,944 - INFO - Evaluated program 02ac1d03-11b9-438b-a252-a85ead809b58 in 10.80s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:08:43,946 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 4, 'semantic_equivalent': 0}
+2026-09-13 18:08:43,946 - INFO - Iteration 13: Program 02ac1d03-11b9-438b-a252-a85ead809b58 (parent: edc140d1-b14b-4182-8379-3fd45391f182) completed in 19.03s
+2026-09-13 18:08:43,946 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:08:43,949 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:09:00,157 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:09:00,165 - INFO - Iteration 14: 2 witness(es) approved by developer; implementing
+2026-09-13 18:09:00,169 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:09:14,278 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:09:14,365 - INFO - Iteration 14: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpkol5gap5.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (12128 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:09:24,464 - INFO - Evaluated program a6683cdb-5266-4b04-9dd1-753bd40ba78d in 10.10s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12128.0000, semantic_equivalent=0.0000
+2026-09-13 18:09:24,466 - INFO - Iteration 14: Program a6683cdb-5266-4b04-9dd1-753bd40ba78d (parent: 96aab5b2-ad7c-4367-ad6d-ce408181809f) completed in 24.30s
+2026-09-13 18:09:24,466 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12128.0000, semantic_equivalent=0.0000
+2026-09-13 18:09:24,469 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:09:39,554 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:09:39,560 - INFO - Iteration 15: 2 witness(es) approved by developer; implementing
+2026-09-13 18:09:39,566 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:09:46,702 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:09:46,786 - INFO - Iteration 15: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpgf8t5wy_.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11808 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:09:57,478 - INFO - Evaluated program 2467f06e-4761-4889-b887-c959d597ea64 in 10.69s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:09:57,481 - INFO - Iteration 15: Program 2467f06e-4761-4889-b887-c959d597ea64 (parent: 8476a155-a5dd-4093-9baf-a8f43c295a91) completed in 17.91s
+2026-09-13 18:09:57,481 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:09:57,485 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:10:10,098 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:10:10,103 - INFO - Iteration 16: 1 witness(es) approved by developer; implementing
+2026-09-13 18:10:10,110 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:10:18,192 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:10:18,278 - INFO - Iteration 16: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpo25zii59.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (12352 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:10:28,735 - INFO - Evaluated program f6764072-3458-4979-b62a-0ea3d7a6db00 in 10.46s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12352.0000, semantic_equivalent=0.0000
+2026-09-13 18:10:28,738 - INFO - Iteration 16: Program f6764072-3458-4979-b62a-0ea3d7a6db00 (parent: a6683cdb-5266-4b04-9dd1-753bd40ba78d) completed in 18.63s
+2026-09-13 18:10:28,738 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12352.0000, semantic_equivalent=0.0000
+2026-09-13 18:10:28,744 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:10:48,046 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:10:48,052 - INFO - Iteration 17: 2 witness(es) approved by developer; implementing
+2026-09-13 18:10:48,059 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:10:56,702 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:10:56,786 - INFO - Iteration 17: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpgk0o2ujx.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:11:07,034 - INFO - Evaluated program 855e02cc-7962-4d7a-9588-2f3d2441904a in 10.25s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11864.0000, semantic_equivalent=0.0000
+2026-09-13 18:11:07,038 - INFO - Iteration 17: Program 855e02cc-7962-4d7a-9588-2f3d2441904a (parent: 7e7c60bc-ad87-44e3-9861-e5b589dc8e7e) completed in 18.98s
+2026-09-13 18:11:07,038 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11864.0000, semantic_equivalent=0.0000
+2026-09-13 18:11:07,045 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:11:39,821 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:11:39,827 - INFO - Iteration 18: 1 witness(es) approved by developer; implementing
+2026-09-13 18:11:39,834 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:11:49,109 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[bpf_eval] === evaluate tmp5cq77cfe.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11808 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=no
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:12:00,055 - INFO - Evaluated program 450b595a-17be-485a-8a6e-46fef535690a in 10.94s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:12:00,058 - INFO - Iteration 18: Program 450b595a-17be-485a-8a6e-46fef535690a (parent: 9af3b731-5b91-4728-ad0f-790d4d8d242c) completed in 20.22s
+2026-09-13 18:12:00,058 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:12:00,063 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:12:23,376 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:12:23,383 - INFO - Iteration 19: 2 witness(es) approved by developer; implementing
+2026-09-13 18:12:23,391 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:12:34,010 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:12:34,095 - INFO - Iteration 19: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmprv8cmoqo.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11768 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/biopattern_runner /tmp/openevolve_bpf_7xdglzhf/tmprv8cmoqo.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   biopattern: 1327.25 ns/run (run_cnt 14477)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7148  (runtime_success=1.0, runtime_score=0.4297, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 18:13:47,160 - INFO - Evaluated program c3dd15a9-abdd-4c94-b4da-fc8bd0d37c42 in 73.06s: score=0.7148, combined_score=0.7148, compile_success=1.0000, object_bytes=11768.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__biopattern=1327.2500, runtime_score=0.4297
+2026-09-13 18:13:47,164 - INFO - New MAP-Elites cell occupied in island 0: {'compile_success': 4, 'semantic_equivalent': 4}
+2026-09-13 18:13:47,165 - INFO - New best program c3dd15a9-abdd-4c94-b4da-fc8bd0d37c42 replaces 7e7c60bc-ad87-44e3-9861-e5b589dc8e7e (combined_score: 0.7040 → 0.7148, +0.0108)
+2026-09-13 18:13:47,165 - INFO - Iteration 19: Program c3dd15a9-abdd-4c94-b4da-fc8bd0d37c42 (parent: 7e7c60bc-ad87-44e3-9861-e5b589dc8e7e) completed in 83.77s
+2026-09-13 18:13:47,165 - INFO - Metrics: score=0.7148, combined_score=0.7148, compile_success=1.0000, object_bytes=11768.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__biopattern=1327.2500, runtime_score=0.4297
+2026-09-13 18:13:47,166 - INFO - 🌟 New best solution found at iteration 19: c3dd15a9-abdd-4c94-b4da-fc8bd0d37c42
+2026-09-13 18:13:47,173 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:14:11,615 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:14:11,622 - INFO - Iteration 20: 2 witness(es) approved by developer; implementing
+2026-09-13 18:14:11,629 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:14:19,037 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:14:19,124 - INFO - Iteration 20: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp1qzgc_xm.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11944 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:14:28,592 - INFO - Evaluated program 16dca6de-f122-4a44-b5bc-448ce6dbcac7 in 9.47s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11944.0000, semantic_equivalent=0.0000
+2026-09-13 18:14:28,595 - INFO - Iteration 20: Program 16dca6de-f122-4a44-b5bc-448ce6dbcac7 (parent: 96aab5b2-ad7c-4367-ad6d-ce408181809f) completed in 16.96s
+2026-09-13 18:14:28,595 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11944.0000, semantic_equivalent=0.0000
+2026-09-13 18:14:28,595 - INFO - Checkpoint interval reached at iteration 20
+2026-09-13 18:14:28,596 - INFO - Island Status:
+2026-09-13 18:14:28,596 - INFO -  * Island 0: 10 programs, best=0.7148, avg=0.1419, diversity=2.43, gen=9 (best: c3dd15a9-abdd-4c94-b4da-fc8bd0d37c42)
+2026-09-13 18:14:28,596 - INFO -    Island 1: 10 programs, best=0.0000, avg=0.0000, diversity=13.90, gen=10 (best: 9af3b731-5b91-4728-ad0f-790d4d8d242c)
+2026-09-13 18:14:28,609 - INFO - Saved database with 20 programs to openevolve_output/bpf_biopattern_verify_autoapprove/checkpoints/checkpoint_20260913_181428_20
+2026-09-13 18:14:28,609 - INFO - Saved best program at checkpoint 20 with metrics: score=0.7148, combined_score=0.7148, compile_success=1.0000, object_bytes=11768.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__biopattern=1327.2500, runtime_score=0.4297
+2026-09-13 18:14:28,609 - INFO - Saved checkpoint at iteration 20 to openevolve_output/bpf_biopattern_verify_autoapprove/checkpoints/checkpoint_20260913_181428_20
+2026-09-13 18:14:28,613 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:14:47,983 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:14:47,989 - INFO - Iteration 21: 2 witness(es) approved by developer; implementing
+2026-09-13 18:14:47,997 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:14:54,568 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:14:54,655 - INFO - Iteration 21: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpcg0wqwrs.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11808 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: EQUIVALENT
+[bpf_eval] [semantic_equivalent] ALL equivalent -> semantic_equivalent=1.0
+[bpf_eval] step 3/3: workload + runner benchmark ...
+[bpf_eval] benchmark: workload = fio ... (runtime up to 600s)
+[bpf_eval] benchmark: runner = sudo -n /users/xiang95/learn_heimdall/heimdall/c2rust_translation/c_bpf_programs/libbpf-tools/biopattern_runner /tmp/openevolve_bpf_05m0g0yw/tmpcg0wqwrs.bpf.o 60
+[bpf_eval] benchmark: workload warmed up, measuring for 60s...
+[bpf_eval]   biopattern: 1393.12 ns/run (run_cnt 14440)
+[bpf_eval] benchmark: OK (1/1 function(s) measured, runner rc=0)
+[bpf_eval] score = 0.7089  (runtime_success=1.0, runtime_score=0.4179, semantic_equivalent=1.0, equiv_factor=1.00)
+2026-09-13 18:16:07,139 - INFO - Evaluated program 3740669b-3418-439e-b2f5-e6553319524e in 72.48s: score=0.7089, combined_score=0.7089, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__biopattern=1393.1200, runtime_score=0.4179
+2026-09-13 18:16:07,144 - INFO - Iteration 21: Program 3740669b-3418-439e-b2f5-e6553319524e (parent: 2467f06e-4761-4889-b887-c959d597ea64) completed in 79.14s
+2026-09-13 18:16:07,144 - INFO - Metrics: score=0.7089, combined_score=0.7089, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__biopattern=1393.1200, runtime_score=0.4179
+2026-09-13 18:16:07,152 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:16:23,460 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:16:23,468 - INFO - Iteration 22: 2 witness(es) approved by developer; implementing
+2026-09-13 18:16:23,476 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:16:30,808 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:16:30,893 - INFO - Iteration 22: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpt97tg3yh.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (12128 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:16:40,669 - INFO - Evaluated program 5ddcdd48-83df-4399-853f-f0e9101de56b in 9.78s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12128.0000, semantic_equivalent=0.0000
+2026-09-13 18:16:40,671 - INFO - Iteration 22: Program 5ddcdd48-83df-4399-853f-f0e9101de56b (parent: a9e9d226-6b54-4da9-a63c-d10f6dd21430) completed in 17.19s
+2026-09-13 18:16:40,672 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12128.0000, semantic_equivalent=0.0000
+2026-09-13 18:16:40,676 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:17:11,100 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:17:11,106 - INFO - Iteration 23: 2 witness(es) approved by developer; implementing
+2026-09-13 18:17:11,115 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:17:21,472 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:17:21,558 - INFO - Iteration 23: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpkoy1d53e.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11920 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:17:31,222 - INFO - Evaluated program c69b182d-04e7-40de-8521-d6c91141c167 in 9.66s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11920.0000, semantic_equivalent=0.0000
+2026-09-13 18:17:31,225 - INFO - Iteration 23: Program c69b182d-04e7-40de-8521-d6c91141c167 (parent: 2467f06e-4761-4889-b887-c959d597ea64) completed in 20.11s
+2026-09-13 18:17:31,225 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11920.0000, semantic_equivalent=0.0000
+2026-09-13 18:17:31,229 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:17:58,343 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:17:58,351 - INFO - Iteration 24: 2 witness(es) approved by developer; implementing
+2026-09-13 18:17:58,359 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:18:06,648 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:18:06,735 - INFO - Iteration 24: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpqm00_2ds.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (12232 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:18:17,133 - INFO - Evaluated program 405634e1-d4bc-4fe8-b1cd-8a78d6fa420e in 10.40s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12232.0000, semantic_equivalent=0.0000
+2026-09-13 18:18:17,137 - INFO - Iteration 24: Program 405634e1-d4bc-4fe8-b1cd-8a78d6fa420e (parent: a0453a76-f0e2-42c1-b57f-ec13cb116c09) completed in 18.78s
+2026-09-13 18:18:17,137 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12232.0000, semantic_equivalent=0.0000
+2026-09-13 18:18:17,142 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:18:33,463 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:18:33,469 - INFO - Iteration 25: 2 witness(es) approved by developer; implementing
+2026-09-13 18:18:33,478 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:18:43,037 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:18:43,146 - INFO - Iteration 25: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpwngcf4yn.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11864 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:18:53,409 - INFO - Evaluated program 32d4255a-4bdc-4138-8dfb-b3552dd23ebf in 10.26s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11864.0000, semantic_equivalent=0.0000
+2026-09-13 18:18:53,411 - INFO - Iteration 25: Program 32d4255a-4bdc-4138-8dfb-b3552dd23ebf (parent: edc140d1-b14b-4182-8379-3fd45391f182) completed in 19.93s
+2026-09-13 18:18:53,412 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11864.0000, semantic_equivalent=0.0000
+2026-09-13 18:18:53,416 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:19:43,194 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:19:43,199 - INFO - Iteration 26: 1 witness(es) approved by developer; implementing
+2026-09-13 18:19:43,208 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:19:51,263 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:19:51,352 - INFO - Iteration 26: combined .wit built, syntax ok=False
+2026-09-13 18:19:51,353 - INFO - witness_dsl: /tmp/openevolve_bpf_wit_hlwtvdhr/4eca90f1-ef45-4f11-ae4b-f7b06fc1262f.wit:2:39: error: unexpected character '('
+  |
+2 |     original.handle__block_rq_complete(ctx: any) returns same as optimized;
+  |                                       ^
+/tmp/openevolve_bpf_wit_hlwtvdhr/4eca90f1-ef45-4f11-ae4b-f7b06fc1262f.wit: FAILED (syntax error)
+[bpf_eval] === evaluate tmphuwinchf.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (12104 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=no
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:20:01,268 - INFO - Evaluated program 4eca90f1-ef45-4f11-ae4b-f7b06fc1262f in 9.92s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12104.0000, semantic_equivalent=0.0000
+2026-09-13 18:20:01,270 - INFO - Iteration 26: Program 4eca90f1-ef45-4f11-ae4b-f7b06fc1262f (parent: 405634e1-d4bc-4fe8-b1cd-8a78d6fa420e) completed in 18.06s
+2026-09-13 18:20:01,271 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12104.0000, semantic_equivalent=0.0000
+2026-09-13 18:20:01,275 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:20:19,907 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:20:19,914 - INFO - Iteration 27: 1 witness(es) approved by developer; implementing
+2026-09-13 18:20:19,923 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:20:27,333 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:20:27,419 - INFO - Iteration 27: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmpwfom38ay.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (12152 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:20:37,844 - INFO - Evaluated program 74d37c47-b164-4b23-81b3-4ab268bb8323 in 10.42s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12152.0000, semantic_equivalent=0.0000
+2026-09-13 18:20:37,846 - INFO - Iteration 27: Program 74d37c47-b164-4b23-81b3-4ab268bb8323 (parent: 2467f06e-4761-4889-b887-c959d597ea64) completed in 17.92s
+2026-09-13 18:20:37,846 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12152.0000, semantic_equivalent=0.0000
+2026-09-13 18:20:37,851 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:20:52,699 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:20:52,706 - INFO - Iteration 28: 1 witness(es) approved by developer; implementing
+2026-09-13 18:20:52,714 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:21:00,214 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:21:00,302 - INFO - Iteration 28: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp7h70hob3.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (12016 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:21:10,844 - INFO - Evaluated program 6dd1b802-36bc-4d1a-9777-ce5b641c29eb in 10.54s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12016.0000, semantic_equivalent=0.0000
+2026-09-13 18:21:10,846 - INFO - Iteration 28: Program 6dd1b802-36bc-4d1a-9777-ce5b641c29eb (parent: 6fcb7b64-b630-47e4-b353-46f6300a8e3f) completed in 18.13s
+2026-09-13 18:21:10,846 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=12016.0000, semantic_equivalent=0.0000
+2026-09-13 18:21:10,851 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:21:24,895 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:21:24,903 - INFO - Iteration 29: 1 witness(es) approved by developer; implementing
+2026-09-13 18:21:24,913 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:21:31,048 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:21:31,133 - INFO - Iteration 29: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmp3qe25eae.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11808 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:21:41,471 - INFO - Evaluated program ebcf7942-9d71-47ce-a18e-e737c6d99c82 in 10.34s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:21:41,474 - INFO - Iteration 29: Program ebcf7942-9d71-47ce-a18e-e737c6d99c82 (parent: 3740669b-3418-439e-b2f5-e6553319524e) completed in 16.56s
+2026-09-13 18:21:41,474 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11808.0000, semantic_equivalent=0.0000
+2026-09-13 18:21:41,480 - INFO - Sampled model: gpt-5-nano
+2026-09-13 18:22:20,139 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:22:20,145 - INFO - Iteration 30: 2 witness(es) approved by developer; implementing
+2026-09-13 18:22:20,155 - INFO - Sampled model: gpt-5-mini
+2026-09-13 18:22:31,612 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-09-13 18:22:31,700 - INFO - Iteration 30: combined .wit built, syntax ok=True
+[bpf_eval] === evaluate tmps05i5yq7.bpf.c (tool=biopattern) ===
+[bpf_eval] step 1/3: compiling candidate with clang -target bpf ...
+[bpf_eval] compile OK (11944 bytes)
+[bpf_eval] step 2/3: symbolic equivalence check vs baseline ...
+[bpf_eval] [semantic_equivalent] 1 entrypoint(s) vs baseline, maps=['counters:hash'], witness=.wit
+[bpf_eval]   handle__block_rq_complete: checking (timeout 90s in env 'c2rust')...
+[bpf_eval]   handle__block_rq_complete: NOT equivalent [mismatch]  Counter-Example Inputs:
+[bpf_eval] [semantic_equivalent] NOT all equivalent -> semantic_equivalent=0.0
+[bpf_eval] step 3/3: SKIPPED (not proven equivalent)
+[bpf_eval] score = 0.0000  (runtime_success=0.0, runtime_score=0.0000, semantic_equivalent=0.0, equiv_factor=0.00)
+2026-09-13 18:22:41,752 - INFO - Evaluated program bd04d426-3114-4997-a18c-682b9c976e99 in 10.05s: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11944.0000, semantic_equivalent=0.0000
+2026-09-13 18:22:41,754 - INFO - Iteration 30: Program bd04d426-3114-4997-a18c-682b9c976e99 (parent: 9af3b731-5b91-4728-ad0f-790d4d8d242c) completed in 21.60s
+2026-09-13 18:22:41,755 - INFO - Metrics: score=0.0000, combined_score=0.0000, compile_success=1.0000, object_bytes=11944.0000, semantic_equivalent=0.0000
+2026-09-13 18:22:41,755 - INFO - Checkpoint interval reached at iteration 30
+2026-09-13 18:22:41,755 - INFO - Island Status:
+2026-09-13 18:22:41,755 - INFO -  * Island 0: 15 programs, best=0.7148, avg=0.1419, diversity=0.58, gen=14 (best: c3dd15a9-abdd-4c94-b4da-fc8bd0d37c42)
+2026-09-13 18:22:41,755 - INFO -    Island 1: 15 programs, best=0.0000, avg=0.0000, diversity=21.05, gen=15 (best: 9af3b731-5b91-4728-ad0f-790d4d8d242c)
+2026-09-13 18:22:41,774 - INFO - Saved database with 30 programs to openevolve_output/bpf_biopattern_verify_autoapprove/checkpoints/checkpoint_20260913_182241_30
+2026-09-13 18:22:41,775 - INFO - Saved best program at checkpoint 30 with metrics: score=0.7148, combined_score=0.7148, compile_success=1.0000, object_bytes=11768.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__biopattern=1327.2500, runtime_score=0.4297
+2026-09-13 18:22:41,775 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_biopattern_verify_autoapprove/checkpoints/checkpoint_20260913_182241_30
+2026-09-13 18:22:41,775 - INFO - ✅ Evolution completed - Maximum iterations reached
+2026-09-13 18:22:41,804 - INFO - Saved database with 30 programs to openevolve_output/bpf_biopattern_verify_autoapprove/checkpoints/checkpoint_20260913_182241_30
+2026-09-13 18:22:41,804 - INFO - Saved best program at checkpoint 30 with metrics: score=0.7148, combined_score=0.7148, compile_success=1.0000, object_bytes=11768.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__biopattern=1327.2500, runtime_score=0.4297
+2026-09-13 18:22:41,804 - INFO - Saved checkpoint at iteration 30 to openevolve_output/bpf_biopattern_verify_autoapprove/checkpoints/checkpoint_20260913_182241_30
+2026-09-13 18:22:41,805 - INFO - Received signal 15, initiating graceful shutdown...
+2026-09-13 18:22:41,805 - INFO - Graceful shutdown requested...
+2026-09-13 18:22:41,814 - INFO - Stopped process pool
+2026-09-13 18:22:41,814 - INFO - Using tracked best program: c3dd15a9-abdd-4c94-b4da-fc8bd0d37c42
+2026-09-13 18:22:41,814 - INFO - Evolution complete. Best program has metrics: score=0.7148, combined_score=0.7148, compile_success=1.0000, object_bytes=11768.0000, semantic_equivalent=1.0000, runtime_success=1.0000, ns_per_run__biopattern=1327.2500, runtime_score=0.4297
+2026-09-13 18:22:41,815 - INFO - Saved best program to openevolve_output/bpf_biopattern_verify_autoapprove/best/best_program.c with program info to openevolve_output/bpf_biopattern_verify_autoapprove/best/best_program_info.json
+
+Evolution complete!
+Best program metrics:
+  score: 0.7148
+  combined_score: 0.7148
+  compile_success: 1.0000
+  object_bytes: 11768.0000
+  semantic_equivalent: 1.0000
+  runtime_success: 1.0000
+  ns_per_run__biopattern: 1327.2500
+  runtime_score: 0.4297
+
+Per-iteration ns/run:
+  iter   0 (original): biopattern=1450.48
+  iter   1: N/A (not equivalent)
+  iter   2: N/A (not equivalent)
+  iter   3: N/A (not equivalent)
+  iter   4: N/A (not equivalent)
+  iter   5: N/A (not equivalent)
+  iter   6: N/A (not equivalent)
+  iter   7: N/A (not equivalent)
+  iter   8: N/A (not equivalent)
+  iter  10: N/A (not equivalent)
+  iter  11: N/A (compile failed)
+  iter  12: N/A (not equivalent)
+  iter  13: N/A (not equivalent)
+  iter  14: N/A (not equivalent)
+  iter  15: N/A (not equivalent)
+  iter  16: N/A (not equivalent)
+  iter  17: N/A (not equivalent)
+  iter  18: N/A (not equivalent)
+  iter  19: biopattern=1327.25
+  iter  20: N/A (not equivalent)
+  iter  21: biopattern=1393.12
+  iter  22: N/A (not equivalent)
+  iter  23: N/A (not equivalent)
+  iter  24: N/A (not equivalent)
+  iter  25: N/A (not equivalent)
+  iter  26: N/A (not equivalent)
+  iter  27: N/A (not equivalent)
+  iter  28: N/A (not equivalent)
+  iter  29: N/A (not equivalent)
+  iter  30: N/A (not equivalent)
+
+Best program's optimization path (1 step(s) from its earliest known ancestor):
+  iter 19:
+    - Strength-reduce the multiplication by 512 to a left shift by 9 (`nr_sector * 512` -> `nr_sector << 9`) in the bytes accumulation.
+    - Hoist the per-call zero initializer into a single static const global so the function does not allocate/zero a stack value every invocation (`struct counter zero = {}` -> `static const struct counter zero = {}`).
+
+LLM token usage (this run):
+  prompt:     345,544
+  completion: 124,029
+  total:      469,573
+
+Latest checkpoint saved at: openevolve_output/bpf_biopattern_verify_autoapprove/checkpoints/checkpoint_20260913_182241_30
+To resume, use: --checkpoint openevolve_output/bpf_biopattern_verify_autoapprove/checkpoints/checkpoint_20260913_182241_30

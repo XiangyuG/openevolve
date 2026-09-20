@@ -156,6 +156,11 @@ class ProgramDatabase:
         # Track the absolute best program separately
         self.best_program_id: Optional[str] = None
 
+        # Track the original/initial program (parent_id is None) separately so
+        # it survives MAP-Elites cell displacement and population pruning -
+        # it's the fixed baseline every other program is compared against.
+        self.initial_program_id: Optional[str] = None
+
         # Track best program per island for proper island-based evolution
         self.island_best_programs: List[Optional[str]] = [None] * config.num_islands
 
@@ -635,6 +640,7 @@ class ProgramDatabase:
             "islands": [list(island) for island in self.islands],
             "archive": list(self.archive),
             "best_program_id": self.best_program_id,
+            "initial_program_id": self.initial_program_id,
             "island_best_programs": self.island_best_programs,
             "last_iteration": iteration or self.last_iteration,
             "current_island": self.current_island,
@@ -672,6 +678,7 @@ class ProgramDatabase:
             saved_islands = metadata.get("islands", [])
             self.archive = set(metadata.get("archive", []))
             self.best_program_id = metadata.get("best_program_id")
+            self.initial_program_id = metadata.get("initial_program_id")
             self.island_best_programs = metadata.get(
                 "island_best_programs", [None] * len(saved_islands)
             )
@@ -770,6 +777,10 @@ class ProgramDatabase:
         if self.best_program_id and self.best_program_id not in self.programs:
             logger.warning(f"Best program {self.best_program_id} not found, will recalculate")
             self.best_program_id = None
+
+        # Check initial program (absent in checkpoints saved before this field existed)
+        if self.initial_program_id and self.initial_program_id not in self.programs:
+            self.initial_program_id = None
 
         # Log reconstruction results
         if missing_programs:
@@ -1108,6 +1119,46 @@ class ProgramDatabase:
 
         return self._llm_judge_novelty(program, self.programs[max_smlty_pid])
 
+    def _pareto_dominates(self, program1: Program, program2: Program, metrics: List[str]) -> bool:
+        """
+        True if program1 Pareto-dominates program2 over `metrics` (all treated as
+        lower-is-better): program1 is <= program2 on every metric and strictly < on
+        at least one. A mixed result (better on some, worse on others) is NOT
+        domination - returns False, same as program2 being outright better.
+        """
+        at_least_one_better = False
+        for m in metrics:
+            v1, v2 = program1.metrics.get(m), program2.metrics.get(m)
+            if v1 is None or v2 is None:
+                return False
+            if v1 > v2:
+                return False
+            if v1 < v2:
+                at_least_one_better = True
+        return at_least_one_better
+
+    def _pareto_front_ids(self) -> Set[str]:
+        """
+        Ids of programs not Pareto-dominated by any other program in the population,
+        over self.config.pareto_metric_prefixes. Only considers programs that have
+        every matching metric key (others - e.g. compile failures - are excluded).
+        """
+        prefixes = self.config.pareto_metric_prefixes
+        if not prefixes:
+            return set()
+
+        candidates = list(self.programs.values())
+        keys = {k for p in candidates for k in p.metrics if any(k.startswith(pre) for pre in prefixes)}
+        if not keys:
+            return set()
+        eligible = [p for p in candidates if all(k in p.metrics for k in keys)]
+
+        front = set()
+        for p in eligible:
+            if not any(self._pareto_dominates(other, p, keys) for other in eligible if other.id != p.id):
+                front.add(p.id)
+        return front
+
     def _is_better(self, program1: Program, program2: Program) -> bool:
         """
         Determine if program1 has better FITNESS than program2
@@ -1131,6 +1182,23 @@ class ProgramDatabase:
             return True
         if not program1.metrics and program2.metrics:
             return False
+
+        # Pareto mode: independently-judged, lower-is-better metrics (e.g. bpf_compile's
+        # ns_per_run__* per function) decide via strict dominance instead of one scalar.
+        # Falls through to the scalar comparison below if either program is missing a
+        # matching metric (e.g. compile failed and never ran the benchmark).
+        prefixes = self.config.pareto_metric_prefixes
+        if prefixes:
+            keys = sorted(
+                {k for k in program1.metrics if any(k.startswith(p) for p in prefixes)}
+                | {k for k in program2.metrics if any(k.startswith(p) for p in prefixes)}
+            )
+            if (
+                keys
+                and all(k in program1.metrics for k in keys)
+                and all(k in program2.metrics for k in keys)
+            ):
+                return self._pareto_dominates(program1, program2, keys)
 
         # Compare fitness (excluding feature dimensions)
         fitness1 = get_fitness_score(program1.metrics, self.config.feature_dimensions)
@@ -1712,6 +1780,12 @@ class ProgramDatabase:
         if program_id not in self.programs:
             return
 
+        # The original/initial program is always kept, even once it stops
+        # owning any cell - it's the fixed baseline every other program is
+        # compared against (e.g. CLI summaries report it as "iteration 0").
+        if program_id == self.initial_program_id:
+            return
+
         # Still owns a cell in some island? Then it is not orphaned.
         for island_map in self.island_feature_maps:
             if program_id in island_map.values():
@@ -1753,8 +1827,18 @@ class ProgramDatabase:
         for island_map in self.island_feature_maps:
             elite_ids.update(island_map.values())
 
-        # Never remove the best program or the excluded (just-added) program
-        protected_ids = {self.best_program_id, exclude_program_id} - {None}
+        # Never remove the best program, the excluded (just-added) program, or
+        # the original/initial program - it's the fixed baseline every other
+        # program is compared against (e.g. CLI summaries report it as
+        # "iteration 0"), so it must survive population pruning too.
+        protected_ids = {self.best_program_id, exclude_program_id, self.initial_program_id} - {
+            None
+        }
+        # In Pareto mode, also protect every current trade-off champion (e.g. the
+        # "fastest write" program even if its combined_score is mediocre) so pruning
+        # by scalar fitness can't silently drop a legitimate non-dominated program.
+        if self.config.pareto_metric_prefixes:
+            protected_ids.update(self._pareto_front_ids())
 
         all_programs = list(self.programs.values())
 

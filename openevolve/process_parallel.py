@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from openevolve.config import Config
 from openevolve.database import Program, ProgramDatabase
+from openevolve.review_gate import ReviewDecision
 from openevolve.utils.metrics_utils import safe_numeric_average
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,10 @@ class SerializableResult:
     iteration: int = 0
     error: Optional[str] = None
     target_island: Optional[int] = None  # Island where child should be placed
+    # Usage for THIS iteration's one LLM call, if the sampled model reported one
+    # (see OpenAILLM.last_usage) - None for manual mode or a non-reporting
+    # provider. Summed across iterations by the caller for a run total.
+    token_usage: Optional[Dict[str, int]] = None
 
 
 @dataclass
@@ -54,6 +59,85 @@ class ProposalResult:
     witnesses: List[Dict[str, Any]] = field(default_factory=list)
     target_island: Optional[int] = None
     error: Optional[str] = None
+    token_usage: Optional[Dict[str, int]] = None
+
+
+_WIT_FENCE_RE = None  # compiled lazily
+
+
+def _c2rust_dir() -> "Path":
+    """heimdall/c2rust_translation, from $HEIMDALL_ROOT or the sibling checkout."""
+    import os
+
+    root = os.environ.get("HEIMDALL_ROOT")
+    if root:
+        return Path(root) / "c2rust_translation"
+    return Path(__file__).resolve().parents[2] / "c2rust_translation"
+
+
+def _write_and_check_wit(text: str, wit_path: "Path") -> Dict[str, Any]:
+    """Write `text` to `wit_path` and syntax-check it with
+    `python3 -m witness_dsl` (grammar: c2rust_translation/witness_dsl/GRAMMAR.bnf).
+    Returns {"path", "ok", "output"}; ok is None when the checker could not be
+    run. Never raises."""
+    import subprocess
+    import sys
+
+    # Resolve to an absolute path FIRST. The checker subprocess below runs
+    # with cwd=_c2rust_dir() (so `import witness_dsl` works), not this
+    # process's cwd -- if `wit_path` were left relative (e.g. the default
+    # BPF_SAVE_DIR="generated_programs/<tool>"), the write lands relative to
+    # here but the checker would then look for it relative to
+    # _c2rust_dir() instead and report "No such file or directory" even
+    # though the file was just written successfully.
+    wit_path = Path(wit_path).resolve()
+    try:
+        wit_path.parent.mkdir(parents=True, exist_ok=True)
+        wit_path.write_text(text if text.endswith("\n") else text + "\n", encoding="utf-8")
+    except OSError as e:
+        return {"path": None, "ok": None, "output": f"could not write .wit: {e}"}
+    try:
+        r = subprocess.run(
+            [sys.executable, "-m", "witness_dsl", str(wit_path)],
+            cwd=str(_c2rust_dir()),
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        return {
+            "path": str(wit_path),
+            "ok": r.returncode == 0,
+            "output": (r.stdout + r.stderr).strip(),
+        }
+    except Exception as e:  # checker missing, timeout, ...
+        return {"path": str(wit_path), "ok": None, "output": f"witness_dsl not run: {e}"}
+
+
+def _save_and_check_wit(llm_response: str, program_id: str) -> Optional[Dict[str, Any]]:
+    """Pull the ```witness DSL block out of an LLM response, write it to
+    <BPF_SAVE_DIR>/<tool>/witnesses/<program_id>.wit, and syntax-check it.
+
+    Returns {"path", "ok", "output"} -- or None if the response has no
+    ```witness block. Best-effort: never raises.
+    """
+    import os
+    import re
+
+    global _WIT_FENCE_RE
+    if _WIT_FENCE_RE is None:
+        _WIT_FENCE_RE = re.compile(
+            r"```[ \t]*witness[ \t]*\r?\n(.*?)\r?\n?```", re.DOTALL | re.IGNORECASE
+        )
+    m = _WIT_FENCE_RE.search(llm_response or "")
+    if not m:
+        return None
+
+    save_root = os.environ.get("BPF_SAVE_DIR") or os.path.join(
+        "generated_programs", os.environ.get("BPF_TOOL", "filetop")
+    )
+    return _write_and_check_wit(
+        m.group(1).strip() + "\n", Path(save_root) / "witnesses" / f"{program_id}.wit"
+    )
 
 
 def _worker_init(config_dict: dict, evaluation_file: str, parent_env: dict = None) -> None:
@@ -231,10 +315,13 @@ def _run_iteration_worker(
         except Exception as e:
             logger.error(f"LLM generation failed: {e}")
             return SerializableResult(error=f"LLM generation failed: {str(e)}", iteration=iteration)
+        llm_token_usage = _worker_llm_ensemble.last_usage
 
         # Check for None response
         if llm_response is None:
-            return SerializableResult(error="LLM returned None response", iteration=iteration)
+            return SerializableResult(
+                error="LLM returned None response", iteration=iteration, token_usage=llm_token_usage
+            )
 
         # Parse response based on evolution mode
         if _worker_config.diff_based_evolution:
@@ -249,7 +336,9 @@ def _run_iteration_worker(
             diff_blocks = extract_diffs(llm_response, _worker_config.diff_pattern)
             if not diff_blocks:
                 return SerializableResult(
-                    error="No valid diffs found in response", iteration=iteration
+                    error="No valid diffs found in response",
+                    iteration=iteration,
+                    token_usage=llm_token_usage,
                 )
 
             if _worker_config.prompt.programs_as_changes_description:
@@ -260,7 +349,9 @@ def _run_iteration_worker(
                         changes_description_text=parent_changes_desc,
                     )
                 except Exception as e:
-                    return SerializableResult(error=str(e), iteration=iteration)
+                    return SerializableResult(
+                        error=str(e), iteration=iteration, token_usage=llm_token_usage
+                    )
 
                 child_code, _ = apply_diff_blocks(parent.code, code_blocks)
                 child_changes_desc, desc_applied = apply_diff_blocks(
@@ -276,6 +367,7 @@ def _run_iteration_worker(
                     return SerializableResult(
                         error="changes_description was not updated or empty, program is discarded",
                         iteration=iteration,
+                        token_usage=llm_token_usage,
                     )
 
                 changes_summary = format_diff_summary(
@@ -297,7 +389,9 @@ def _run_iteration_worker(
             new_code = parse_full_rewrite(llm_response, _worker_config.language)
             if not new_code:
                 return SerializableResult(
-                    error=f"No valid code found in response", iteration=iteration
+                    error=f"No valid code found in response",
+                    iteration=iteration,
+                    token_usage=llm_token_usage,
                 )
 
             child_code = new_code
@@ -309,8 +403,13 @@ def _run_iteration_worker(
             validate_transformation_proof,
         )
 
+        # Extract witnesses from the RAW response, before any code-fence stripping --
+        # extract_change_explanation() indiscriminately deletes every ``` ... ``` block
+        # (meant for a full program's code fence), which would silently eat the
+        # required ```witness DSL fence too, leaving every witness's "wit" empty even
+        # when the model wrote it correctly.
+        change_witnesses = extract_transformation_witnesses(llm_response)
         change_explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
-        change_witnesses = extract_transformation_witnesses(change_explanation)
         for index, witness in enumerate(change_witnesses):
             # Stable per-child index so the developer can approve/reject witnesses
             # individually in the review UI (openevolve/review_gate.py) and have
@@ -325,16 +424,47 @@ def _run_iteration_worker(
             return SerializableResult(
                 error=f"Generated code exceeds maximum length ({len(child_code)} > {_worker_config.max_code_length})",
                 iteration=iteration,
+                token_usage=llm_token_usage,
             )
 
         # Evaluate the child program
         import uuid
 
         child_id = str(uuid.uuid4())
-        child_metrics = asyncio.run(_worker_evaluator.evaluate_program(child_code, child_id))
+        child_metrics = asyncio.run(
+            _worker_evaluator.evaluate_program(child_code, child_id, iteration=iteration)
+        )
 
         # Get artifacts
         artifacts = _worker_evaluator.get_pending_artifacts(child_id)
+
+        # Save the LLM's transformation-witness DSL block as a .wit file and
+        # syntax-check it against GRAMMAR.bnf (informational -- the actual
+        # --witness file is still built elsewhere).
+        wit_check = _save_and_check_wit(llm_response, child_id)
+        if wit_check is None:
+            logger.info("Iteration %d: no ```witness block in the LLM response", iteration)
+        else:
+            logger.info(
+                "Iteration %d: wrote %s, witness_dsl syntax ok=%s",
+                iteration,
+                wit_check.get("path"),
+                wit_check.get("ok"),
+            )
+            if wit_check.get("ok") is not True and wit_check.get("output"):
+                logger.info("witness_dsl: %s", wit_check["output"])
+                # Feed the diagnostic back: it becomes an artifact on this child,
+                # so the next prompt sampled from this lineage shows the error
+                # and the model can correct the witness. Non-blocking -- the
+                # child is still scored on its code.
+                if artifacts is None:
+                    artifacts = {}
+                artifacts["witness_dsl_syntax_error"] = (
+                    "The ```witness block in your last response did NOT conform to "
+                    "the transformation-witness DSL grammar (GRAMMAR.bnf). Produce "
+                    "a corrected ```witness block this time; the code change itself "
+                    "was fine. Checker output:\n" + str(wit_check.get("output") or "")
+                )
 
         # Create child program
         child_program = Program(
@@ -350,6 +480,7 @@ def _run_iteration_worker(
                 "changes": changes_summary,
                 "explanation": change_explanation,
                 "witnesses": change_witnesses,
+                "wit": wit_check,
                 "parent_metrics": parent.metrics,
                 "island": parent_island,
             },
@@ -369,11 +500,32 @@ def _run_iteration_worker(
             artifacts=artifacts,
             iteration=iteration,
             target_island=target_island,
+            token_usage=llm_token_usage,
         )
 
     except Exception as e:
         logger.exception(f"Error in worker iteration {iteration}")
         return SerializableResult(error=str(e), iteration=iteration)
+
+
+def _combine_feedback(
+    known_compile_failures: List[str], parent_feedback: Optional[str]
+) -> Optional[str]:
+    """Merge the run-wide known-compile-failures list with this parent's own
+    specific feedback (a rejection reason, or its own last compile error) into
+    the single string the propose prompt's {developer_feedback} section shows.
+    The global list comes first so it reads as standing context ("these don't
+    work, anywhere, this run") ahead of anything specific to this one parent."""
+    parts = []
+    if known_compile_failures:
+        parts.append(
+            "Known compile-time errors already hit this run (from other lineages "
+            "too) - avoid triggering these again:\n"
+            + "\n".join(f"- {e}" for e in known_compile_failures)
+        )
+    if parent_feedback:
+        parts.append(parent_feedback)
+    return "\n\n".join(parts) if parts else None
 
 
 def _build_worker_prompt(
@@ -400,7 +552,10 @@ def _build_worker_prompt(
     inspirations = [programs[pid] for pid in inspiration_ids if pid in programs]
 
     parent_artifacts = db_snapshot["artifacts"].get(parent_id)
-    developer_feedback = db_snapshot.get("developer_feedback", {}).get(parent_id)
+    developer_feedback = _combine_feedback(
+        db_snapshot.get("known_compile_failures") or [],
+        db_snapshot.get("developer_feedback", {}).get(parent_id),
+    )
 
     parent_island = parent.metadata.get("island", db_snapshot["current_island"])
     island_programs = [
@@ -478,10 +633,14 @@ def _run_iteration_worker_propose(
             return ProposalResult(
                 error=f"LLM generation failed: {str(e)}", iteration=iteration, parent_id=parent_id
             )
+        llm_token_usage = _worker_llm_ensemble.last_usage
 
         if llm_response is None:
             return ProposalResult(
-                error="LLM returned None response", iteration=iteration, parent_id=parent_id
+                error="LLM returned None response",
+                iteration=iteration,
+                parent_id=parent_id,
+                token_usage=llm_token_usage,
             )
 
         from openevolve.utils.code_utils import (
@@ -490,15 +649,23 @@ def _run_iteration_worker_propose(
             validate_transformation_proof,
         )
 
-        # The propose prompt asks for no code, but strip any diff/code fences the model
-        # might still emit anyway, same defensive extraction as the non-interactive path.
-        explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
-        witnesses = extract_transformation_witnesses(explanation)
+        # Extract witnesses from the RAW response, before any code-fence stripping --
+        # extract_change_explanation() indiscriminately deletes every ``` ... ``` block
+        # (meant for a full program's code fence in the non-interactive path), which
+        # would silently eat the required ```witness DSL fence too, leaving every
+        # witness's "wit" empty even when the model wrote it correctly.
+        witnesses = extract_transformation_witnesses(llm_response)
         for index, witness in enumerate(witnesses):
             witness["index"] = index
             witness["proof"] = validate_transformation_proof(
                 witness["pre_formula"], witness["post_formula"]
             )
+
+        # The propose prompt asks for no code, but strip any diff/code fences the model
+        # might still emit anyway, same defensive extraction as the non-interactive path --
+        # safe to run AFTER witness extraction since each witness's "wit" text is already
+        # captured above, and the review UI renders it separately (see review.js).
+        explanation = extract_change_explanation(llm_response, _worker_config.diff_pattern)
 
         return ProposalResult(
             parent_id=parent.id,
@@ -509,6 +676,7 @@ def _run_iteration_worker_propose(
             explanation=explanation,
             witnesses=witnesses,
             target_island=db_snapshot.get("sampling_island"),
+            token_usage=llm_token_usage,
         )
 
     except Exception as e:
@@ -567,9 +735,12 @@ def _run_iteration_worker_implement(
         except Exception as e:
             logger.error(f"LLM generation failed (implement): {e}")
             return SerializableResult(error=f"LLM generation failed: {str(e)}", iteration=iteration)
+        llm_token_usage = _worker_llm_ensemble.last_usage
 
         if llm_response is None:
-            return SerializableResult(error="LLM returned None response", iteration=iteration)
+            return SerializableResult(
+                error="LLM returned None response", iteration=iteration, token_usage=llm_token_usage
+            )
 
         if _worker_config.diff_based_evolution:
             from openevolve.utils.code_utils import (
@@ -583,7 +754,9 @@ def _run_iteration_worker_implement(
             diff_blocks = extract_diffs(llm_response, _worker_config.diff_pattern)
             if not diff_blocks:
                 return SerializableResult(
-                    error="No valid diffs found in response", iteration=iteration
+                    error="No valid diffs found in response",
+                    iteration=iteration,
+                    token_usage=llm_token_usage,
                 )
 
             if _worker_config.prompt.programs_as_changes_description:
@@ -594,7 +767,9 @@ def _run_iteration_worker_implement(
                         changes_description_text=parent_changes_desc,
                     )
                 except Exception as e:
-                    return SerializableResult(error=str(e), iteration=iteration)
+                    return SerializableResult(
+                        error=str(e), iteration=iteration, token_usage=llm_token_usage
+                    )
 
                 child_code, _ = apply_diff_blocks(parent.code, code_blocks)
                 child_changes_desc, desc_applied = apply_diff_blocks(
@@ -609,6 +784,7 @@ def _run_iteration_worker_implement(
                     return SerializableResult(
                         error="changes_description was not updated or empty, program is discarded",
                         iteration=iteration,
+                        token_usage=llm_token_usage,
                     )
 
                 changes_summary = format_diff_summary(
@@ -630,7 +806,9 @@ def _run_iteration_worker_implement(
             new_code = parse_full_rewrite(llm_response, _worker_config.language)
             if not new_code:
                 return SerializableResult(
-                    error="No valid code found in response", iteration=iteration
+                    error="No valid code found in response",
+                    iteration=iteration,
+                    token_usage=llm_token_usage,
                 )
 
             child_code = new_code
@@ -641,12 +819,56 @@ def _run_iteration_worker_implement(
             return SerializableResult(
                 error=f"Generated code exceeds maximum length ({len(child_code)} > {_worker_config.max_code_length})",
                 iteration=iteration,
+                token_usage=llm_token_usage,
             )
 
         import uuid
 
         child_id = str(uuid.uuid4())
-        child_metrics = asyncio.run(_worker_evaluator.evaluate_program(child_code, child_id))
+
+        # Combine this iteration's developer-approved witnesses (plus everything
+        # approved anywhere in this program's ancestry) into the structured hints
+        # and the .wit DSL file evaluate() needs to do a relaxed check in the SAME
+        # pass as the unconditional one - see openevolve/evaluator.py's EQUIV_MODE.
+        # Ancestry is propagated so a descendant is checked against the run's
+        # fixed baseline with the full set of claims its lineage relies on, not
+        # just this iteration's delta.
+        import tempfile
+
+        from openevolve.utils.code_utils import combine_witness_dsl_blocks, merge_witnesses
+
+        newly_approved = [
+            w
+            for w in witnesses
+            if w.get("developer_approved") is True
+            and (w.get("map_width_change") or w.get("map_key_width_change") or w.get("map_fusion"))
+        ]
+        inherited = parent.metadata.get("approved_witnesses") or []
+        accumulated = merge_witnesses(inherited, newly_approved)
+
+        # The .wit DSL text itself is NOT ancestry-propagated (same as before this
+        # refactor) - only this iteration's own witnesses contribute to it.
+        wit_path = None
+        wit_text = None
+        wit_check = None
+        combined_wit = combine_witness_dsl_blocks(witnesses, only_approved=True)
+        if combined_wit.strip():
+            wit_text = combined_wit
+            wit_dest = Path(tempfile.mkdtemp(prefix="openevolve_bpf_wit_")) / f"{child_id}.wit"
+            wit_check = _write_and_check_wit(combined_wit, wit_dest)
+            logger.info(
+                "Iteration %d: combined .wit built, syntax ok=%s", iteration, wit_check.get("ok")
+            )
+            if wit_check.get("ok") is True:
+                wit_path = wit_check["path"]
+            elif wit_check.get("output"):
+                logger.info("witness_dsl: %s", wit_check["output"])
+
+        child_metrics = asyncio.run(
+            _worker_evaluator.evaluate_program(
+                child_code, child_id, witnesses=accumulated, wit_path=wit_path, iteration=iteration
+            )
+        )
 
         artifacts = _worker_evaluator.get_pending_artifacts(child_id)
 
@@ -663,6 +885,9 @@ def _run_iteration_worker_implement(
                 "changes": changes_summary,
                 "explanation": explanation,
                 "witnesses": witnesses,
+                "approved_witnesses": accumulated,
+                "wit": wit_check,
+                "wit_text": wit_text,
                 "parent_metrics": parent.metrics,
                 "island": parent_island,
             },
@@ -679,6 +904,7 @@ def _run_iteration_worker_implement(
             artifacts=artifacts,
             iteration=iteration,
             target_island=db_snapshot.get("sampling_island"),
+            token_usage=llm_token_usage,
         )
 
     except Exception as e:
@@ -774,109 +1000,55 @@ class ProcessParallelController:
         self.interactive_enabled = bool(config.interactive.enabled) and review_gate is not None
         self._pending_feedback: Dict[str, str] = {}
         self._rejection_counts: Dict[str, int] = {}
+        # Separate from _rejection_counts (which resets the moment a proposal is
+        # approved, before implementation even runs): how many times IN A ROW an
+        # approved proposal for this parent has failed to compile. Also feeds
+        # _pending_feedback (same channel the next propose call reads either way),
+        # kept in its own dict purely so the two failure kinds don't reset each
+        # other's streak.
+        self._compile_failure_counts: Dict[str, int] = {}
+        # Unlike _pending_feedback (per-parent, cleared once that lineage moves on),
+        # this is run-wide: every distinct compile error seen from ANY parent this
+        # run, shown to EVERY propose call regardless of which parent it targets.
+        # Without this, giving up on a stuck lineage (see max_rejections_per_parent)
+        # throws away everything learned about why it kept failing - a fresh parent
+        # can, and in practice does, re-discover the exact same environment
+        # restriction (e.g. clang's BPF backend rejecting memset()) from scratch.
+        # Capped to the most recent N distinct errors so the prompt doesn't grow
+        # unboundedly over a long run.
+        self._known_compile_failures: List[str] = []
+        self._known_compile_failures_cap = 10
 
-        # The most recently completed iteration's implement+evaluate(+reverify) result
-        # (see _run_evolution_interactive below), shown alongside the NEXT witness
+        # Run-wide LLM token usage, summed across every completed iteration's
+        # single LLM call (propose-phase + implement-phase in interactive mode,
+        # or the one call per iteration in non-interactive mode). Each worker
+        # reports its own call's usage as a delta on its result dataclass (see
+        # SerializableResult.token_usage / ProposalResult.token_usage) rather
+        # than a cumulative snapshot, so summing deltas here is correct
+        # regardless of how many worker processes ran them. Read by cli.py at
+        # the end of the run via OpenEvolve.parallel_controller.
+        self.total_token_usage: Dict[str, int] = {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+        }
+
+        # The most recently completed iteration's implement+evaluate result (see
+        # _run_evolution_interactive below), shown alongside the NEXT witness
         # proposal's review task so the developer can see what their last approval
-        # actually produced -- there is no separate review round for it (see
-        # _reverify_approved_witnesses' docstring), so without this the compile/
-        # equivalence/performance results computed for every iteration would never
-        # reach the browser at all. None until the first witness is approved and
-        # implemented; persists across intervening rejections (still the most recent
-        # real result), tagged with its own iteration number so that's never ambiguous.
+        # actually produced -- there is no separate review round for it, so without
+        # this the compile/equivalence/performance results computed for every
+        # iteration would never reach the browser at all. None until the first
+        # witness is approved and implemented; persists across intervening
+        # rejections (still the most recent real result), tagged with its own
+        # iteration number so that's never ambiguous.
         self._last_iteration_result: Optional[Dict[str, Any]] = None
-
-        # Lazily created main-process Evaluator used only for the optional
-        # post-approval re-verification pass (see _reverify_approved_witnesses
-        # below) -- most runs never approve a witness with a relaxation hint,
-        # so this is never instantiated for them.
-        self._reverify_evaluator = None
 
         logger.info(f"Initialized process parallel controller with {self.num_workers} workers")
 
-    def _get_reverify_evaluator(self):
-        from openevolve.evaluator import Evaluator
-
-        if self._reverify_evaluator is None:
-            self._reverify_evaluator = Evaluator(
-                config=self.config.evaluator,
-                evaluation_file=self.evaluation_file,
-                suffix=self.file_suffix,
-            )
-        return self._reverify_evaluator
-
-    async def _reverify_approved_witnesses(self, child_program: Program) -> Dict[str, Any]:
-        """
-        After a developer approves specific transformation witnesses (see
-        openevolve/review_gate.py and scripts/review.py), re-run the
-        evaluator's optional `reverify_with_witnesses` hook using the approved
-        hints, and let its result REPLACE (not just sit alongside)
-        child_program's unconditional "semantic_equivalent" metric. A no-op
-        (no evaluator call at all) unless there's at least one qualifying
-        witness, so this costs nothing for the common case.
-
-        Only witnesses the developer explicitly approved (not just left
-        unreviewed) AND that carry a parsed "map_width_change" or
-        "map_fusion" hint are used -- an approved witness with no parseable
-        hint (including a "variable_width_change"-only witness, which
-        heimdall has no map-level model for -- see build_heimdall_witness_file)
-        contributes nothing here.
-
-        Deliberately NOT gated on the witness's own Z3 self-proof
-        ("proof_status") having succeeded: that proof only checks the LLM's
-        own toy pre_result/post_result formula for internal consistency, and
-        says nothing about whether the transformation is actually equivalent
-        -- that's what the real, independent proof below (heimdall's own
-        symbolic execution over the whole program, plus its own BTF-metadata
-        cross-check of the hint) establishes. Gating reverify on the
-        self-proof too just meant a witness with a syntactically broken
-        formula -- e.g. one that got the numbers right but tripped over Z3's
-        SMT-LIB2 parser some other way -- silently never got heimdall's real
-        check at all, leaving the developer staring at the unconditional
-        strict check's raw "BTF mismatch" as if it were the final word, when
-        a more informed check was available and never even attempted.
-
-        The hint's old_bytes/new_bytes are independently corrected against
-        real BTF metadata before use (see evaluator.py's
-        _correct_map_width_change_hints), so trusting the human's approval
-        instead of the LLM's self-proof here doesn't weaken the actual
-        soundness of what gets accepted -- heimdall still verifies everything
-        itself either way.
-
-        Returns:
-            Extra artifacts to merge into this iteration's stored artifacts
-            (empty dict if no reverify ran).
-        """
-        witnesses = child_program.metadata.get("witnesses") or []
-        qualifying = [
-            w
-            for w in witnesses
-            if w.get("developer_approved") is True
-            and (w.get("map_width_change") or w.get("map_fusion"))
-        ]
-        self._dump_witness_file(child_program, witnesses, qualifying)
-        if not qualifying:
-            return {}
-
-        metrics, artifacts = await self._get_reverify_evaluator().reverify_program(
-            child_program.code, child_program.id, qualifying
-        )
-        if metrics:
-            child_program.metrics.update(metrics)
-            # The relaxed/witness-aware result IS the answer once it exists --
-            # not a second opinion filed next to the unconditional strict one.
-            # Downstream consumers (MAP-Elites feature grid, fitness, the
-            # review UI's fallback-to-relaxed display) should all see ONE
-            # equivalence verdict per child, and it should be the one that
-            # accounts for what the developer actually approved.
-            if "semantic_equivalent_relaxed" in metrics:
-                child_program.metrics["semantic_equivalent"] = metrics[
-                    "semantic_equivalent_relaxed"
-                ]
-        return artifacts
-
     def _dump_witness_file(
         self,
+        iteration: int,
         child_program: Program,
         witnesses: List[Dict[str, Any]],
         qualifying: List[Dict[str, Any]],
@@ -892,10 +1064,17 @@ class ProcessParallelController:
         the witnesses/child_code shape a task needs -- co-locating it there
         made it show up in the review UI as a bogus task ("Iteration ?").
 
-        "heimdall_witness_file" is exactly what reverify_program/
-        reverify_with_witnesses will (or would) hand heimdall as
-        --witness-file for this child; it's the empty {"witnesses": []} shape
-        whenever `qualifying` is empty, which itself is useful signal (the
+        Filenames are prefixed with the zero-padded iteration number (e.g.
+        "0007_<child_id>.json") so `ls` sorts them in run order and a
+        developer can tell which iteration produced which file without
+        cross-referencing the log -- the child UUID alone doesn't say that.
+        The ".wit" copy is written unconditionally, even when it's empty --
+        see the comment above its write call.
+
+        "heimdall_witness_file" is exactly what evaluate()'s relaxed check will
+        (or would) hand heimdall as --witness-file for this child; it's the
+        empty {"witnesses": []} shape whenever `qualifying` is empty, which
+        itself is useful signal (the
         approval didn't produce anything for heimdall to check). The
         per-witness breakdown makes it obvious WHY a witness is or isn't in
         that payload -- e.g. developer_approved is True but proof_status is
@@ -915,6 +1094,7 @@ class ProcessParallelController:
                     "developer_approved": w.get("developer_approved"),
                     "proof_status": (w.get("proof") or {}).get("status"),
                     "proof_detail": (w.get("proof") or {}).get("detail"),
+                    "wit": w.get("wit") or "",
                     "map_width_change": w.get("map_width_change"),
                     "map_fusion": w.get("map_fusion"),
                     "variable_width_change": w.get("variable_width_change"),
@@ -924,12 +1104,31 @@ class ProcessParallelController:
             ],
         }
         witness_files_dir = self.review_gate.queue_dir / "witness_files"
-        path = witness_files_dir / f"{child_program.id}.json"
+        stem = f"{iteration:04d}_{child_program.id}"
+        path = witness_files_dir / f"{stem}.json"
         try:
             witness_files_dir.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(dump, indent=2))
         except OSError as e:
             logger.warning(f"Could not write witness file dump to {path}: {e}")
+
+        # Persist the combined .wit the worker already syntax-checked (see
+        # _run_iteration_worker_implement) as a durable, developer-facing copy -
+        # the worker's own copy lives in a throwaway temp dir that may not
+        # outlive the call. Always written, even when empty (every approved
+        # witness left both blocks blank, or nothing was approved) -- an
+        # absent .wit file reads as "did this even run?"; a present one with
+        # an explanatory comment reads as "confirmed empty, here's why".
+        wit_text = child_program.metadata.get("wit_text")
+        content = wit_text or (
+            "// No assumption/binding statements: every approved witness left both\n"
+            "// blocks empty (a purely structural change), or nothing was approved.\n"
+        )
+        wit_path = witness_files_dir / f"{stem}.wit"
+        try:
+            wit_path.write_text(content if content.endswith("\n") else content + "\n")
+        except OSError as e:
+            logger.warning(f"Could not write .wit copy to {wit_path}: {e}")
 
     def _serialize_config(self, config: Config) -> dict:
         """Serialize config object to a dictionary that can be pickled"""
@@ -1022,6 +1221,7 @@ class ProcessParallelController:
             "feature_dimensions": self.database.config.feature_dimensions,
             "artifacts": {},  # Will be populated selectively
             "developer_feedback": dict(self._pending_feedback),
+            "known_compile_failures": list(self._known_compile_failures),
         }
 
         # Include artifacts for programs that might be selected
@@ -1042,6 +1242,15 @@ class ProcessParallelController:
                 snapshot["artifacts"][pid] = artifacts
 
         return snapshot
+
+    def _accumulate_token_usage(self, usage: Optional[Dict[str, int]]) -> None:
+        """Add one iteration's LLM call usage (may be None -- manual mode, a
+        non-reporting provider, or an iteration that never reached the LLM
+        call) into the run-wide total."""
+        if not usage:
+            return
+        for key in self.total_token_usage:
+            self.total_token_usage[key] += usage.get(key, 0) or 0
 
     async def run_evolution(
         self,
@@ -1131,6 +1340,7 @@ class ProcessParallelController:
                 # Use evaluator timeout + buffer to gracefully handle stuck processes
                 timeout_seconds = self.config.evaluator.timeout + 30
                 result = future.result(timeout=timeout_seconds)
+                self._accumulate_token_usage(result.token_usage)
 
                 if result.error:
                     logger.warning(f"Iteration {completed_iteration} error: {result.error}")
@@ -1442,6 +1652,7 @@ class ProcessParallelController:
                 proposal = await loop.run_in_executor(
                     None, proposal_future.result, timeout_seconds
                 )
+                self._accumulate_token_usage(proposal.token_usage)
             except FutureTimeoutError:
                 logger.error(
                     f"⏰ Iteration {current_iteration} proposal timed out after "
@@ -1504,15 +1715,27 @@ class ProcessParallelController:
                 island_id += 1
                 continue
 
-            # Ask the developer to review the proposed witnesses -- BEFORE any code exists
-            decision = await self.review_gate.request_witness_review(
-                iteration=current_iteration,
-                parent=parent,
-                explanation=proposal.explanation,
-                witnesses=proposal.witnesses,
-                parent_artifacts=self.database.get_artifacts(parent.id),
-                previous_result=self._last_iteration_result,
-            )
+            # Ask the developer to review the proposed witnesses -- BEFORE any code
+            # exists - unless auto_approve is on, in which case every witness is
+            # approved without a human ever seeing it (see InteractiveConfig.auto_approve
+            # for the trust-gate trade-off this makes).
+            if self.config.interactive.auto_approve:
+                decision = ReviewDecision(
+                    approved=True,
+                    feedback="",
+                    witness_decisions={
+                        str(w.get("index")): True for w in proposal.witnesses
+                    },
+                )
+            else:
+                decision = await self.review_gate.request_witness_review(
+                    iteration=current_iteration,
+                    parent=parent,
+                    explanation=proposal.explanation,
+                    witnesses=proposal.witnesses,
+                    parent_artifacts=self.database.get_artifacts(parent.id),
+                    previous_result=self._last_iteration_result,
+                )
 
             # Stamp each witness with the developer's per-witness call (True/False).
             # Undecided witnesses (developer didn't touch that control) get None, not
@@ -1587,6 +1810,7 @@ class ProcessParallelController:
 
             try:
                 result = await loop.run_in_executor(None, implement_future.result, timeout_seconds)
+                self._accumulate_token_usage(result.token_usage)
             except FutureTimeoutError:
                 logger.error(
                     f"⏰ Iteration {current_iteration} implementation timed out after "
@@ -1624,18 +1848,68 @@ class ProcessParallelController:
 
             # From here on, same bookkeeping as the standard (non-interactive) path --
             # no further review round, the human gate already happened before phase 2.
-            reverify_artifacts = await self._reverify_approved_witnesses(child_program)
+            # The witness combining + evaluate() call already happened together, in
+            # the worker (_run_iteration_worker_implement) - this is purely a
+            # developer-facing diagnostic dump of what was already decided there.
+            self._dump_witness_file(
+                current_iteration,
+                child_program,
+                child_program.metadata.get("witnesses") or [],
+                child_program.metadata.get("approved_witnesses") or [],
+            )
 
             self.database.add(
                 child_program, iteration=current_iteration, target_island=result.target_island
             )
 
-            combined_artifacts = {**(result.artifacts or {}), **reverify_artifacts}
+            combined_artifacts = dict(result.artifacts or {})
             if combined_artifacts:
                 self.database.store_artifacts(child_program.id, combined_artifacts)
 
-            # Surface this iteration's compile/equivalence/performance result (and,
-            # if any witness qualified, heimdall's own re-verification of it) on the
+            # An approved witness can still fail to compile - the developer never
+            # saw the actual code, only the proposed change description. Without
+            # this, a later proposal from the SAME parent has no way to know a
+            # sibling attempt already hit this error and can repeat it indefinitely
+            # (e.g. proposing memset(), which clang's BPF backend rejects, over and
+            # over from a parent that itself compiles fine). Mirrors the existing
+            # developer-rejection retry-with-feedback pattern above, including the
+            # same give-up-after-N-in-a-row safety valve, but tracked separately
+            # (_compile_failure_counts) so an approval doesn't reset a streak that
+            # hasn't actually been resolved yet.
+            if child_program.metrics.get("compile_success", 1.0) != 1.0:
+                stderr_text = (combined_artifacts.get("stderr") or combined_artifacts.get("error") or "").strip()
+                first_err = stderr_text.splitlines()[0] if stderr_text else "(no diagnostic)"
+                self._pending_feedback[parent.id] = (
+                    f"Your last approved implementation for this program failed to compile: "
+                    f"{first_err}\nPropose a different change that avoids this error."
+                )
+                # Run-wide, not per-parent (see _known_compile_failures' docstring in
+                # __init__): every propose call sees this, regardless of which parent
+                # it targets, so giving up on this lineage doesn't lose the lesson.
+                if first_err not in self._known_compile_failures:
+                    self._known_compile_failures.append(first_err)
+                    del self._known_compile_failures[: -self._known_compile_failures_cap]
+                self._compile_failure_counts[parent.id] = (
+                    self._compile_failure_counts.get(parent.id, 0) + 1
+                )
+                if (
+                    self._compile_failure_counts[parent.id]
+                    >= self.config.interactive.max_rejections_per_parent
+                ):
+                    logger.info(
+                        f"Parent {parent.id} failed to compile "
+                        f"{self._compile_failure_counts[parent.id]} times in a row; giving up "
+                        f"on this lineage and sampling a new parent next"
+                    )
+                    del self._compile_failure_counts[parent.id]
+                    self._pending_feedback.pop(parent.id, None)
+                    forced_parent_id = None
+                else:
+                    forced_parent_id = parent.id
+            else:
+                self._compile_failure_counts.pop(parent.id, None)
+
+            # Surface this iteration's compile/equivalence/performance result on the
             # NEXT witness-review task -- see _last_iteration_result's docstring.
             self._last_iteration_result = {
                 "iteration": current_iteration,

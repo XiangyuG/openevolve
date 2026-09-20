@@ -7,8 +7,11 @@ import unittest
 from openevolve.utils.code_utils import (
     _format_block_lines,
     apply_diff,
+    build_heimdall_witness_file,
     extract_diffs,
     format_diff_summary,
+    merge_witnesses,
+    parse_full_rewrite,
 )
 
 
@@ -180,6 +183,199 @@ class TestFormatDiffSummary(unittest.TestCase):
         """Empty input should return '(empty)'"""
         result = _format_block_lines([])
         self.assertEqual(result, "  (empty)")
+
+
+class TestBuildHeimdallWitnessFile(unittest.TestCase):
+    """build_heimdall_witness_file() -> heimdall `--witness` schema"""
+
+    def test_empty(self):
+        out = build_heimdall_witness_file([])
+        self.assertEqual(
+            out,
+            {
+                "witness": {
+                    "version": "0.1",
+                    "name": "openevolve_transform",
+                    "bindings": [],
+                    "assumptions": [],
+                    "observations": [],
+                }
+            },
+        )
+
+    def test_map_width_change_becomes_map_correspondence(self):
+        out = build_heimdall_witness_file(
+            [{"index": 1, "map_width_change": {"map": "counts", "old_bytes": 8, "new_bytes": 4}}]
+        )
+        bindings = out["witness"]["bindings"]
+        self.assertEqual(len(bindings), 1)
+        b = bindings[0]
+        self.assertEqual(b["name"], "counts")
+        mc = b["relation"]["map_correspondence"]
+        self.assertEqual(mc["original_key"], "k")
+        self.assertEqual(mc["optimized_key"], "k")
+        self.assertNotIn("assume", mc)
+        self.assertEqual(
+            mc["value_relation"]["equal"]["right"],
+            {"truncate": {"value": "original.value", "width": 32}},
+        )
+
+    def test_map_key_width_change_adds_truncated_key_assume_and_assumption(self):
+        from openevolve.utils.code_utils import _parse_map_key_width_change
+
+        hint = _parse_map_key_width_change("qp: 4 -> 2 key rx_queue_index < 65536")
+        self.assertEqual(hint["ctx_field"], "rx_queue_index")
+        self.assertEqual(hint["bound"], 65536)
+
+        out = build_heimdall_witness_file([{"index": 1, "map_key_width_change": hint}])
+        w = out["witness"]
+        mc = w["bindings"][0]["relation"]["map_correspondence"]
+        self.assertEqual(mc["optimized_key"], {"truncate": {"value": "k", "width": 16}})
+        self.assertEqual(
+            mc["assume"],
+            {"unsigned_le": {"left": "k", "right": {"value": 65535, "type": "u32"}}},
+        )
+        self.assertEqual(mc["value_relation"], {"equal": True})
+        self.assertEqual(len(w["assumptions"]), 1)
+        self.assertEqual(
+            w["assumptions"][0]["expression"],
+            {"unsigned_lt": {"left": "original.ctx.rx_queue_index",
+                             "right": {"value": 65536, "type": "u32"}}},
+        )
+
+    def test_map_key_width_change_without_bound_clause_has_no_assumption(self):
+        out = build_heimdall_witness_file(
+            [{"map_key_width_change": {"map": "qp", "old_bytes": 4, "new_bytes": 2,
+                                       "ctx_field": None, "bound": None}}]
+        )
+        self.assertEqual(out["witness"]["assumptions"], [])
+        self.assertIn(
+            "assume",
+            out["witness"]["bindings"][0]["relation"]["map_correspondence"],
+        )
+
+    def test_key_and_value_narrowing_merge_into_one_binding(self):
+        out = build_heimdall_witness_file(
+            [
+                {"map_key_width_change": {"map": "qp", "old_bytes": 4, "new_bytes": 2,
+                                           "ctx_field": None, "bound": None}},
+                {"map_width_change": {"map": "qp", "old_bytes": 8, "new_bytes": 4}},
+            ]
+        )
+        bindings = out["witness"]["bindings"]
+        self.assertEqual(len(bindings), 1)
+        mc = bindings[0]["relation"]["map_correspondence"]
+        self.assertEqual(mc["optimized_key"], {"truncate": {"value": "k", "width": 16}})
+        self.assertIn("assume", mc)
+        self.assertEqual(
+            mc["value_relation"]["equal"]["right"],
+            {"truncate": {"value": "original.value", "width": 32}},
+        )
+
+    def test_non_narrowing_and_other_hints_skipped(self):
+        out = build_heimdall_witness_file(
+            [
+                {"map_width_change": {"map": "a", "old_bytes": 4, "new_bytes": 8}},  # widening
+                {"map_width_change": {"map": "b", "old_bytes": 4, "new_bytes": 4}},  # no-op
+                {"variable_width_change": {"var": "x", "old_bits": 32, "new_bits": 16}},
+                {"map_fusion": {"target": "t", "sources": [{"map": "s", "value_offset_bytes": 0, "value_bytes": 4}]}},
+                {"summary": "structural only"},
+            ]
+        )
+        self.assertEqual(out["witness"]["bindings"], [])
+
+
+class TestMergeWitnesses(unittest.TestCase):
+    """merge_witnesses(): accumulate an ancestry's witnesses with new ones"""
+
+    def test_inherited_key_plus_new_value_both_kept(self):
+        inherited = [{"map_key_width_change": {"map": "qp", "old_bytes": 4, "new_bytes": 2,
+                                                "ctx_field": "rx_queue_index", "bound": 65536}}]
+        new = [{"map_width_change": {"map": "qp", "old_bytes": 8, "new_bytes": 4}}]
+        merged = merge_witnesses(inherited, new)
+        self.assertEqual(len(merged), 2)
+
+        out = build_heimdall_witness_file(merged)
+        mc = out["witness"]["bindings"][0]["relation"]["map_correspondence"]
+        self.assertEqual(mc["optimized_key"], {"truncate": {"value": "k", "width": 16}})
+        self.assertEqual(
+            mc["value_relation"]["equal"]["right"],
+            {"truncate": {"value": "original.value", "width": 32}},
+        )
+        self.assertEqual(len(out["witness"]["assumptions"]), 1)
+
+    def test_same_map_deeper_narrowing_wins_and_tightest_bound(self):
+        inherited = [{"map_key_width_change": {"map": "qp", "old_bytes": 4, "new_bytes": 2,
+                                                "ctx_field": "rx_queue_index", "bound": 65536}}]
+        new = [{"map_key_width_change": {"map": "qp", "old_bytes": 2, "new_bytes": 1,
+                                         "ctx_field": None, "bound": 200}}]
+        merged = merge_witnesses(inherited, new)
+        self.assertEqual(len(merged), 1)
+        kh = merged[0]["map_key_width_change"]
+        self.assertEqual(kh["new_bytes"], 1)
+        self.assertEqual(kh["bound"], 200)  # min(65536, 200)
+
+    def test_untranslatable_dropped(self):
+        merged = merge_witnesses(
+            [{"variable_width_change": {"var": "x", "old_bits": 32, "new_bits": 16}}],
+            [{"summary": "pure refactor"}],
+        )
+        self.assertEqual(merged, [])
+
+
+class TestParseFullRewrite(unittest.TestCase):
+    """parse_full_rewrite(): must never mistake a ```witness/```wit block
+    (see examples/bpf_compile's prompts) for the program itself when the
+    model forgets to tag its actual code fence with `language`. Regression
+    coverage for a bug found by an actual openevolve run against
+    examples/bpf_compile: the response had no ```c fence around the C
+    program, and the "any fence" fallback grabbed the trailing ```witness
+    block instead, so the candidate's .bpf.c started with the literal text
+    "witness" and failed to compile."""
+
+    def test_properly_tagged_code_fence_is_unaffected(self):
+        response = (
+            "Some prose.\n```c\nint main() { return 0; }\n```\n"
+            "```witness\nbinding { original.x = optimized.x; }\n```\n"
+        )
+        self.assertEqual(parse_full_rewrite(response, "c").strip(), "int main() { return 0; }")
+
+    def test_bare_fence_with_no_witness_block_is_unaffected(self):
+        response = "prose\n```\nint main() { return 0; }\n```\n"
+        self.assertEqual(parse_full_rewrite(response, "c").strip(), "int main() { return 0; }")
+
+    def test_bare_code_fence_preferred_over_later_witness_fence(self):
+        response = (
+            "prose\n```\nint main() { return 0; }\n```\n"
+            "```witness\nbinding { original.x = optimized.x; }\n```\n"
+        )
+        self.assertEqual(parse_full_rewrite(response, "c").strip(), "int main() { return 0; }")
+
+    def test_fully_unfenced_response_returned_as_is(self):
+        response = "int main() { return 0; }"
+        self.assertEqual(parse_full_rewrite(response, "c"), response)
+
+    def test_unfenced_code_plus_witness_fence_does_not_extract_witness_text(self):
+        """The exact shape that triggered the bug: the C code is never
+        fenced, but a ```witness block is. There's no way to cleanly recover
+        the program here, so this must fail closed (None -> "No valid code
+        found in response") rather than silently returning the witness
+        block's content as if it were the program."""
+        response = (
+            "/* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause) */\n"
+            "int main() { return 0; }\n"
+            "I made the following changes:\n"
+            "(1) some change\n"
+            "    Witness (.wit):\n"
+            "    ```witness\n"
+            "    binding {\n"
+            "        original.zero_value[:] = optimized.zero_value[:];\n"
+            "    }\n"
+            "    ```\n"
+            "    Formula (pre-transformation): (assert true)\n"
+        )
+        result = parse_full_rewrite(response, "c")
+        self.assertIsNone(result)
 
 
 if __name__ == "__main__":
