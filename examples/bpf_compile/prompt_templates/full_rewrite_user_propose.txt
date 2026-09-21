@@ -139,6 +139,33 @@ post re-declares the same inputs plus a `post_result` for the NEW value -- prove
 equal for every input. Only Int/Bool sorts, no bitvector ops (approximate a mask
 with `mod`), nothing after the final `)`.
 
+Then add AT MOST ONE of the following tag lines, directly after the
+post-transformation formula, and only when it exactly describes this change --
+omit all three otherwise. Without one of these tags, a map-value-width or
+map-key-width change from the SCHEMA list above is checked with NO relaxation
+and will only verify if the two object files are already byte-for-byte equal
+on that map, which a real narrowing never is -- so it MUST carry the matching
+tag below or it cannot be approved into the relaxed check. (Map fusion has no
+tag yet; a proposed map merge is always checked as a plain, non-relaxed change.)
+
+  Map value width change: <map_name>: <old_bytes> -> <new_bytes>
+      -- this change shrank that map's VALUE struct.
+
+  Map key width change: <map_name>: <old_bytes> -> <new_bytes> key <ctx_field> < <bound>
+      -- this change shrank that hash map's KEY type. The "key <ctx_field> <
+      <bound>" clause is REQUIRED: <ctx_field> is the BPF context field the key
+      is derived from (e.g. rx_queue_index, cpu, common_pid) and <bound> is the
+      exclusive limit it never reaches (e.g. 65536 for a narrow to 2 bytes).
+      Your formulas MUST also prove it: assert `(< <ctx_field> <bound>)` on the
+      shared input in the pre-transformation formula and model the post one as
+      truncation (e.g. `(assert (= post_result (mod k 65536)))`).
+
+  Variable width change: <var_name>: <old_bits> -> <new_bits>
+      -- this change narrowed a scalar VARIABLE from a proven range invariant.
+      Assert the range on the shared input in the pre-transformation formula
+      and model the post one as truncation (e.g.
+      `(assert (= post_result (mod v 16)))` for an unsigned narrow to 4 bits).
+
 Each "Example" line must quote a real, short fragment (a line or part of a line) of
 the actual before/after code you are proposing, wrapped in single backticks -- not a
 triple-backtick block -- so a reviewer can see exactly where the change would happen
