@@ -1633,6 +1633,7 @@ class ProcessParallelController:
             parent, inspirations = self._sample_parent_and_inspirations(
                 target_island, forced_parent_id
             )
+            self._log_parent_selection(current_iteration, parent, inspirations, forced_parent_id)
             inspiration_ids = [insp.id for insp in inspirations]
 
             # --- Phase 1: propose ---
@@ -2088,6 +2089,24 @@ class ProcessParallelController:
             num_inspirations=self.config.prompt.num_diverse_programs,
         )
 
+    def _log_parent_selection(
+        self,
+        iteration: int,
+        parent: Program,
+        inspirations: List[Program],
+        forced_parent_id: Optional[str],
+    ) -> None:
+        """Log which program an iteration starts from, before any LLM call."""
+        how = "retrying same parent" if parent.id == forced_parent_id else "sampled"
+        score = parent.metrics.get("combined_score")
+        score_str = f"{score:.4f}" if isinstance(score, (int, float)) else "n/a"
+        logger.info(
+            f"Iteration {iteration}: parent {parent.id} ({how}; "
+            f"generation {parent.generation}, island {parent.metadata.get('island')}, "
+            f"combined_score {score_str}, own parent {parent.parent_id}); "
+            f"inspirations: {[insp.id for insp in inspirations]}"
+        )
+
     def _submit_iteration(
         self,
         iteration: int,
@@ -2107,6 +2126,7 @@ class ProcessParallelController:
             parent, inspirations = self._sample_parent_and_inspirations(
                 target_island, forced_parent_id
             )
+            self._log_parent_selection(iteration, parent, inspirations, forced_parent_id)
 
             # Create database snapshot
             db_snapshot = self._create_database_snapshot()
